@@ -86,6 +86,6 @@ Suggestions and feature requests will be considered. If you have something in mi
 
 ## Contributing
 
-One of the main reason I made DOTSAnimation open source is for it to benefit from the 
+Pull Request are welcomed! :)
 
 
