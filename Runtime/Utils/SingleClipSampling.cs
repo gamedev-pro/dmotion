@@ -24,5 +24,15 @@ namespace DOTSAnimation
             current.scale = math.lerp(current.scale, next.scale, blend);
             return current;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SamplePoseBlended(
+            ref BufferPoseBlender blender, float blend, float timeShift,
+            in AnimationState currentState, in AnimationState nextState,
+            in DynamicBuffer<ClipSampler> samplers)
+        {
+            currentState.SamplePose(ref blender, timeShift, samplers, 1f - blend);
+            nextState.SamplePose(ref blender, timeShift, samplers, blend);
+        }
     }
 }

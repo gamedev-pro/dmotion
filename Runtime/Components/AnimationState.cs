@@ -55,6 +55,21 @@ namespace DOTSAnimation
             }
         }
 
+        public void SamplePose(ref BufferPoseBlender blender, float timeShift, in DynamicBuffer<ClipSampler> samplers, float blend = 1f)
+        {
+            switch (Type)
+            {
+                case AnimationSamplerType.Single:
+                    SamplePose_SingleClip(ref blender, timeShift, samplers, blend);
+                    break;
+                case AnimationSamplerType.LinearBlend:
+                    SamplePose_LinearBlend(ref blender, timeShift, samplers, blend);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public float GetStateTime(in DynamicBuffer<ClipSampler> samplers)
         {
             switch (Type)

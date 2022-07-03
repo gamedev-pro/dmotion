@@ -26,6 +26,21 @@ namespace DOTSAnimation
             return bone;
         }
 
+        public static void SamplePose(
+            ref BufferPoseBlender blender,
+            float timeShift,
+            in DynamicBuffer<ClipSampler> samplers,
+            int startIndex, int endIndex, float blend = 1f)
+        {
+            for (var i = startIndex; i <= endIndex; i++)
+            {
+                var s = samplers[i];
+                var t = s.Time + timeShift * s.Speed;
+                t = s.Clip.LoopToClipTime(t);
+                s.Clip.SamplePose(ref blender, s.Weight * blend, t);
+            }
+        }
+
         public static void FindSamplers(
             in DynamicBuffer<ClipSampler> samplers,
             int startIndex, int endIndex,

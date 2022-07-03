@@ -15,34 +15,36 @@ namespace DOTSAnimation
             in DynamicBuffer<AnimationState> states,
             in OptimizedSkeletonHierarchyBlobReference hierarchyRef)
         {
+            var blender = new BufferPoseBlender(boneToRootBuffer);
+            bool requiresNormalization = true;
+            
             //Sample blended (current and next states)
             if (stateMachine.NextState.IsValid)
             {
                 var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
                 var nextState = states.ElementAtSafe(stateMachine.NextState.StateIndex);
-
+            
                 var blend = math.clamp(nextState.GetNormalizedStateTime(samplers) / nextState.TransitionDuration, 0, 1);
-                
-                var bones = boneToRootBuffer.AsBTRMatrixArray();
-                //We start at 1 because root is sampled in a different job
-                for (var i = 1; i < bones.Length; i++)
-                {
-                    var current = SingleClipSampling.SampleBoneBlended(i, blend, 0, currentState, nextState, samplers);
-                    bones[i] = current.ToBTRMatrix(i, in bones, in hierarchyRef);
-                }
+            
+                SingleClipSampling.SamplePoseBlended(ref blender, blend, 0, currentState, nextState, samplers);
             }
             //Sample current state
             else
             {
                 var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
-                var bones = boneToRootBuffer.AsBTRMatrixArray();
-                //We start at 1 because root is sampled in a different job
-                for (var i = 1; i < bones.Length; i++)
-                {
-                    var current = currentState.SampleBone(i, 0, samplers);
-                    bones[i] = current.ToBTRMatrix(i, in bones, in hierarchyRef);
-                }
+            
+                //Skip normalization when there is only one pose since the rotations will already be normalized
+                requiresNormalization = currentState.Type != AnimationSamplerType.Single;
+            
+                currentState.SamplePose(ref blender, 0, samplers);
             }
+            
+            if (requiresNormalization)
+            {
+                blender.NormalizeRotations();
+            }
+            
+            blender.ApplyBoneHierarchyAndFinish(hierarchyRef.blob);
         }
     }
 }
