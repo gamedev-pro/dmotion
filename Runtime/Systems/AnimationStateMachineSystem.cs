@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using Unity.Collections;
+using Unity.Entities;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -20,47 +21,38 @@ namespace DOTSAnimation
 
         protected override void OnUpdate()
         {
-            Dependency = new SyncBlendParametersJob()
-            {
-            }.ScheduleParallel();
-            
             var ecb = ecbSystem.CreateCommandBuffer().AsParallelWriter();
-            Dependency = new RaiseAnimationEventsJob()
+            var updateFmsHandle = new UpdateStateMachineJob()
             {
                 DeltaTime = Time.DeltaTime,
                 Ecb = ecb
             }.ScheduleParallel();
-            
             ecbSystem.AddJobHandleForProducer(Dependency);
             
-            var sampleOptimizedBones = new SampleOptimizedBonesJob()
+            //Sample bones (those only depend on updateFmsHandle)
+            var sampleOptimizedHandle = new SampleOptimizedBonesJob()
             {
-            }.ScheduleParallel();
-            var sampleNonOptimizedBones = new SampleNonOptimizedBones()
+            }.ScheduleParallel(updateFmsHandle);
+            var sampleNonOptimizedHandle = new SampleNonOptimizedBones()
             {
-                CfeAnimationState = GetBufferFromEntity<AnimationState>(),
-                CfeClipSampler = GetBufferFromEntity<ClipSampler>(),
-                CfeStateMachine = GetComponentDataFromEntity<AnimationStateMachine>(),
-            }.ScheduleParallel();
+                CfeAnimationState = GetBufferFromEntity<AnimationState>(true),
+                CfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                CfeStateMachine = GetComponentDataFromEntity<AnimationStateMachine>(true),
+            }.ScheduleParallel(updateFmsHandle);
             
             var sampleRootHandle = new SampleRootJob()
             {
                 DeltaTime = Time.DeltaTime
-            }.ScheduleParallel();
-            
-            var updateStateMachineHandle = new UpdateStateMachineJob()
+            }.ScheduleParallel(updateFmsHandle);
+
+            var transferRootMotionHandle = new TransferRootMotionJob()
             {
-                DeltaTime = Time.DeltaTime,
-            }.ScheduleParallel();
-            
-            var transferRootHandle = new TransferRootMotionJob()
-            {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaPosition>(),
-                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(),
+                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaPosition>(true),
+                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
             }.ScheduleParallel(sampleRootHandle);
+            //end sample bones
             
-            Dependency = JobHandle.CombineDependencies(Dependency, sampleOptimizedBones, sampleNonOptimizedBones);
-            Dependency = JobHandle.CombineDependencies(Dependency, updateStateMachineHandle, transferRootHandle);
+            Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle, transferRootMotionHandle);
         }
     }
 }
