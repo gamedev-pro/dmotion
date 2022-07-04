@@ -20,7 +20,7 @@ namespace DOTSAnimation
             var next = nextState.SampleBone(boneIndex, timeShift, samplers);
 
             current.translation = math.lerp(current.translation, next.translation, blend);
-            current.rotation = math.slerp(current.rotation, next.rotation, blend);
+            current.rotation = math.nlerp(current.rotation, next.rotation, blend);
             current.scale = math.lerp(current.scale, next.scale, blend);
             return current;
         }

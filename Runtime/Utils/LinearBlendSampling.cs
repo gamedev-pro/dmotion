@@ -163,21 +163,17 @@ namespace DOTSAnimation
             bone.translation += otherBone.translation * clipWeight;
             
             //blends rotation. Negates opposing quaternions to be sure to choose the shortest path
-            var sign = signzeropositive(math.dot(otherBone.rotation, bone.rotation));
-            var otherRot = new quaternion(
-                otherBone.rotation.value.x * sign, otherBone.rotation.value.y * sign,
-                otherBone.rotation.value.z * sign, otherBone.rotation.value.w * sign
-            );
+            var otherRot = otherBone.rotation;
+            var dot = math.dot(otherRot, bone.rotation);
+            if (dot < 0)
+            {
+                otherRot.value = -otherRot.value;
+            }
             var rot = bone.rotation;
             rot.value += otherRot.value * clipWeight;
             bone.rotation = rot;
 
             bone.scale += otherBone.scale * clipWeight;
-        }
-        
-        public static float signzeropositive(float v)
-        {
-            return v >= 0 ? 1 : -1;
         }
     }
 }

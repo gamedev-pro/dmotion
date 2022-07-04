@@ -13,7 +13,7 @@ namespace DOTSAnimation
             var toTransform = to.SampleBone(boneIndex, toClipTime);
 
             fromTransform.translation = math.lerp(fromTransform.translation, toTransform.translation, blend);
-            fromTransform.rotation = math.slerp(fromTransform.rotation, toTransform.rotation, blend);
+            fromTransform.rotation = math.nlerp(fromTransform.rotation, toTransform.rotation, blend);
             fromTransform.scale = math.lerp(fromTransform.scale, toTransform.scale, blend);
             return fromTransform;
         }
