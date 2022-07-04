@@ -15,7 +15,12 @@ namespace DOTSAnimation
         {
             return LinearBlendSampling.SampleBone(boneIndex, timeShift, samplers, StartSamplerIndex, EndSamplerIndex);
         }
-        
+
+        private readonly void SamplePose_LinearBlend(ref BufferPoseBlender blender, float timeShift, in DynamicBuffer<ClipSampler> samplers, float blend = 1f)
+        {
+            LinearBlendSampling.SamplePose(ref blender, timeShift, samplers, StartSamplerIndex, EndSamplerIndex, blend);
+        }
+
         private readonly float NormalizedTime_LinearBlend(in DynamicBuffer<ClipSampler> samplers)
         { 
             LinearBlendSampling.FindSamplers(samplers, StartSamplerIndex, EndSamplerIndex, Blend, out var firstSamplerIndex, out var secondSamplerIndex);

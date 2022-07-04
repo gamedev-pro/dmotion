@@ -21,6 +21,14 @@ namespace DOTSAnimation
             return sampler.Clip.SampleBone(boneIndex, normalizedTime);
         }
 
+        private readonly void SamplePose_SingleClip(ref BufferPoseBlender blender, float timeShift, in DynamicBuffer<ClipSampler> samplers, float blend = 1f)
+        {
+            var sampler = samplers[StartSamplerIndex];
+            var time = sampler.Time + timeShift * sampler.Speed;
+            var normalizedTime = Loop ? sampler.Clip.LoopToClipTime(time) : time;
+            sampler.Clip.SamplePose(ref blender, blend, normalizedTime);
+        }
+
         private readonly float NormalizedTime_Single(in DynamicBuffer<ClipSampler> samplers)
         {
             var s = samplers[StartSamplerIndex];

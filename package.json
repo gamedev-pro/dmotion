@@ -5,7 +5,7 @@
   "unity": "2020.3",
   "description": "DOTSAnimation is a high level Animation State Machine framework for DOTS",
   "dependencies": {
-    "com.latios.latiosframework": "0.5.1"
+    "com.latios.latiosframework": "0.5.2"
   },
   "unityRelease": "30f1",
   "keywords": [
