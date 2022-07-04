@@ -7,6 +7,8 @@ using Unity.Transforms;
 namespace DOTSAnimation
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
+    [UpdateBefore(typeof(TRSToLocalToParentSystem))]
+    [UpdateBefore(typeof(TRSToLocalToWorldSystem))]
     public partial class AnimationStateMachineSystem : SystemBase
     {
         private EntityCommandBufferSystem ecbSystem;
