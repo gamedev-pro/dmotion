@@ -1,28 +1,36 @@
+using BovineLabs.Event.Systems;
 using Unity.Entities;
 using Unity.Transforms;
 
 namespace DOTSAnimation
 {
+    public struct AnimationEventData
+    {
+        public int EventHash;
+        public Entity AnimatorEntity;
+        public Entity AnimatorOwner;
+    }
+    
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(AnimationStateMachineSystem))]
     public partial class AnimationEventsSystem : SystemBase
     {
-        private EntityCommandBufferSystem ecbSystem;
+        private EventSystem eventSystem;
+
         protected override void OnCreate()
         {
             base.OnCreate();
-            ecbSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
+            eventSystem = World.GetOrCreateSystem<EventSystem>();
         }
 
         protected override void OnUpdate()
         {
-            var ecb = ecbSystem.CreateCommandBuffer().AsParallelWriter();
             new RaiseAnimationEventsJob()
             {
+                Writer = eventSystem.CreateEventWriter<AnimationEventData>(),
                 DeltaTime = Time.DeltaTime,
-                Ecb = ecb
             }.ScheduleParallel();
-            ecbSystem.AddJobHandleForProducer(Dependency);
+            eventSystem.AddJobHandleForProducer<AnimationEventData>(Dependency);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using BovineLabs.Event.Containers;
 using Unity.Burst;
 using Unity.Entities;
 using UnityEngine.Assertions;
@@ -8,12 +9,11 @@ namespace DOTSAnimation
     [BurstCompile]
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
-        public EntityCommandBuffer.ParallelWriter Ecb;
+        public NativeEventStream.ThreadWriter Writer;
         public float DeltaTime;
         
         public void Execute(
-            Entity e,
-            [EntityInQueryIndex] int sortKey,
+            Entity animatorEntity,
             in AnimationStateMachine stateMachine,
             in DynamicBuffer<ClipSampler> samplers,
             in DynamicBuffer<AnimationState> states,
@@ -22,19 +22,19 @@ namespace DOTSAnimation
         )
         {
             //Raise events
-            RaiseStateEvents(sortKey, stateMachine.CurrentState, animatorOwner.Owner, states, samplers,
+            RaiseStateEvents(animatorEntity, stateMachine.CurrentState, animatorOwner.Owner, states, samplers,
                 animationEvents);
             if (stateMachine.NextState.IsValid)
             {
-                RaiseStateEvents(sortKey, stateMachine.NextState, animatorOwner.Owner, states, samplers,
+                RaiseStateEvents(animatorEntity, stateMachine.NextState, animatorOwner.Owner, states, samplers,
                     animationEvents);
             }
         }
         
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RaiseStateEvents(
-            int sortKey, in AnimationStateMachine.StateRef stateRef,
+        private void RaiseStateEvents(Entity animatorEntity,
+            in AnimationStateMachine.StateRef stateRef,
             Entity ownerEntity, in DynamicBuffer<AnimationState> states, in DynamicBuffer<ClipSampler> samplers,
             in DynamicBuffer<AnimationEvent> events)
         {
@@ -49,14 +49,15 @@ namespace DOTSAnimation
             for (var j = 0; j < events.Length; j++)
             {
                 var e = events[j];
-                unsafe
+                if (e.SamplerIndex == samplerIndex && e.NormalizedTime >= previousSamplerTime &&
+                    e.NormalizedTime <= normalizedSamplerTime)
                 {
-                    if (e.SamplerIndex == samplerIndex && e.NormalizedTime >= previousSamplerTime &&
-                        e.NormalizedTime <= normalizedSamplerTime)
+                    Writer.Write(new AnimationEventData()
                     {
-                        var ecb = Ecb;
-                        e.Delegate.Invoke(&ownerEntity, sortKey, &ecb);
-                    }
+                        EventHash = e.EventHash,
+                        AnimatorEntity = animatorEntity,
+                        AnimatorOwner = ownerEntity,
+                    });
                 }
             }
         }
