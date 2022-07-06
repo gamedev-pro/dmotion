@@ -1,10 +1,15 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using Unity.Burst;
 using Unity.Entities;
 
 namespace DOTSAnimation
 {
+    public struct RaisedAnimationEvent
+    {
+        public int EventHash;
+        public Entity AnimatorEntity;
+        public Entity AnimatorOwner;
+    }
+    
     public struct AnimationEvent : IBufferElementData, IComparable<AnimationEvent>
     {
         internal int EventHash;

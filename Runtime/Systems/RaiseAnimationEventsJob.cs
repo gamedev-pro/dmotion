@@ -52,7 +52,7 @@ namespace DOTSAnimation
                 if (e.SamplerIndex == samplerIndex && e.NormalizedTime >= previousSamplerTime &&
                     e.NormalizedTime <= normalizedSamplerTime)
                 {
-                    Writer.Write(new AnimationEventData()
+                    Writer.Write(new RaisedAnimationEvent()
                     {
                         EventHash = e.EventHash,
                         AnimatorEntity = animatorEntity,

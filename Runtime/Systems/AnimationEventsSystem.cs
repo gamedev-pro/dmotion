@@ -4,13 +4,6 @@ using Unity.Transforms;
 
 namespace DOTSAnimation
 {
-    public struct AnimationEventData
-    {
-        public int EventHash;
-        public Entity AnimatorEntity;
-        public Entity AnimatorOwner;
-    }
-    
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(AnimationStateMachineSystem))]
     public partial class AnimationEventsSystem : SystemBase
@@ -27,10 +20,10 @@ namespace DOTSAnimation
         {
             new RaiseAnimationEventsJob()
             {
-                Writer = eventSystem.CreateEventWriter<AnimationEventData>(),
+                Writer = eventSystem.CreateEventWriter<RaisedAnimationEvent>(),
                 DeltaTime = Time.DeltaTime,
             }.ScheduleParallel();
-            eventSystem.AddJobHandleForProducer<AnimationEventData>(Dependency);
+            eventSystem.AddJobHandleForProducer<RaisedAnimationEvent>(Dependency);
         }
     }
 }
