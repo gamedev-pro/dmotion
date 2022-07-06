@@ -238,7 +238,7 @@ namespace DOTSAnimation
 
 
         public static BufferElementRef<AnimationEvent> AddEvent(this BufferElementRef<AnimationState> stateRef,
-            float normalizedTime, FunctionPointer<AnimationEventDelegate> eventDelegate)
+            float normalizedTime, int eventHash)
         {
             var state = stateRef.Value;
             Assert.IsTrue(state.Type == AnimationSamplerType.Single);
@@ -249,17 +249,17 @@ namespace DOTSAnimation
                 EntityManager = stateRef.EntityManager,
                 Index = state.StartSamplerIndex
             };
-            return AddEvent(sampler, normalizedTime, eventDelegate);
+            return AddEvent(sampler, normalizedTime, eventHash);
         }
         
-        public static BufferElementRef<AnimationEvent> AddEvent(this BufferElementRef<ClipSampler> samplerRef, float normalizedTime, FunctionPointer<AnimationEventDelegate> eventDelegate)
+        public static BufferElementRef<AnimationEvent> AddEvent(this BufferElementRef<ClipSampler> samplerRef, float normalizedTime, int eventHash)
         {
             var eventsBuffer = samplerRef.EntityManager.GetOrCreateBuffer<AnimationEvent>(samplerRef.Entity);
 
             var newEvent = new AnimationEvent()
             {
                 SamplerIndex = samplerRef.Index,
-                Delegate = eventDelegate,
+                EventHash = eventHash,
                 NormalizedTime = normalizedTime
             };
             eventsBuffer.Add(newEvent);

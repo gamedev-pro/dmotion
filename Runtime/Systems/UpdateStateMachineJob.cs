@@ -3,18 +3,14 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace DOTSAnimation
 {
     [BurstCompile]
     internal partial struct UpdateStateMachineJob : IJobEntity
     {
-        public EntityCommandBuffer.ParallelWriter Ecb;
         public float DeltaTime;
         public void Execute(
-            Entity e,
-            [EntityInQueryIndex] int sortKey,
             ref AnimationStateMachine stateMachine,
             ref DynamicBuffer<ClipSampler> samplers,
             ref DynamicBuffer<AnimationState> states,
@@ -22,9 +18,7 @@ namespace DOTSAnimation
             in DynamicBuffer<BlendParameter> blendParameters,
             in DynamicBuffer<BoolTransition> boolTransitions,
             in DynamicBuffer<BoolParameter> boolParameters,
-            in DynamicBuffer<ExitTimeTransition> exitTimeTransitions,
-            in AnimatorEntity animatorOwner,
-            in DynamicBuffer<AnimationEvent> animationEvents
+            in DynamicBuffer<ExitTimeTransition> exitTimeTransitions
             )
         {
             AnimationStateMachineUtils.RaiseExceptionIfNotValid(stateMachine, states);
@@ -107,15 +101,6 @@ namespace DOTSAnimation
                     states[stateIndex] = state;
                 }
             }
-            
-            //Raise events
-            RaiseStateEvents(sortKey, stateMachine.CurrentState, animatorOwner.Owner, states, samplers,
-                animationEvents);
-            if (stateMachine.NextState.IsValid)
-            {
-                RaiseStateEvents(sortKey, stateMachine.NextState, animatorOwner.Owner, states, samplers,
-                    animationEvents);
-            }
         }
         
         [BurstCompile]
@@ -189,34 +174,5 @@ namespace DOTSAnimation
             return false;
         }
         
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RaiseStateEvents(
-            int sortKey, in AnimationStateMachine.StateRef stateRef,
-            Entity ownerEntity, in DynamicBuffer<AnimationState> states, in DynamicBuffer<ClipSampler> samplers,
-            in DynamicBuffer<AnimationEvent> events)
-        {
-            Assert.IsTrue(states.IsValidIndex(stateRef.StateIndex));
-            var state = states.ElementAtSafe(stateRef.StateIndex);
-            var samplerIndex = state.GetActiveSamplerIndex(samplers);
-            
-            var sampler = samplers[samplerIndex];
-            var normalizedSamplerTime = sampler.Clip.LoopToClipTime(sampler.Time);
-            var previousSamplerTime = sampler.Clip.LoopToClipTime(sampler.Time - DeltaTime * sampler.Speed);
-            
-            for (var j = 0; j < events.Length; j++)
-            {
-                var e = events[j];
-                unsafe
-                {
-                    if (e.SamplerIndex == samplerIndex && e.NormalizedTime >= previousSamplerTime &&
-                        e.NormalizedTime <= normalizedSamplerTime)
-                    {
-                        var ecb = Ecb;
-                        e.Delegate.Invoke(&ownerEntity, sortKey, &ecb);
-                    }
-                }
-            }
-        }
     }
 }

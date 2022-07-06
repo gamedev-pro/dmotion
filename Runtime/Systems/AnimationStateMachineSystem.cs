@@ -12,22 +12,12 @@ namespace DOTSAnimation
     [UpdateBefore(typeof(TRSToLocalToWorldSystem))]
     public partial class AnimationStateMachineSystem : SystemBase
     {
-        private EntityCommandBufferSystem ecbSystem;
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-            ecbSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
-        }
-
         protected override void OnUpdate()
         {
-            var ecb = ecbSystem.CreateCommandBuffer().AsParallelWriter();
             var updateFmsHandle = new UpdateStateMachineJob()
             {
                 DeltaTime = Time.DeltaTime,
-                Ecb = ecb
             }.ScheduleParallel();
-            ecbSystem.AddJobHandleForProducer(Dependency);
             
             //Sample bones (those only depend on updateFmsHandle)
             var sampleOptimizedHandle = new SampleOptimizedBonesJob()
