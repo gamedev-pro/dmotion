@@ -4,6 +4,13 @@ using Latios.Kinemation;
 using Unity.Entities;
 using UnityEngine;
 
+public static class AnimationEvents
+{
+    public static int StartAttackEventHash = "StartAttackEvent".GetHashCode();
+    public static int EndAttackEventHash = "EndAttackEvent".GetHashCode();
+    public static int FootstepEvent1 = "FootstepEvent1".GetHashCode();
+    public static int FootstepEvent2 = "FootstepEvent2".GetHashCode();
+}
 public struct CombatAnimations : IComponentData
 {
     public AnimationStateRef Attack;
@@ -28,13 +35,13 @@ public class PlayOneShotExampleAuthoring : MonoBehaviour, IConvertGameObjectToEn
         var blockState = AnimationConversionUtils.AddAnimationState_Single(entity, dstManager, blob, 1,
             ClipSamplerCreateParams.Default, AnimationStateCreateParams.OneShot, "Heavy Atk");
         
-        atkState.AddEvent(0.2f, AnimationEvents.StartAttackWindowEventPtr);
-        atkState.AddEvent(0.35f, AnimationEvents.EndAttackWindowEventPtr);
+        atkState.AddEvent(0.2f, AnimationEvents.StartAttackEventHash);
+        atkState.AddEvent(0.35f, AnimationEvents.EndAttackEventHash);
 
         var combatAnimations = new CombatAnimations()
         {
             Attack = atkState.ToStateRef(),
-            Block = blockState.ToStateRef()
+            Block = blockState.ToStateRef(),
         };
 
         dstManager.AddComponentData(entity, combatAnimations);

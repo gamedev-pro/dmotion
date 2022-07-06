@@ -30,8 +30,8 @@ public class StateMachineExampleAuthoring : MonoBehaviour, IConvertGameObjectToE
             AddSampler(entity, dstManager, blob, 2, new ClipSamplerCreateParams(1, 0.8f));
 
         //Add events
-        walkSampler.AddEvent(0.2f, AnimationEvents.FootStepEventPtr);
-        runSampler.AddEvent(0.1f, AnimationEvents.FootStepEvent2Ptr);
+        walkSampler.AddEvent(0.2f, AnimationEvents.FootstepEvent1);
+        runSampler.AddEvent(0.1f, AnimationEvents.FootstepEvent2);
 
         //Create 1D Blend Tree state
         var locomotionState = AnimationConversionUtils.AddAnimationState(entity, dstManager, idleSampler.Index,
