@@ -115,9 +115,16 @@ namespace DOTSAnimation.Editor
             var bounds = skinnedMeshRenderer.bounds;
             var camPos = new Vector3(0f, bounds.size.y * 3, 10f);
             previewRenderUtility.camera.transform.position = camPos;
-            previewRenderUtility.camera.transform.rotation = Quaternion.LookRotation(bounds.center - camPos);
+            var camRot = Quaternion.LookRotation(bounds.center - camPos);
+            previewRenderUtility.camera.transform.rotation = camRot;
             previewRenderUtility.camera.nearClipPlane = 0.3f;
             previewRenderUtility.camera.farClipPlane = 3000f;
+
+            var light1 = previewRenderUtility.lights[0];
+            light1.type = LightType.Directional;
+            light1.color = Color.white;
+            light1.intensity = 1;
+            light1.transform.rotation = camRot;
         }
 
         private void OnEnable()
