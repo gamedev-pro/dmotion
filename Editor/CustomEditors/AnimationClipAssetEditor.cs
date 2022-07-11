@@ -1,6 +1,9 @@
 using DOTSAnimation.Authoring;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
+using UnityEngine.UIElements;
 
 namespace DOTSAnimation.Editor
 {
@@ -9,8 +12,10 @@ namespace DOTSAnimation.Editor
     {
         private PreviewRenderUtility previewRenderUtility;
         private GameObject gameObject;
+        private Animator animator;
         private SkinnedMeshRenderer skinnedMeshRenderer;
         private Mesh previewMesh;
+        private PlayableGraph playableGraph;
         private float sampleNormalizedTime;
         private GameObject AnimatorRoot => skinnedMeshRenderer.transform.root.gameObject;
 
@@ -26,9 +31,10 @@ namespace DOTSAnimation.Editor
                     RefreshPreviewObjects();
                 }
             }
+
             using (var c = new EditorGUI.ChangeCheckScope())
             {
-                gameObject = (GameObject) EditorGUILayout.ObjectField(gameObject, typeof(GameObject), true);
+                gameObject = (GameObject)EditorGUILayout.ObjectField(gameObject, typeof(GameObject), true);
                 if (c.changed)
                 {
                     if (gameObject != null)
@@ -44,14 +50,14 @@ namespace DOTSAnimation.Editor
                     }
                 }
             }
-            
+
             sampleNormalizedTime = EditorGUILayout.Slider(sampleNormalizedTime, 0, 1);
         }
 
 
         private bool IsValidGameObject(GameObject obj)
         {
-            return obj.GetComponentInChildren<SkinnedMeshRenderer>() != null;
+            return obj.GetComponentInChildren<Animator>() != null;
         }
 
         private bool TryInstantiateSkinnedMesh(GameObject template)
@@ -64,14 +70,29 @@ namespace DOTSAnimation.Editor
             DestroyPreviewInstance();
 
             var instance = Instantiate(template, Vector3.zero, Quaternion.identity);
+            
+            AnimatorUtility.DeoptimizeTransformHierarchy(instance);
+            
             instance.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild | HideFlags.HideInHierarchy |
                                  HideFlags.HideInInspector | HideFlags.NotEditable;
+            animator = instance.GetComponentInChildren<Animator>();
             skinnedMeshRenderer = instance.GetComponentInChildren<SkinnedMeshRenderer>();
             instance.SetActive(false);
 
             previewMesh = new Mesh();
-            CreatePreviewUtility();
+
+            if (playableGraph.IsValid())
+            {
+                playableGraph.Destroy();
+            }
+            playableGraph = PlayableGraph.Create();
+            playableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+            var playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation", animator);
+            var clipPlayable = AnimationClipPlayable.Create(playableGraph, ClipTarget.Clip);
+            playableOutput.SetSourcePlayable(clipPlayable);
             
+            CreatePreviewUtility();
+
             return true;
         }
 
@@ -90,9 +111,9 @@ namespace DOTSAnimation.Editor
         {
             previewRenderUtility?.Cleanup();
             previewRenderUtility = new PreviewRenderUtility();
-            
+
             var bounds = skinnedMeshRenderer.bounds;
-            var camPos = new Vector3(0f, bounds.size.y*3, 10f);
+            var camPos = new Vector3(0f, bounds.size.y * 3, 10f);
             previewRenderUtility.camera.transform.position = camPos;
             previewRenderUtility.camera.transform.rotation = Quaternion.LookRotation(bounds.center - camPos);
             previewRenderUtility.camera.nearClipPlane = 0.3f;
@@ -101,8 +122,16 @@ namespace DOTSAnimation.Editor
 
         private void OnEnable()
         {
+            AnimationMode.StartAnimationMode();
             RefreshPreviewObjects();
         }
+        
+        private void OnDisable()
+        {
+            AnimationMode.StopAnimationMode();
+            previewRenderUtility?.Cleanup();
+        }
+
 
         private void RefreshPreviewObjects()
         {
@@ -137,13 +166,9 @@ namespace DOTSAnimation.Editor
                     return IsValidGameObject(go);
                 }
             }
+
             armatureGo = null;
             return false;
-        }
-
-        private void OnDisable()
-        {
-            previewRenderUtility?.Cleanup();
         }
 
         public override bool HasPreviewGUI()
@@ -156,19 +181,20 @@ namespace DOTSAnimation.Editor
             if (skinnedMeshRenderer != null && ClipTarget.Clip != null)
             {
                 AnimationMode.BeginSampling();
-                AnimationMode.SampleAnimationClip(AnimatorRoot, ClipTarget.Clip, sampleNormalizedTime*ClipTarget.Clip.length);
+                AnimationMode.SamplePlayableGraph(playableGraph, 0, sampleNormalizedTime*ClipTarget.Clip.length);
                 AnimationMode.EndSampling();
-
                 {
                     skinnedMeshRenderer.BakeMesh(previewMesh);
                     previewRenderUtility.BeginPreview(r, background);
 
                     for (var i = 0; i < previewMesh.subMeshCount; i++)
                     {
-                        previewRenderUtility.DrawMesh(previewMesh, Matrix4x4.identity, skinnedMeshRenderer.sharedMaterial, i);
+                        previewRenderUtility.DrawMesh(previewMesh, Matrix4x4.identity,
+                            skinnedMeshRenderer.sharedMaterial, i);
                     }
+
                     previewRenderUtility.camera.Render();
-                    
+
                     var resultRender = previewRenderUtility.EndPreview();
                     GUI.DrawTexture(r, resultRender, ScaleMode.StretchToFill, false);
                 }
