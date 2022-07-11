@@ -1,5 +1,6 @@
 using DOTSAnimation.Authoring;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -10,6 +11,7 @@ namespace DOTSAnimation.Editor
     [CustomEditor(typeof(AnimationClipAsset))]
     public class AnimationClipAssetEditor : UnityEditor.Editor
     {
+        public VisualTreeAsset DefaultInspector;
         private PreviewRenderUtility previewRenderUtility;
         private GameObject gameObject;
         private Animator animator;
@@ -17,43 +19,69 @@ namespace DOTSAnimation.Editor
         private Mesh previewMesh;
         private PlayableGraph playableGraph;
         private float sampleNormalizedTime;
-        private GameObject AnimatorRoot => skinnedMeshRenderer.transform.root.gameObject;
-
         private AnimationClipAsset ClipTarget => (AnimationClipAsset)target;
 
-        public override void OnInspectorGUI()
+        public override VisualElement CreateInspectorGUI()
         {
-            using (var c = new EditorGUI.ChangeCheckScope())
+            var inspector = new VisualElement();
+            if (DefaultInspector != null)
             {
-                base.OnInspectorGUI();
-                if (c.changed)
+                DefaultInspector.CloneTree(inspector);
+            }
+            
+            var defaultInspector = inspector.Q("default-inspector");
+            if (defaultInspector != null)
+            {
+                InspectorElement.FillDefaultInspector(defaultInspector, serializedObject, this);
+                var q = defaultInspector.Query<PropertyField>();
+                foreach (var e in q.Build())
                 {
-                    RefreshPreviewObjects();
+                    e.RegisterCallback <ChangeEvent<Object>>(OnObjectPropertyChanged);
                 }
             }
 
-            using (var c = new EditorGUI.ChangeCheckScope())
+            var slider = inspector.Q<Slider>("sample-time");
+            if (slider != null)
             {
-                gameObject = (GameObject)EditorGUILayout.ObjectField(gameObject, typeof(GameObject), true);
-                if (c.changed)
-                {
-                    if (gameObject != null)
-                    {
-                        if (!TryInstantiateSkinnedMesh(gameObject))
-                        {
-                            gameObject = null;
-                        }
-                    }
-                    else
-                    {
-                        DestroyPreviewInstance();
-                    }
-                }
+                slider.RegisterValueChangedCallback(OnTimeSliderValueChanged);
+                slider.value = sampleNormalizedTime;
             }
 
-            sampleNormalizedTime = EditorGUILayout.Slider(sampleNormalizedTime, 0, 1);
+            var previewObjField = inspector.Q<ObjectField>("preview-obj");
+            if (previewObjField != null)
+            {
+                previewObjField.value = gameObject;
+                previewObjField.RegisterValueChangedCallback(OnPreviewObjectChanged);
+            }
+            return inspector;
         }
 
+        private void OnPreviewObjectChanged(ChangeEvent<Object> evt)
+        {
+            gameObject = (GameObject) evt.newValue;
+            if (gameObject != null)
+            {
+                if (!TryInstantiateSkinnedMesh(gameObject))
+                {
+                    DestroyPreviewInstance();
+                    gameObject = null;
+                }
+            }
+            else
+            {
+                DestroyPreviewInstance();
+            }
+        }
+
+        private void OnObjectPropertyChanged(ChangeEvent<Object> evt)
+        {
+            RefreshPreviewObjects();
+        }
+
+        private void OnTimeSliderValueChanged(ChangeEvent<float> evt)
+        {
+            sampleNormalizedTime = evt.newValue;
+        }
 
         private bool IsValidGameObject(GameObject obj)
         {
@@ -144,7 +172,10 @@ namespace DOTSAnimation.Editor
         {
             if (gameObject != null)
             {
-                TryInstantiateSkinnedMesh(gameObject);
+                if (!TryInstantiateSkinnedMesh(gameObject))
+                {
+                    gameObject = null;
+                }
             }
             else if (ClipTarget.Clip != null)
             {

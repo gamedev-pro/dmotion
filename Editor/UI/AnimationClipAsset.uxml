@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="default-inspector" />
+    <ui:Slider picking-mode="Ignore" label="Time (N)" value="0" high-value="1" name="sample-time" />
+    <uie:ObjectField label="Preview Object" name="preview-obj" type="UnityEngine.GameObject, UnityEngine.CoreModule" />
+</ui:UXML>
