@@ -10,6 +10,10 @@ using UnityEngine.Assertions;
 
 namespace DOTSAnimation
 {
+    public class ClipAsset
+    {
+        
+    }
     public struct BufferElementRef<T> where T : struct, IBufferElementData
     {
         public Entity Entity;
