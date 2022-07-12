@@ -33,6 +33,10 @@ namespace DOTSAnimation.Editor
         }
         private void SetGameObjectPreview(GameObject newValue)
         {
+            if (gameObject == newValue)
+            {
+                return;
+            }
             gameObject = newValue;
             if (gameObject != null)
             {

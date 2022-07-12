@@ -1,71 +1,55 @@
 using DOTSAnimation.Authoring;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
 
 namespace DOTSAnimation.Editor
 {
     [CustomEditor(typeof(AnimationClipAsset))]
     public class AnimationClipAssetEditor : UnityEditor.Editor
     {
-        public VisualTreeAsset DefaultInspector;
         private SingleClipPreview preview;
         private AnimationClipAsset ClipTarget => (AnimationClipAsset)target;
-
-        public override VisualElement CreateInspectorGUI()
-        {
-            Assert.IsNotNull(preview);
-            
-            var inspector = new VisualElement();
-            if (DefaultInspector != null)
-            {
-                DefaultInspector.CloneTree(inspector);
-            }
-
-            // var previewObjField = inspector.Q<ObjectField>("preview-obj");
-            // if (previewObjField != null)
-            // {
-            //     previewObjField.value = preview.GameObject;
-            //     previewObjField.RegisterValueChangedCallback(OnPreviewObjectChanged);
-            // }
-
-            var eventsEditor = inspector.Q<AnimationEventsEditorView>();
-            if (eventsEditor != null)
-            {
-                eventsEditor.Initialize(ClipTarget, serializedObject);
-                eventsEditor.SampleTimeDragger.ValueChangedEvent += OnTimeSliderValueChanged;
-                eventsEditor.SampleTimeDragger.Value = 0;
-            }
-            return inspector;
-        }
-
-        private void OnPreviewObjectChanged(ChangeEvent<Object> evt)
-        {
-            preview.GameObject = (GameObject) evt.newValue;
-        }
-
-        private void OnObjectPropertyChanged(ChangeEvent<Object> evt)
-        {
-            preview.Clip = ClipTarget.Clip;
-        }
-
-        private void OnTimeSliderValueChanged(float curr)
-        {
-            preview.SampleNormalizedTime = curr;
-        }
-
+        
+        private SerializedProperty clipProperty;
+        private SerializedProperty eventsProperty;
+        private AnimationEventsPropertyDrawer eventsPropertyDrawer;
+        
         private void OnEnable()
         {
             preview = new SingleClipPreview(ClipTarget.Clip);
             preview.Initialize();
+            clipProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Clip));
+            eventsProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Events));
+            eventsPropertyDrawer = new AnimationEventsPropertyDrawer();
+            
         }
         
         private void OnDisable()
         {
             preview?.Dispose();
+        }
+
+        public override void OnInspectorGUI()
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("Preview Object");
+                preview.GameObject = (GameObject)EditorGUILayout.ObjectField(preview.GameObject, typeof(GameObject), true);
+            }
+            using (var c = new EditorGUI.ChangeCheckScope())
+            {
+                EditorGUILayout.PropertyField(clipProperty, true);
+                preview.Clip = ClipTarget.Clip;
+                
+            var content = new GUIContent(eventsProperty.displayName);
+            var drawerRect = EditorGUILayout.GetControlRect(true, eventsPropertyDrawer.GetPropertyHeight(eventsProperty, content));
+            eventsPropertyDrawer.OnGUI(drawerRect, eventsProperty, content);
+            
+                if (c.changed)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
         }
 
         public override bool HasPreviewGUI()

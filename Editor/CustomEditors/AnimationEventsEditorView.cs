@@ -8,6 +8,23 @@ using UnityEngine.UIElements;
 
 namespace DOTSAnimation.Editor
 {
+    //not using attribute here, this property drawer needs to be instantiated by custom editors
+    public class AnimationEventsPropertyDrawer : PropertyDrawer
+    {
+        private static Texture2D timelineDragTexture;
+
+        static AnimationEventsPropertyDrawer()
+        {
+            timelineDragTexture = new Texture2D(1, 1);
+        }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            EditorGUILayout.PropertyField(property, label, true);
+            position = EditorGUILayout.GetControlRect();
+            GUI.color = Color.red;
+            GUI.DrawTexture(position, timelineDragTexture);
+        }
+    }
     public class AnimationEventsEditorView : VisualElement
     {
         public new class UxmlFactory : UxmlFactory<AnimationEventsEditorView, UxmlTraits>{}
