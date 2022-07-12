@@ -36,18 +36,26 @@ namespace DOTSAnimation.Editor
                 }
             }
 
-            var slider = inspector.Q<Slider>("sample-time");
-            if (slider != null)
-            {
-                slider.RegisterValueChangedCallback(OnTimeSliderValueChanged);
-                slider.value = preview.SampleNormalizedTime;
-            }
+            // var slider = inspector.Q<Slider>("sample-time");
+            // if (slider != null)
+            // {
+            //     slider.RegisterValueChangedCallback(OnTimeSliderValueChanged);
+            //     slider.value = preview.SampleNormalizedTime;
+            // }
 
             var previewObjField = inspector.Q<ObjectField>("preview-obj");
             if (previewObjField != null)
             {
                 previewObjField.value = preview.GameObject;
                 previewObjField.RegisterValueChangedCallback(OnPreviewObjectChanged);
+            }
+
+            var eventsEditor = inspector.Q<AnimationEventsEditorView>();
+            if (eventsEditor != null)
+            {
+                eventsEditor.Initialize();
+                eventsEditor.SampleTimeDragger.ValueChangedEvent += OnTimeSliderValueChanged;
+                eventsEditor.SampleTimeDragger.Value = 0;
             }
             return inspector;
         }
@@ -62,9 +70,9 @@ namespace DOTSAnimation.Editor
             preview.Clip = ClipTarget.Clip;
         }
 
-        private void OnTimeSliderValueChanged(ChangeEvent<float> evt)
+        private void OnTimeSliderValueChanged(float curr)
         {
-            preview.SampleNormalizedTime = evt.newValue;
+            preview.SampleNormalizedTime = curr;
         }
 
         private void OnEnable()
