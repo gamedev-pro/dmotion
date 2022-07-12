@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 
 namespace DOTSAnimation.Authoring
 {
+    [Serializable]
     public struct AnimationClipEvent
     {
         public string Name;

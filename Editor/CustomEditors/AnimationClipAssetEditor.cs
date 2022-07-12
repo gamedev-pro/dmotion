@@ -24,36 +24,18 @@ namespace DOTSAnimation.Editor
             {
                 DefaultInspector.CloneTree(inspector);
             }
-            
-            var defaultInspector = inspector.Q("default-inspector");
-            if (defaultInspector != null)
-            {
-                InspectorElement.FillDefaultInspector(defaultInspector, serializedObject, this);
-                var q = defaultInspector.Query<PropertyField>();
-                foreach (var e in q.Build())
-                {
-                    e.RegisterCallback <ChangeEvent<Object>>(OnObjectPropertyChanged);
-                }
-            }
 
-            // var slider = inspector.Q<Slider>("sample-time");
-            // if (slider != null)
+            // var previewObjField = inspector.Q<ObjectField>("preview-obj");
+            // if (previewObjField != null)
             // {
-            //     slider.RegisterValueChangedCallback(OnTimeSliderValueChanged);
-            //     slider.value = preview.SampleNormalizedTime;
+            //     previewObjField.value = preview.GameObject;
+            //     previewObjField.RegisterValueChangedCallback(OnPreviewObjectChanged);
             // }
-
-            var previewObjField = inspector.Q<ObjectField>("preview-obj");
-            if (previewObjField != null)
-            {
-                previewObjField.value = preview.GameObject;
-                previewObjField.RegisterValueChangedCallback(OnPreviewObjectChanged);
-            }
 
             var eventsEditor = inspector.Q<AnimationEventsEditorView>();
             if (eventsEditor != null)
             {
-                eventsEditor.Initialize();
+                eventsEditor.Initialize(ClipTarget, serializedObject);
                 eventsEditor.SampleTimeDragger.ValueChangedEvent += OnTimeSliderValueChanged;
                 eventsEditor.SampleTimeDragger.Value = 0;
             }
