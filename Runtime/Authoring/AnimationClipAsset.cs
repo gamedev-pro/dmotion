@@ -7,6 +7,7 @@ namespace DOTSAnimation.Authoring
     public struct AnimationClipEvent
     {
         public string Name;
+        [Range(0,1)]
         public float NormalizedTime;
     }
     
