@@ -154,12 +154,3 @@
     padding-top: 0;
     padding-bottom: 0;
 }
-
-#unity-content, .unity-foldout__content {
-    position: absolute;
-    width: 100%;
-}
-
-#unity-list-view__size-field {
-    visibility: hidden;
-}
