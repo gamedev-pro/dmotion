@@ -69,19 +69,32 @@
 
 .event-marker {
     background-image: resource('Animation.EventMarker');
+    flex-grow: 1;
+    width: 5px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    position: relative;
+    -unity-background-scale-mode: scale-and-crop;
+    -unity-slice-left: 6;
+    -unity-slice-top: 0;
+    -unity-slice-right: 0;
+    -unity-slice-bottom: 0;
+}
+
+.event-marker-container {
     position: absolute;
     flex-grow: 0;
     height: 100%;
     width: 5px;
     bottom: auto;
     justify-content: center;
-    align-items: auto;
-    -unity-background-scale-mode: scale-and-crop;
-    -unity-slice-left: 6;
-    -unity-slice-top: 0;
-    -unity-slice-right: 0;
-    -unity-slice-bottom: 0;
-    left: 22px;
+    align-items: center;
     flex-direction: column;
     margin-left: 0;
     margin-right: 0;
@@ -155,11 +168,16 @@
     padding-bottom: 0;
 }
 
-#unity-content, .unity-foldout__content {
-    position: absolute;
-    width: 100%;
-}
+/*#unity-content {*/
+/*    position: absolute;*/
+/*    width: 100%;*/
+/*}*/
 
-#unity-list-view__size-field {
-    visibility: hidden;
-}
+/*.unity-foldout__content {*/
+/*    position: absolute;*/
+/*    width: 100%;*/
+/*}*/
+
+/*#unity-list-view__size-field {*/
+/*    visibility: hidden;*/
+/*}*/

@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.gamedevpro.dotsanimation/Editor/UI/AnimationInspector.uss?fileID=7433441132597879392&amp;guid=005c2e375e972ec429f4c293b7500631&amp;type=3#AnimationInspector" />
+    <ui:VisualElement name="event-marker-container" class="event-marker-container">
+        <ui:VisualElement name="event-marker" picking-mode="Ignore" class="event-marker" />
+    </ui:VisualElement>
+</ui:UXML>

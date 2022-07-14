@@ -11,6 +11,7 @@ namespace DOTSAnimation.Editor
     public class AnimationClipAssetEditor : UnityEditor.Editor
     {
         public VisualTreeAsset EditorXml;
+        public VisualTreeAsset EventMarkerXml;
         private SingleClipPreview preview;
         private AnimationClipAsset ClipTarget => (AnimationClipAsset)target;
         
@@ -36,7 +37,7 @@ namespace DOTSAnimation.Editor
                 objField.RegisterValueChangedCallback(OnPreviewObjectChanged);
                 
                 var eventsEditorView = inspector.Q<AnimationEventsEditorView>();
-                eventsEditorView.Initialize(ClipTarget, serializedObject);
+                eventsEditorView.Initialize(ClipTarget, serializedObject, EventMarkerXml);
                 eventsEditorView.SampleTimeChanged += OnSampleTimeChanged;
             }
             

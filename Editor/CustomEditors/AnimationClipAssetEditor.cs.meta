@@ -5,6 +5,7 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - EditorXml: {fileID: 9197481963319205126, guid: daabb60d2e4ae634ebf76e3966e23e42, type: 3}
+  - EventMarkerXml: {fileID: 9197481963319205126, guid: 71e82bb7913aa774cb669fb6afbf8d7b, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

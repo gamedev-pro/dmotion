@@ -39,11 +39,11 @@ namespace DOTSAnimation.Editor
         {
         }
 
-        private float PositionToNormalizedValue(float posX)
+        public float PositionToNormalizedValue(float posX)
         {
             return posX / (dragArea.layout.width - dragElement.layout.width);
         }
-        private float NormalizedValueToPosition(float n)
+        public float NormalizedValueToPosition(float n)
         {
             var halfWidth = dragElement.layout.width * 0.5f;
             return Mathf.Lerp(-halfWidth, dragArea.layout.width - halfWidth, n);
