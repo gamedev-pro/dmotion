@@ -1,6 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.gamedevpro.dotsanimation/Editor/UI/AnimationInspector.uss?fileID=7433441132597879392&amp;guid=005c2e375e972ec429f4c293b7500631&amp;type=3#AnimationInspector" />
     <ui:Template name="AnimationEventsEditorView" src="project://database/Packages/com.gamedevpro.dotsanimation/Editor/UI/AnimationEventsEditorView.uxml?fileID=9197481963319205126&amp;guid=ef4d0f32c8e1aa640af46bdd55cc6f84&amp;type=3#AnimationEventsEditorView" />
-    <ui:VisualElement name="default-inspector" />
-    <uie:ObjectField label="Preview Object" name="preview-obj" type="UnityEngine.GameObject, UnityEngine.CoreModule" />
-    <ui:Instance template="AnimationEventsEditorView" name="AnimationEventsEditorView" />
+    <uie:ObjectField label="Preview Object" name="object-preview" type="UnityEngine.GameObject, UnityEngine.CoreModule" />
+    <uie:PropertyField name="property__clip" binding-path="Clip" />
+    <ui:Instance template="AnimationEventsEditorView" name="editor__animation-events" />
 </ui:UXML>

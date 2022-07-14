@@ -4,7 +4,7 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - EventsTimelineAsset: {fileID: 9197481963319205126, guid: ef4d0f32c8e1aa640af46bdd55cc6f84, type: 3}
+  - EditorXml: {fileID: 9197481963319205126, guid: daabb60d2e4ae634ebf76e3966e23e42, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
