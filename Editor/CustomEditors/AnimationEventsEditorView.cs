@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DOTSAnimation.Authoring;
@@ -9,15 +8,21 @@ using UnityEngine.UIElements;
 
 namespace DOTSAnimation.Editor
 {
-    [CustomPropertyDrawer(typeof(AnimationClipEvent))]
+    //not using attribute here, this property drawer needs to be instantiated by custom editors
     public class AnimationEventsPropertyDrawer : PropertyDrawer
     {
-        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        private static Texture2D timelineDragTexture;
+
+        static AnimationEventsPropertyDrawer()
         {
-            var inspector = new VisualElement();
-            inspector.Add(new PropertyField(property.FindPropertyRelative(nameof(AnimationClipEvent.Name))));
-            inspector.Add(new PropertyField(property.FindPropertyRelative(nameof(AnimationClipEvent.NormalizedTime))));
-            return inspector;
+            timelineDragTexture = new Texture2D(1, 1);
+        }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            EditorGUILayout.PropertyField(property, label, true);
+            position = EditorGUILayout.GetControlRect();
+            GUI.color = Color.red;
+            GUI.DrawTexture(position, timelineDragTexture);
         }
     }
     public class AnimationEventsEditorView : VisualElement
@@ -27,37 +32,44 @@ namespace DOTSAnimation.Editor
         private const string ButtonAddEvent = "button-add-event";
         private const string TimeDragger = "dragger-container";
         private const string DragArea = "unity-drag-container";
+        private const string EventsProperty = "property-events";
 
-        private SliderDragger SampleTimeDragger;
+        public SliderDragger SampleTimeDragger;
         private AnimationClipAsset clipAsset;
-
-        public Action<float> SampleTimeChanged;
+        private SerializedObject serializedObject;
 
         public void Initialize(AnimationClipAsset animationClipAsset, SerializedObject serializedObject)
         {
             clipAsset = animationClipAsset;
+            this.serializedObject = serializedObject;
             var timeDraggerElement = this.Q<VisualElement>(TimeDragger);
             var dragAreaElement = this.Q<VisualElement>(DragArea);
             SampleTimeDragger = new SliderDragger(timeDraggerElement, dragAreaElement);
-            SampleTimeDragger.ValueChangedEvent += OnSampleTimeChanged;
 
             var button = this.Q<Button>(ButtonAddEvent);
             button.clicked += OnAddEventClicked;
-            
-            var eventsPropertyField = new ArrayPropertyField(serializedObject.FindProperty(nameof(AnimationClipAsset.Events)));
-            eventsPropertyField.ArrayChanged += OnEventsArrayChanged;
-            Add(eventsPropertyField);
+
+            var eventsProperty = this.Q<PropertyField>(EventsProperty);
+            eventsProperty.BindProperty(serializedObject.FindProperty(nameof(AnimationClipAsset.Events)));
+            eventsProperty.schedule.Execute(RegisterToListChangedEvent).ExecuteLater(1000);
         }
 
-        private void OnSampleTimeChanged(float normalizedTime)
+        private void RegisterToListChangedEvent()
         {
-            //This needsd to be encapsulated as this event will be called when "Event makers" are moved as well
-            SampleTimeChanged?.Invoke(normalizedTime);
+            var eventsProperty = this.Q<PropertyField>(EventsProperty);
+            var listView = eventsProperty.Q<ListView>();
+            listView.itemsAdded += OnItemsAdded;
+            listView.itemsRemoved += OnItemsRemoved;
         }
 
-        private void OnEventsArrayChanged()
+        private void OnItemsRemoved(IEnumerable<int> obj)
         {
-            Debug.Log(clipAsset.Events.Length);
+            Debug.Log("REMOVE");
+        }
+
+        private void OnItemsAdded(IEnumerable<int> obj)
+        {
+            Debug.Log("HERE");
         }
 
         private void OnAddEventClicked()
@@ -69,9 +81,8 @@ namespace DOTSAnimation.Editor
                     Name = $"New Event {clipAsset.Events.Length}",
                     NormalizedTime = SampleTimeDragger.Value
                 };
-                Undo.RecordObject(clipAsset, "Add Event");
                 clipAsset.Events = clipAsset.Events.Append(newEvent).ToArray();
-                EditorUtility.SetDirty(clipAsset);
+                
             }
         }
     }

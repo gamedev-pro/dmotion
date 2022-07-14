@@ -1,48 +1,27 @@
-using System;
 using DOTSAnimation.Authoring;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
 
 namespace DOTSAnimation.Editor
 {
-    public class ArrayPropertyField : PropertyField
-    {
-        public Action ArrayChanged;
-        private SerializedProperty property;
-        private int prevArraySize;
-
-        public ArrayPropertyField(SerializedProperty prop) : base(prop)
-        {
-            property = prop;
-            Assert.IsTrue(property.isArray);
-            prevArraySize = property.arraySize;
-        }
-        
-        protected override void ExecuteDefaultActionAtTarget(EventBase evt)
-        {
-            base.ExecuteDefaultActionAtTarget(evt);
-            if (evt is GeometryChangedEvent && property.arraySize != prevArraySize)
-            {
-                prevArraySize = property.arraySize;
-                ArrayChanged?.Invoke();
-            }
-        }
-    }
     [CustomEditor(typeof(AnimationClipAsset))]
     public class AnimationClipAssetEditor : UnityEditor.Editor
     {
-        public VisualTreeAsset EventsTimelineAsset;
         private SingleClipPreview preview;
         private AnimationClipAsset ClipTarget => (AnimationClipAsset)target;
+        
+        private SerializedProperty clipProperty;
+        private SerializedProperty eventsProperty;
+        private AnimationEventsPropertyDrawer eventsPropertyDrawer;
         
         private void OnEnable()
         {
             preview = new SingleClipPreview(ClipTarget.Clip);
             preview.Initialize();
+            clipProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Clip));
+            eventsProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Events));
+            eventsPropertyDrawer = new AnimationEventsPropertyDrawer();
+            
         }
         
         private void OnDisable()
@@ -50,37 +29,27 @@ namespace DOTSAnimation.Editor
             preview?.Dispose();
         }
 
-        public override VisualElement CreateInspectorGUI()
+        public override void OnInspectorGUI()
         {
-            var inspector = new VisualElement();
-            var objField = new ObjectField("Preview Object");
-            objField.value = preview.GameObject;
-            objField.objectType = typeof(GameObject);
-            objField.allowSceneObjects = true;
-            objField.RegisterValueChangedCallback(OnPreviewObjectChanged);
-            inspector.Add(objField);
-            
-            var clipProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Clip));
-            inspector.Add(new PropertyField(clipProperty));
-
-            if (EventsTimelineAsset != null)
+            using (new EditorGUILayout.HorizontalScope())
             {
-                EventsTimelineAsset.CloneTree(inspector);
-                var eventsEditorView = inspector.Q<AnimationEventsEditorView>();
-                eventsEditorView.Initialize(ClipTarget, serializedObject);
-                eventsEditorView.SampleTimeChanged += OnSampleTimeChanged;
+                EditorGUILayout.LabelField("Preview Object");
+                preview.GameObject = (GameObject)EditorGUILayout.ObjectField(preview.GameObject, typeof(GameObject), true);
             }
-            return inspector;
-        }
-
-        private void OnSampleTimeChanged(float normalizedTime)
-        {
-            preview.SampleNormalizedTime = normalizedTime;
-        }
-
-        private void OnPreviewObjectChanged(ChangeEvent<Object> evt)
-        {
-            preview.GameObject = evt.newValue as GameObject;
+            using (var c = new EditorGUI.ChangeCheckScope())
+            {
+                EditorGUILayout.PropertyField(clipProperty, true);
+                preview.Clip = ClipTarget.Clip;
+                
+            var content = new GUIContent(eventsProperty.displayName);
+            var drawerRect = EditorGUILayout.GetControlRect(true, eventsPropertyDrawer.GetPropertyHeight(eventsProperty, content));
+            eventsPropertyDrawer.OnGUI(drawerRect, eventsProperty, content);
+            
+                if (c.changed)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
         }
 
         public override bool HasPreviewGUI()
