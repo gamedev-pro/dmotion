@@ -3,16 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using DOTSAnimation.Authoring;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace DOTSAnimation.Editor
 {
+    [CustomPropertyDrawer(typeof(AnimationClipEvent))]
+    public class AnimationEventsPropertyDrawer : PropertyDrawer
+    {
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            var inspector = new VisualElement();
+            inspector.Add(new PropertyField(property.FindPropertyRelative(nameof(AnimationClipEvent.Name))));
+            inspector.Add(new PropertyField(property.FindPropertyRelative(nameof(AnimationClipEvent.NormalizedTime))));
+            return inspector;
+        }
+    }
     public class AnimationEventsEditorView : VisualElement
     {
         public new class UxmlFactory : UxmlFactory<AnimationEventsEditorView, UxmlTraits>{}
-
-        private VisualTreeAsset eventMarkerXml;
 
         private const string ButtonAddEvent = "button-add-event";
         private const string TimeDragger = "dragger-container";
@@ -23,16 +33,12 @@ namespace DOTSAnimation.Editor
 
         public Action<float> SampleTimeChanged;
 
-        private List<SliderDragger> eventMarkers = new();
-        private VisualElement dragArea;
-
-        public void Initialize(AnimationClipAsset animationClipAsset, SerializedObject serializedObject, VisualTreeAsset eventMarkerTemplate)
+        public void Initialize(AnimationClipAsset animationClipAsset, SerializedObject serializedObject)
         {
             clipAsset = animationClipAsset;
-            eventMarkerXml = eventMarkerTemplate;
             var timeDraggerElement = this.Q<VisualElement>(TimeDragger);
-            dragArea = this.Q<VisualElement>(DragArea);
-            SampleTimeDragger = new SliderDragger(timeDraggerElement, dragArea);
+            var dragAreaElement = this.Q<VisualElement>(DragArea);
+            SampleTimeDragger = new SliderDragger(timeDraggerElement, dragAreaElement);
             SampleTimeDragger.ValueChangedEvent += OnSampleTimeChanged;
 
             var button = this.Q<Button>(ButtonAddEvent);
@@ -41,45 +47,6 @@ namespace DOTSAnimation.Editor
             var eventsPropertyField = new ArrayPropertyField(serializedObject.FindProperty(nameof(AnimationClipAsset.Events)));
             eventsPropertyField.ArrayChanged += OnEventsArrayChanged;
             Add(eventsPropertyField);
-
-            CreateEventMarkers();
-        }
-
-		private void CreateEventMarkers()
-        {
-            if (eventMarkerXml == null)
-            {
-                return;
-            }
-            DestroyEventMarkers();
-            for (var i = 0; i < clipAsset.Events.Length; i++)
-            {
-                var e = clipAsset.Events[i];
-                eventMarkerXml.CloneTree(dragArea);
-                var eventMarker = dragArea.Children().Last();
-                var dragger = new SliderDragger(eventMarker, dragArea);
-                dragger.Value = e.NormalizedTime;
-
-                var index = i;
-                dragger.ValueChangedEvent += v => OnEventMarkerMove(v, index);
-                eventMarkers.Add(dragger);
-            }
-        }
-
-        private void OnEventMarkerMove(float normalizedValue, int eventIndex)
-        {
-            clipAsset.Events[eventIndex].NormalizedTime = normalizedValue;
-            EditorUtility.SetDirty(clipAsset);
-            SampleTimeChanged?.Invoke(normalizedValue);
-        }
-
-        private void DestroyEventMarkers()
-        {
-            foreach (var marker in eventMarkers)
-            {
-                marker.target.RemoveFromHierarchy();
-            }
-            eventMarkers.Clear();
         }
 
         private void OnSampleTimeChanged(float normalizedTime)
@@ -90,7 +57,7 @@ namespace DOTSAnimation.Editor
 
         private void OnEventsArrayChanged()
         {
-            CreateEventMarkers();
+            Debug.Log(clipAsset.Events.Length);
         }
 
         private void OnAddEventClicked()
