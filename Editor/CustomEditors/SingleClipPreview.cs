@@ -7,7 +7,8 @@ namespace DOTSAnimation.Editor
 {
     public class SingleClipPreview : PlayableGraphPreview
     {
-        public float SampleNormalizedTime;
+        private float sampleNormalizedTime;
+        
         private AnimationClip clip;
 
         public AnimationClip Clip
@@ -29,6 +30,11 @@ namespace DOTSAnimation.Editor
             {
                 yield return Clip;
             }
+        }
+        public float SampleNormalizedTime
+        {
+            get => sampleNormalizedTime;
+            set => sampleNormalizedTime = Mathf.Clamp01(value);
         }
         protected override float SampleTime => SampleNormalizedTime * Clip.length;
         
