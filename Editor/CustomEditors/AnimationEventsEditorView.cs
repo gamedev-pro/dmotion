@@ -153,11 +153,16 @@ namespace DOTSAnimation.Editor
         {
             if (GUI.Button(addEventButtonRect, AddEventContent, AddRemoveEventStyle))
             {
-                clipAsset.Events = clipAsset.Events.Append(new AnimationClipEvent()
-                {
-                    NormalizedTime = timeMarkerTime
-                }).ToArray();
+                AddEvent(timeMarkerTime);
             }
+        }
+
+        private void AddEvent(float normalizedTime)
+        {
+            clipAsset.Events = clipAsset.Events.Append(new AnimationClipEvent()
+            {
+                NormalizedTime = normalizedTime
+            }).ToArray();
         }
 
         private void HandleEvents()
@@ -246,6 +251,14 @@ namespace DOTSAnimation.Editor
             {
                 isDraggingTimeMarker = true;
                 current.Use();
+                return;
+            }
+
+            if (current.clickCount == 2 && dragArea.Contains(current.mousePosition))
+            {
+                //this gotta be between [0,1]
+                var normalizedTime = (current.mousePosition.x - dragArea.x) / dragArea.width;
+                AddEvent(normalizedTime);
             }
         }
 
