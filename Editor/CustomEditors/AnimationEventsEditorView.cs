@@ -55,8 +55,10 @@ namespace DOTSAnimation.Editor
         private List<RectElement> eventMarkers = new();
         private bool isDraggingTimeMarker = false;
         private int eventMarkerDragIndex = -1;
+        
         private readonly SingleClipPreview preview;
-        private AnimationClipAsset clipAsset;
+        private readonly SerializedProperty property;
+        private readonly AnimationClipAsset clipAsset;
 
         private static Texture2D EventMarkerTex
         {
@@ -118,22 +120,20 @@ namespace DOTSAnimation.Editor
             whiteTex = new Texture2D(1, 1);
         }
 
-        public AnimationEventsPropertyDrawer(AnimationClipAsset clipAsset, SingleClipPreview preview)
+        public AnimationEventsPropertyDrawer(AnimationClipAsset clipAsset, SerializedProperty property, SingleClipPreview preview)
         {
             this.clipAsset = clipAsset;
             this.preview = preview;
+            this.property = property;
             timeMarkerTime = preview.SampleNormalizedTime;
         }
 
 
-        public void OnInspectorGUI(
-            Rect area,
-            GUIContent label,
-            SerializedProperty property)
+        public void OnInspectorGUI(Rect area)
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUI.LabelField(area, label);
+                EditorGUI.LabelField(area, property.displayName);
 
                 var addEventButtonWidth = area.height;//square button
                 dragArea = area;
@@ -149,11 +149,28 @@ namespace DOTSAnimation.Editor
 
             using (var c = new EditorGUI.ChangeCheckScope())
             {
+                var cachedEvents = clipAsset.Events.ToList();
                 GUI.color = Color.white;
                 EditorGUILayout.PropertyField(property, GUIContent.none, true);
                 if (c.changed)
                 {
                     ClearSelection();
+                    property.serializedObject.ApplyModifiedProperties();
+                    property.serializedObject.Update();
+                    if (cachedEvents.Count == clipAsset.Events.Length)
+                    {
+                        for (var i = 0; i < clipAsset.Events.Length; i++)
+                        {
+                            var cachedEvent = cachedEvents[i];
+                            var currentEvent = clipAsset.Events[i];
+                            if (!Mathf.Approximately(cachedEvent.NormalizedTime, currentEvent.NormalizedTime))
+                            {
+                                eventMarkerDragIndex = i;
+                                preview.SampleNormalizedTime = currentEvent.NormalizedTime;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             
@@ -189,6 +206,8 @@ namespace DOTSAnimation.Editor
             }).ToArray();
             ClearSelection();
             eventMarkerDragIndex = clipAsset.Events.Length - 1;
+            property.serializedObject.ApplyModifiedProperties();
+            property.serializedObject.Update();
         }
 
         private void RemoveEvent(int index)
@@ -200,6 +219,8 @@ namespace DOTSAnimation.Editor
                 clipAsset.Events = l.ToArray();
             }
             ClearSelection();
+            property.serializedObject.ApplyModifiedProperties();
+            property.serializedObject.Update();
         }
         
         private void ClearSelection()

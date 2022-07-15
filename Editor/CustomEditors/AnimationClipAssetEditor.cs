@@ -12,7 +12,6 @@ namespace DOTSAnimation.Editor
         private AnimationClipAsset ClipTarget => (AnimationClipAsset)target;
         
         private SerializedProperty clipProperty;
-        private SerializedProperty eventsProperty;
         private AnimationEventsPropertyDrawer eventsPropertyDrawer;
         
         private void OnEnable()
@@ -20,9 +19,10 @@ namespace DOTSAnimation.Editor
             preview = new SingleClipPreview(ClipTarget.Clip);
             preview.Initialize();
             clipProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Clip));
-            eventsProperty = serializedObject.FindProperty(nameof(AnimationClipAsset.Events));
-            eventsPropertyDrawer = new AnimationEventsPropertyDrawer(ClipTarget, preview);
-            
+            eventsPropertyDrawer = new AnimationEventsPropertyDrawer(
+                ClipTarget,
+                serializedObject.FindProperty(nameof(AnimationClipAsset.Events)),
+                preview);
         }
         
         private void OnDisable()
@@ -41,14 +41,17 @@ namespace DOTSAnimation.Editor
             {
                 EditorGUILayout.PropertyField(clipProperty, true);
                 preview.Clip = ClipTarget.Clip;
+
+                if (c.changed)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    serializedObject.Update();
+                }
                 
-                var content = new GUIContent(eventsProperty.displayName);
                 var drawerRect = EditorGUILayout.GetControlRect();
                 //TODO: This magic number is a right padding. Not why this is needed or of a better alternative
                 drawerRect.xMax -= 60;
-                eventsPropertyDrawer.OnInspectorGUI(drawerRect, content, eventsProperty);
-                serializedObject.ApplyModifiedProperties();
-                serializedObject.Update();
+                eventsPropertyDrawer.OnInspectorGUI(drawerRect);
             }
         }
 
