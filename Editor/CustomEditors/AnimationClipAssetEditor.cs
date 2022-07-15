@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using DOTSAnimation.Authoring;
 using UnityEditor;
 using UnityEngine;
