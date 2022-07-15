@@ -46,6 +46,9 @@ namespace DOTSAnimation.Editor
         private static GUIContent addEventContent;
         private static GUIContent removeEventContent;
 
+        private static Color selectedEventColor = new Color32(56, 196, 235, 255);//light blue
+        private static Color unselectedEventColor = Color.white;
+
         private Rect dragArea;
         private RectElement timeMarker;
         private float timeMarkerTime;
@@ -143,17 +146,38 @@ namespace DOTSAnimation.Editor
                 addEventButtonRect.x = dragArea.xMax + EditorGUIUtility.standardVerticalSpacing;
                 DrawAddRemoveEventButton(addEventButtonRect);
             }
-            GUI.color = Color.white;
-            EditorGUILayout.PropertyField(property, GUIContent.none, true);
+
+            using (var c = new EditorGUI.ChangeCheckScope())
+            {
+                GUI.color = Color.white;
+                EditorGUILayout.PropertyField(property, GUIContent.none, true);
+                if (c.changed)
+                {
+                    ClearSelection();
+                }
+            }
             
             HandleEvents();
         }
 
         private void DrawAddRemoveEventButton(Rect addEventButtonRect)
         {
-            if (GUI.Button(addEventButtonRect, AddEventContent, AddRemoveEventStyle))
+            GUI.color = Color.white;
+            if (eventMarkerDragIndex >= 0)
             {
-                AddEvent(timeMarkerTime);
+                //remove button
+                if (GUI.Button(addEventButtonRect, RemoveEventContent, AddRemoveEventStyle))
+                {
+                    RemoveEvent(eventMarkerDragIndex);
+                }
+            }
+            else
+            {
+                //add button
+                if (GUI.Button(addEventButtonRect, AddEventContent, AddRemoveEventStyle))
+                {
+                    AddEvent(timeMarkerTime);
+                }
             }
         }
 
@@ -163,6 +187,25 @@ namespace DOTSAnimation.Editor
             {
                 NormalizedTime = normalizedTime
             }).ToArray();
+            ClearSelection();
+            eventMarkerDragIndex = clipAsset.Events.Length - 1;
+        }
+
+        private void RemoveEvent(int index)
+        {
+            if (index >= 0 && index < clipAsset.Events.Length)
+            {
+                var l = clipAsset.Events.ToList();
+                l.RemoveAt(index);
+                clipAsset.Events = l.ToArray();
+            }
+            ClearSelection();
+        }
+        
+        private void ClearSelection()
+        {
+            isDraggingTimeMarker = false;
+            eventMarkerDragIndex = -1;
         }
 
         private void HandleEvents()
@@ -173,7 +216,6 @@ namespace DOTSAnimation.Editor
                     OnMouseDown(Event.current);
                     break;
                 case EventType.MouseUp:
-                    OnMouseUp();
                     break;
                 case EventType.MouseMove:
                     break;
@@ -227,16 +269,9 @@ namespace DOTSAnimation.Editor
             }
         }
 
-        private void OnMouseUp()
-        {
-            isDraggingTimeMarker = false;
-            eventMarkerDragIndex = -1;
-        }
-
         private void OnMouseDown(Event current)
         {
-            isDraggingTimeMarker = false;
-            eventMarkerDragIndex = -1;
+            ClearSelection();
             for (var i = 0; i < eventMarkers.Count; i++)
             {
                 if (eventMarkers[i].ControlRect.Contains(current.mousePosition))
@@ -259,6 +294,8 @@ namespace DOTSAnimation.Editor
                 //this gotta be between [0,1]
                 var normalizedTime = (current.mousePosition.x - dragArea.x) / dragArea.width;
                 AddEvent(normalizedTime);
+                current.Use();
+                return;
             }
         }
 
@@ -315,7 +352,7 @@ namespace DOTSAnimation.Editor
                     var eventMarkerRect = new RectElement(area, 10, 5);
                     eventMarkerRect.Rect.height *= 0.9f;
                     eventMarkerRect.Rect.x = NormalizedTimeToPixels(e.NormalizedTime, eventMarkerRect.VisualRect, area);
-                    GUI.color = Color.white;
+                    GUI.color = i == eventMarkerDragIndex ? selectedEventColor : unselectedEventColor;
                     GUI.DrawTexture(eventMarkerRect.VisualRect, EventMarkerTex, ScaleMode.ScaleAndCrop);
                     eventMarkers.Add(eventMarkerRect);
                 }
