@@ -10,10 +10,6 @@ using UnityEngine.Assertions;
 
 namespace DOTSAnimation
 {
-    public class ClipAsset
-    {
-        
-    }
     public struct BufferElementRef<T> where T : struct, IBufferElementData
     {
         public Entity Entity;
@@ -111,7 +107,7 @@ namespace DOTSAnimation
             SamplerType = AnimationSamplerType.Single
         };
     }
-    public static class AnimationConversionUtils
+    public static class AnimationAuthoringUtils
     {
         public static SmartBlobberHandle<SkeletonClipSetBlob> RequestBlobAssets(UnityEngine.AnimationClip[] clips,
             GameObject gameObject, GameObjectConversionSystem conversionSystem)
