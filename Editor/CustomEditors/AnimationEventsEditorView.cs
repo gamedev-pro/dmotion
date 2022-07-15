@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using DOTSAnimation.Authoring;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Accessibility;
-using UnityEngine.UIElements;
 
 namespace DOTSAnimation.Editor
 {
@@ -40,7 +36,7 @@ namespace DOTSAnimation.Editor
             }
         }
     }
-    
+
     public class AnimationEventsPropertyDrawer
     {
         private static readonly Texture2D whiteTex;

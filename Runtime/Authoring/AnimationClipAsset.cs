@@ -6,8 +6,8 @@ namespace DOTSAnimation.Authoring
     [Serializable]
     public struct AnimationClipEvent
     {
-        public string Name;
-        [Range(0,1)]
+        public AnimationEventName Name;
+        [InspectorReadOnly, Range(0,1)]
         public float NormalizedTime;
     }
     
