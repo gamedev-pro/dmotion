@@ -236,64 +236,17 @@ namespace DOTSAnimation.Editor
                 case EventType.MouseDown:
                     OnMouseDown(Event.current);
                     break;
-                case EventType.MouseUp:
-                    break;
-                case EventType.MouseMove:
-                    break;
                 case EventType.MouseDrag:
                     OnMouseDrag(Event.current);
                     break;
-                case EventType.KeyDown:
-                    break;
-                case EventType.KeyUp:
-                    break;
-                case EventType.ScrollWheel:
-                    break;
-                case EventType.Repaint:
-                    break;
-                case EventType.Layout:
-                    break;
-                case EventType.DragUpdated:
-                    break;
-                case EventType.DragPerform:
-                    break;
-                case EventType.DragExited:
-                    break;
-                case EventType.Ignore:
-                    break;
-                case EventType.Used:
-                    break;
-                case EventType.ValidateCommand:
-                    break;
-                case EventType.ExecuteCommand:
-                    break;
-                case EventType.ContextClick:
-                    break;
-                case EventType.MouseEnterWindow:
-                    break;
-                case EventType.MouseLeaveWindow:
-                    break;
-                case EventType.TouchDown:
-                    break;
-                case EventType.TouchUp:
-                    break;
-                case EventType.TouchMove:
-                    break;
-                case EventType.TouchEnter:
-                    break;
-                case EventType.TouchLeave:
-                    break;
-                case EventType.TouchStationary:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
         }
 
         private void OnMouseDown(Event current)
         {
             ClearSelection();
-            for (var i = 0; i < eventMarkers.Count; i++)
+            //reverse order for handling click ("last on top")
+            for (var i = eventMarkers.Count - 1; i >= 0; i--)
             {
                 if (eventMarkers[i].ControlRect.Contains(current.mousePosition))
                 {
@@ -336,7 +289,9 @@ namespace DOTSAnimation.Editor
                 preview.SampleNormalizedTime = time;
 
                 clipAsset.Events[eventMarkerDragIndex].NormalizedTime = time;
-                EditorUtility.SetDirty(clipAsset);
+
+                property.serializedObject.ApplyModifiedProperties();
+                property.serializedObject.Update();
                 
                 currentEvent.Use();
             }
