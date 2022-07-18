@@ -10,13 +10,13 @@ namespace DOTSAnimation
     {
         internal StateType Type;
         internal short StateIndex;
+        internal bool Loop;
+        internal float Speed;
     }
     
     internal struct SingleClipStateBlob
     {
         internal ushort ClipIndex;
-        internal bool Loop;
-        internal float Speed;
     }
 
     // internal struct LinearBlendStateBlob : IAnimationState

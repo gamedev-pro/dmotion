@@ -60,23 +60,24 @@ namespace DOTSAnimation.Authoring
                 converter.SingleClipStates[i] = new SingleClipStateBlob()
                 {
                     ClipIndex = i,
-                    Loop = singleStateAsset.Loop,
-                    Speed = singleStateAsset.Speed
                 };
             }
 
-            var allStatesCount = converter.SingleClipStates.Length;
             converter.States =
-                new UnsafeList<AnimationStateBlob>(allStatesCount, allocator);
-            converter.States.Resize(allStatesCount);
+                new UnsafeList<AnimationStateBlob>(stateMachineAsset.StateCount, allocator);
+            converter.States.Resize(stateMachineAsset.StateCount);
 
-            for (short i = 0; i < converter.SingleClipStates.Length; i++)
+            short stateIndex = 0;
+            foreach (var state in stateMachineAsset.States)
             {
-                converter.States[i] = new AnimationStateBlob
+                converter.States[stateIndex] = new AnimationStateBlob
                 {
                     Type = StateType.Single,
-                    StateIndex = i,
+                    StateIndex = stateIndex,
+                    Loop = state.Loop,
+                    Speed = state.Speed
                 };
+                stateIndex++;
             }
         }
 

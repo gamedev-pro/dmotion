@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using BovineLabs.Event.Containers;
-using BovineLabs.Event.Jobs;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
+using UnityEngine;
 
 namespace DOTSAnimation
 {
@@ -21,20 +20,7 @@ namespace DOTSAnimation
         internal readonly AnimationStateBlob StateBlob => StateMachineBlob.Value.States[StateIndex];
         internal readonly StateType Type => StateBlob.Type;
         internal readonly ref SingleClipStateBlob AsSingleClip => ref StateMachineBlob.Value.SingleClipStates[StateIndex];
-        internal readonly float Speed
-        {
-            get
-            {
-                switch (Type)
-                {
-                    case StateType.Single:
-                        return StateMachineBlob.Value.SingleClipStates[StateIndex].Speed;
-                    case StateType.LinearBlend:
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
+        internal readonly float Speed => StateBlob.Speed;
 
         internal void Update(float dt)
         {
@@ -76,7 +62,7 @@ namespace DOTSAnimation
         {
             ref var singleClipState = ref AsSingleClip;
             ref var clip = ref Clips.Value.clips[singleClipState.ClipIndex];
-            var normalizedTime = singleClipState.Loop ? clip.LoopToClipTime(time) : time;
+            var normalizedTime = StateBlob.Loop ? clip.LoopToClipTime(time) : time;
             return clip.SampleBone(boneIndex, normalizedTime);
         }
 
@@ -84,23 +70,8 @@ namespace DOTSAnimation
         {
             ref var singleClipState = ref AsSingleClip;
             ref var clip = ref Clips.Value.clips[singleClipState.ClipIndex];
-            var normalizedTime = singleClipState.Loop ? clip.LoopToClipTime(time) : time;
+            var normalizedTime = StateBlob.Loop ? clip.LoopToClipTime(time) : time;
             clip.SamplePose(ref blender, blend, normalizedTime);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal readonly float GetLoopClipTime(float time)
-        {
-            switch (Type)
-            {
-                case StateType.Single:
-                    ref var singleClipState = ref AsSingleClip;
-                    ref var clip = ref Clips.Value.clips[singleClipState.ClipIndex];
-                    return singleClipState.Loop ? clip.LoopToClipTime(time) : time;
-                case StateType.LinearBlend:
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -109,9 +80,18 @@ namespace DOTSAnimation
             switch (Type)
             {
                 case StateType.Single:
-                    ref var clipEvents = ref StateMachineBlob.Value.ClipEvents[AsSingleClip.ClipIndex];
-                    var currentNormalizedTime = GetLoopClipTime(NormalizedTime);
-                    var previousNormalizedTime = GetLoopClipTime(GetNormalizedTimeShifted(dt));
+                    ref var singleClipState = ref AsSingleClip;
+                    ref var clipEvents = ref StateMachineBlob.Value.ClipEvents[singleClipState.ClipIndex];
+                    var currentNormalizedTime = NormalizedTime;
+                    var previousNormalizedTime = GetNormalizedTimeShifted(dt);
+                    
+                    if (StateBlob.Loop)
+                    {
+                        ref var clip = ref Clips.Value.clips[singleClipState.ClipIndex];
+                        currentNormalizedTime = clip.LoopToClipTime(currentNormalizedTime);
+                        previousNormalizedTime = clip.LoopToClipTime(previousNormalizedTime);
+                    }
+                    
                     for (short i = 0; i < clipEvents.Events.Length; i++)
                     {
                         ref var e = ref clipEvents.Events[i];
