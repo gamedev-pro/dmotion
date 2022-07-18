@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DOTSAnimation.Authoring
@@ -6,5 +7,10 @@ namespace DOTSAnimation.Authoring
     public class SingleClipStateAsset : AnimationStateAsset
     {
         public AnimationClipAsset Clip;
+        public override int ClipCount => 1;
+        public override IEnumerable<AnimationClipAsset> Clips
+        {
+            get { yield return Clip; }
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace DOTSAnimation.Authoring
 {
     public struct StateMachineBlobBakeData
     {
-        internal AnimationStateMachineAsset StateMachineAsset;
+        internal StateMachineAsset StateMachineAsset;
     }
 
     public static class AnimationStateMachineConversionUtils
@@ -50,7 +50,7 @@ namespace DOTSAnimation.Authoring
             return true;
         }
 
-        private void BuildStates(AnimationStateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter, Allocator allocator)
+        private void BuildStates(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter, Allocator allocator)
         {
             converter.SingleClipStates = new UnsafeList<SingleClipStateBlob>(stateMachineAsset.SingleClipStates.Count, allocator);
             converter.SingleClipStates.Resize(stateMachineAsset.SingleClipStates.Count);
@@ -80,7 +80,7 @@ namespace DOTSAnimation.Authoring
             }
         }
 
-        private void BuildParameters(AnimationStateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
+        private void BuildParameters(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
             Allocator allocator)
         {
             converter.Parameters = new UnsafeList<StateMachineParameter>(stateMachineAsset.Parameters.Count, allocator);
@@ -93,7 +93,7 @@ namespace DOTSAnimation.Authoring
                 };
             }
         }
-        private void BuildTransitions(AnimationStateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
+        private void BuildTransitions(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
             Allocator allocator)
         {
             TransitionGroupConvertData BuildTransition(int groupIndex, AnimationTransitionGroup transitionAsset, List<AnimationParameterAsset> parameters)
@@ -134,12 +134,31 @@ namespace DOTSAnimation.Authoring
             }
         }
 
-        private void BuildEvents(AnimationStateMachineAsset stateMachineAsset,
+        private void BuildEvents(StateMachineAsset stateMachineAsset,
             ref StateMachineBlobConverter converter,
             Allocator allocator)
         {
-            converter.Events = new UnsafeList<AnimationEventBlob>(0, allocator);
-            converter.Events.Resize(0);
+            converter.Events = new UnsafeList<AnimationClipEventsBlobConvertData>(stateMachineAsset.ClipCount, allocator);
+            converter.Events.Resize(stateMachineAsset.ClipCount);
+
+            var i = 0;
+            foreach (var clip in stateMachineAsset.Clips)
+            {
+                var clipEvents = new AnimationClipEventsBlobConvertData()
+                {
+                    Events = new UnsafeList<ClipEventBlob>(clip.Events.Length, allocator)
+                };
+                clipEvents.Events.Resize(clip.Events.Length);
+                for (short j = 0; j < clipEvents.Events.Length; j++)
+                {
+                    clipEvents.Events[j] = new ClipEventBlob()
+                    {
+                        EventHash = clip.Events[j].Hash,
+                        NormalizedTime = clip.Events[j].NormalizedTime
+                    };
+                }
+                converter.Events[i++] = clipEvents;
+            }
         }
     }
 }

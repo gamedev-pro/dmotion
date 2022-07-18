@@ -10,6 +10,8 @@ namespace DOTSAnimation
         
         internal BlobArray<AnimationTransitionGroup> Transitions;
         internal BlobArray<StateMachineParameter> Parameters;
-        internal BlobArray<AnimationEventBlob> Events;
+        
+        //Array of array of events. Maps directly to SkeletonClipSetBlob.Clips that this StateMachine uses
+        internal BlobArray<AnimationClipEventsBlob> ClipEvents;
     }
 }

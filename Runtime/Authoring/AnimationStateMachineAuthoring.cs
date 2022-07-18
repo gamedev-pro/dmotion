@@ -10,8 +10,9 @@ namespace DOTSAnimation.Authoring
 {
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
+        public GameObject Owner;
         public Animator Animator;
-        public AnimationStateMachineAsset StateMachineAsset;
+        public StateMachineAsset StateMachineAsset;
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsBlobHandle;
         private SmartBlobberHandle<StateMachineBlob> stateMachinBlobHandle;
         
@@ -40,6 +41,10 @@ namespace DOTSAnimation.Authoring
                     Value = false
                 });
             }
+
+            var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
+            dstManager.AddComponentData(ownerEntity, new AnimatorOwner() { AnimatorEntity = entity });
+            dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity});
         }
 
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager, GameObjectConversionSystem conversionSystem)

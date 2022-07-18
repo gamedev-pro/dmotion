@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DOTSAnimation.Authoring
@@ -6,5 +7,8 @@ namespace DOTSAnimation.Authoring
     {
         public bool Loop = true;
         public float Speed = 1;
+
+        public abstract int ClipCount { get; }
+        public abstract IEnumerable<AnimationClipAsset> Clips { get; }
     }
 }

@@ -9,6 +9,8 @@ namespace DOTSAnimation.Authoring
         public AnimationEventName Name;
         [InspectorReadOnly, Range(0,1)]
         public float NormalizedTime;
+
+        public int Hash => Name.GetHashCode();
     }
     
     [CreateAssetMenu(menuName = "Tools/DOTSAnimation/Clip")]

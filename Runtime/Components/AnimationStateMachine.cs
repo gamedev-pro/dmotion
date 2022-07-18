@@ -22,7 +22,6 @@ namespace DOTSAnimation
         internal readonly ref AnimationTransitionGroup CurrentTransitionBlob =>
             ref StateMachineBlob.Value.Transitions[CurrentTransition.TransitionIndex];
         internal readonly ref BlobArray<AnimationTransitionGroup> TransitionsBlob => ref StateMachineBlob.Value.Transitions;
-        internal readonly ref BlobArray<AnimationEventBlob> EventsBlob => ref StateMachineBlob.Value.Events;
 
         internal AnimationState CreateState(short stateIndex)
         {

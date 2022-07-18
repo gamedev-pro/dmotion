@@ -14,13 +14,18 @@ namespace DOTSAnimation.Authoring
         internal float NormalizedTransitionDuration;
         internal UnsafeList<BoolTransition> BoolTransitions;
     }
+
+    internal struct AnimationClipEventsBlobConvertData
+    {
+        internal UnsafeList<ClipEventBlob> Events;
+    }
     internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>
     {
         internal UnsafeList<SingleClipStateBlob> SingleClipStates;
         internal UnsafeList<AnimationStateBlob> States;
         internal UnsafeList<StateMachineParameter> Parameters;
         internal UnsafeList<TransitionGroupConvertData> Transitions;
-        internal UnsafeList<AnimationEventBlob> Events;
+        internal UnsafeList<AnimationClipEventsBlobConvertData> Events;
 
         public unsafe BlobAssetReference<StateMachineBlob> BuildBlob()
         {
@@ -43,8 +48,15 @@ namespace DOTSAnimation.Authoring
                 builder.ConstructFromNativeArray(ref transitions[i].BoolTransitions,
                     transitionConvertData.BoolTransitions.Ptr, transitionConvertData.BoolTransitions.Length);
             }
+
+            var clipEvents = builder.Allocate(ref root.ClipEvents, Events.Length);
+            for (short i = 0; i < clipEvents.Length; i++)
+            {
+                clipEvents[i] = default;
+                var clipEventsConvertData = Events[i];
+                builder.ConstructFromNativeArray(ref clipEvents[i].Events, clipEventsConvertData.Events.Ptr, clipEventsConvertData.Events.Length);
+            }
             
-            builder.ConstructFromNativeArray(ref root.Events, Events.Ptr, Events.Length);
             return builder.CreateBlobAssetReference<StateMachineBlob>(Allocator.Persistent);
         }
     }
