@@ -30,12 +30,18 @@ namespace DOTSAnimation.Authoring
             builder.ConstructFromNativeArray(ref root.States, States.Ptr, States.Length);
             builder.ConstructFromNativeArray(ref root.Parameters, Parameters.Ptr, Parameters.Length);
             
-            var transitionGroups = builder.Allocate(ref root.Transitions, Transitions.Length);
-            for (short i = 0; i < transitionGroups.Length; i++)
+            var transitions = builder.Allocate(ref root.Transitions, Transitions.Length);
+            for (short i = 0; i < transitions.Length; i++)
             {
-                var transitionGroupConvertData = Transitions[i];
-                builder.ConstructFromNativeArray(ref transitionGroups[i].BoolTransitions,
-                    transitionGroupConvertData.BoolTransitions.Ptr, transitionGroupConvertData.BoolTransitions.Length);
+                var transitionConvertData = Transitions[i];
+                transitions[i] = new DOTSAnimation.AnimationTransitionGroup()
+                {
+                    NormalizedTransitionDuration = transitionConvertData.NormalizedTransitionDuration,
+                    FromStateIndex = transitionConvertData.FromStateIndex,
+                    ToStateIndex = transitionConvertData.ToStateIndex
+                };
+                builder.ConstructFromNativeArray(ref transitions[i].BoolTransitions,
+                    transitionConvertData.BoolTransitions.Ptr, transitionConvertData.BoolTransitions.Length);
             }
             
             builder.ConstructFromNativeArray(ref root.Events, Events.Ptr, Events.Length);

@@ -1,11 +1,8 @@
-using Latios.Kinemation;
-using Unity.Entities;
-
 namespace DOTSAnimation
 {
-    public enum StateType
+    public enum StateType : byte
     {
-        Single,
+        Single = 0,
         LinearBlend
     }
 

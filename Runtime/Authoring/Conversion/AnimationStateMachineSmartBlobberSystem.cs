@@ -6,6 +6,7 @@ using Latios.Kinemation;
 using Latios.Kinemation.Authoring;
 using Latios.Kinemation.Authoring.Systems;
 using Unity.Assertions;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using UnityEngine;
@@ -47,11 +48,12 @@ namespace DOTSAnimation.Authoring
                 converter.SingleClipStates.Resize(stateMachineAsset.SingleClipStates.Count);
                 for (ushort i = 0; i < converter.SingleClipStates.Length; i++)
                 {
+                    var singleStateAsset = stateMachineAsset.SingleClipStates[i];
                     converter.SingleClipStates[i] = new SingleClipStateBlob()
                     {
                         ClipIndex = i,
-                        Loop = false,
-                        Speed = 1
+                        Loop = singleStateAsset.Loop,
+                        Speed = singleStateAsset.Speed
                     };
                 }
 
@@ -101,9 +103,10 @@ namespace DOTSAnimation.Authoring
 
                     transitionGroup.BoolTransitions =
                         new UnsafeList<BoolTransition>(transitionAsset.BoolTransitions.Count, allocator);
+                    transitionGroup.BoolTransitions.Resize(transitionAsset.BoolTransitions.Count);
                     for (short j = 0; j < transitionGroup.BoolTransitions.Length; j++)
                     {
-                        var boolTransitionAsset = transitionAsset.BoolTransitions[i];
+                        var boolTransitionAsset = transitionAsset.BoolTransitions[j];
                         var parameterIndex = -1;
                         var parameterHash = boolTransitionAsset.Parameter.Hash;
                         for (short k = 0; k < converter.Parameters.Length; k++)
@@ -116,13 +119,15 @@ namespace DOTSAnimation.Authoring
                         }
                         
                         Assert.IsTrue(parameterIndex >= 0, $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.Parameter.Name}, for transition");
-                        transitionGroup.BoolTransitions[i] = new BoolTransition()
+                        transitionGroup.BoolTransitions[j] = new BoolTransition()
                         {
                             ParameterIndex = parameterIndex,
                             GroupIndex = i,
                             ComparisonValue = boolTransitionAsset.ComparisonValue,
                         };
                     }
+
+                    converter.Transitions[i] = transitionGroup;
                 }
             }
             

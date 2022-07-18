@@ -4,11 +4,12 @@ namespace DOTSAnimation
 {
     public struct StateMachineBlob
     {
+        internal BlobArray<AnimationStateBlob> States;
         internal BlobArray<SingleClipStateBlob> SingleClipStates;
         // internal BlobArray<LinearBlendStateBlob> LinearBlendStates;
-        internal BlobArray<StateMachineParameter> Parameters;
-        internal BlobArray<AnimationStateBlob> States;
+        
         internal BlobArray<AnimationTransitionGroup> Transitions;
+        internal BlobArray<StateMachineParameter> Parameters;
         internal BlobArray<AnimationEventBlob> Events;
     }
 }

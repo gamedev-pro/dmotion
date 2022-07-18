@@ -2,6 +2,7 @@ using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
 using Latios.Kinemation.Authoring;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -31,6 +32,14 @@ namespace DOTSAnimation.Authoring
             dstManager.AddComponentData(entity, stateMachine);
 
             var boolParameters = dstManager.GetOrCreateBuffer<BoolParameter>(entity);
+            for (ushort i = 0; i < stateMachineBlob.Value.Parameters.Length; i++)
+            {
+                boolParameters.Add(new BoolParameter()
+                {
+                    Hash = stateMachineBlob.Value.Parameters[i].Hash,
+                    Value = false
+                });
+            }
         }
 
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager, GameObjectConversionSystem conversionSystem)
