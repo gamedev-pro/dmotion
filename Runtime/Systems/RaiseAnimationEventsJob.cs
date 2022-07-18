@@ -2,55 +2,40 @@ using System.Runtime.CompilerServices;
 using BovineLabs.Event.Containers;
 using Unity.Burst;
 using Unity.Entities;
-using UnityEngine.Assertions;
 
 namespace DOTSAnimation
 {
     [BurstCompile]
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
-        public NativeEventStream.ThreadWriter Writer;
-        public float DeltaTime;
-        
-        public void Execute(
+        internal NativeEventStream.ThreadWriter Writer;
+        internal float DeltaTime;
+        internal void Execute(
             Entity animatorEntity,
             in AnimationStateMachine stateMachine,
-            in DynamicBuffer<ClipSampler> samplers,
-            in DynamicBuffer<AnimationState> states,
-            in AnimatorEntity animatorOwner,
-            in DynamicBuffer<AnimationEvent> animationEvents
+            in AnimatorEntity animatorOwner
         )
         {
             //Raise events
-            RaiseStateEvents(animatorEntity, stateMachine.CurrentState, animatorOwner.Owner, states, samplers,
-                animationEvents);
-            if (stateMachine.NextState.IsValid)
+            RaiseStateEvents(stateMachine, stateMachine.CurrentState, animatorEntity, animatorOwner.Owner);
+            if (stateMachine.CurrentTransition.IsValid)
             {
-                RaiseStateEvents(animatorEntity, stateMachine.NextState, animatorOwner.Owner, states, samplers,
-                    animationEvents);
+                RaiseStateEvents(stateMachine, stateMachine.CurrentState, animatorEntity, animatorOwner.Owner);
             }
         }
         
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RaiseStateEvents(Entity animatorEntity,
-            in AnimationStateMachine.StateRef stateRef,
-            Entity ownerEntity, in DynamicBuffer<AnimationState> states, in DynamicBuffer<ClipSampler> samplers,
-            in DynamicBuffer<AnimationEvent> events)
+        private void RaiseStateEvents(in AnimationStateMachine stateMachine, in AnimationState state,
+            Entity animatorEntity, Entity ownerEntity)
         {
-            Assert.IsTrue(states.IsValidIndex(stateRef.StateIndex));
-            var state = states.ElementAtSafe(stateRef.StateIndex);
-            var samplerIndex = state.GetActiveSamplerIndex(samplers);
-            
-            var sampler = samplers[samplerIndex];
-            var normalizedSamplerTime = sampler.Clip.LoopToClipTime(sampler.Time);
-            var previousSamplerTime = sampler.Clip.LoopToClipTime(sampler.Time - DeltaTime * sampler.Speed);
-            
-            for (var j = 0; j < events.Length; j++)
+            var currentNormalizedTime = state.NormalizedTime;
+            var previousNormalizedTime = state.NormalizedTime - DeltaTime * state.Speed;
+            for (var i = 0; i < stateMachine.EventsBlob.Length; i++)
             {
-                var e = events[j];
-                if (e.SamplerIndex == samplerIndex && e.NormalizedTime >= previousSamplerTime &&
-                    e.NormalizedTime <= normalizedSamplerTime)
+                var e = stateMachine.EventsBlob[i];
+                if (e.StateIndex == state.StateIndex && e.NormalizedTime >= previousNormalizedTime &&
+                    e.NormalizedTime <= currentNormalizedTime)
                 {
                     Writer.Write(new RaisedAnimationEvent()
                     {

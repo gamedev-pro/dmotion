@@ -10,7 +10,7 @@ namespace DOTSAnimation
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateBefore(typeof(TRSToLocalToParentSystem))]
     [UpdateBefore(typeof(TRSToLocalToWorldSystem))]
-    public partial class AnimationStateMachineSystem : SystemBase
+    internal partial class AnimationStateMachineSystem : SystemBase
     {
         protected override void OnUpdate()
         {
@@ -25,8 +25,6 @@ namespace DOTSAnimation
             }.ScheduleParallel(updateFmsHandle);
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones()
             {
-                CfeAnimationState = GetBufferFromEntity<AnimationState>(true),
-                CfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
                 CfeStateMachine = GetComponentDataFromEntity<AnimationStateMachine>(true),
             }.ScheduleParallel(updateFmsHandle);
             

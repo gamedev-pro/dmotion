@@ -9,37 +9,44 @@ namespace DOTSAnimation
     [WithAll(typeof(SkeletonRootTag))]
     internal partial struct SampleRootJob : IJobEntity
     {
-        public float DeltaTime;
-        public void Execute(
+        internal float DeltaTime;
+        internal void Execute(
             ref RootDeltaPosition rootDeltaPosition,
             ref RootDeltaRotation rootDeltaRotation,
-            in AnimationStateMachine stateMachine,
-            in DynamicBuffer<ClipSampler> samplers,
-            in DynamicBuffer<AnimationState> states
+            in AnimationStateMachine stateMachine
         )
         {
-            //Sample blended (current and next states)
-            if (stateMachine.NextState.IsValid)
+            //Sample root blended and calculate motion deltas
+            if (stateMachine.CurrentTransition.IsValid)
             {
-                var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
-                var nextState = states.ElementAtSafe(stateMachine.NextState.StateIndex);
+                var blend = math.clamp(
+                    stateMachine.NextState.NormalizedTime/ stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
 
-                var blend = math.clamp(nextState.GetNormalizedStateTime(samplers) / nextState.TransitionDuration, 0, 1);
-
-                //Calculate root motion deltas
-                var prevRoot = SingleClipSampling.SampleBoneBlended(0, blend, -DeltaTime, currentState, nextState, samplers);
-                var newRoot = SingleClipSampling.SampleBoneBlended(0, blend, 0, currentState, nextState, samplers);
+                var prevCurrentStateTime = stateMachine.CurrentState.GetNormalizedTimeShifted(DeltaTime);
+                var prevNextStateTime = stateMachine.NextState.GetNormalizedTimeShifted(DeltaTime);
+                
+                var prevRoot = SingleClipSampling.SampleBoneBlended(stateMachine.CurrentState,
+                    prevCurrentStateTime,
+                    stateMachine.NextState, prevNextStateTime,
+                    blend, 0);
+                
+                var newRoot = SingleClipSampling.SampleBoneBlended(stateMachine.CurrentState,
+                    stateMachine.CurrentState.NormalizedTime,
+                    stateMachine.NextState, stateMachine.NextState.NormalizedTime,
+                    blend, 0);
+                
                 rootDeltaPosition.Value = newRoot.translation - prevRoot.translation;
                 rootDeltaRotation.Value = mathex.delta(prevRoot.rotation, newRoot.rotation);
             }
-            //Sample current state
+            //Sample root and calculate motion deltas
             else
             {
-                var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
+                var prevCurrentStateTime =
+                    stateMachine.CurrentState.NormalizedTime - DeltaTime*stateMachine.CurrentState.Speed;
 
-                //Calculate root motion deltas
-                var prevRoot = currentState.SampleBone(0, -DeltaTime, samplers);
-                var newRoot = currentState.SampleBone(0, timeShift:0 ,samplers);
+                var prevRoot = stateMachine.CurrentState.SampleBone(prevCurrentStateTime, 0);
+                var newRoot = stateMachine.CurrentState.SampleBone(stateMachine.CurrentState.NormalizedTime, 0);
+                
                 rootDeltaPosition.Value = newRoot.translation - prevRoot.translation;
                 rootDeltaRotation.Value = mathex.delta(prevRoot.rotation, newRoot.rotation);
             }

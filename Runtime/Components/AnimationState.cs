@@ -4,123 +4,87 @@ using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public enum AnimationSamplerType
+    internal struct AnimationState
     {
-        Single,
-        LinearBlend
-    }
-    
-    //AnimationState is "polymorphic" (it switches implementation based on AnimationSamplerType)
-    //This also means that AnimationState holds data that it doesn't necessarily needs (i.e Blend is only for 1D Blend)
-    //I don't like this very much, but the alternative of separating different animation states to different buffers was even messier. At least this option concentrates the switch case mess in one place
-    //We could also use https://github.com/PhilSA/PolymorphicStructs (which has code gen for the switch case), but I want to avoid using libraries to solve small things like that
-    public partial struct AnimationState : IBufferElementData
-    {
-        public int StartSamplerIndex;
-        public int EndSamplerIndex;
+        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
+        internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
+        internal short StateIndex;
+        internal float NormalizedTime;
+        internal bool IsValid => StateIndex >= 0;
+        internal static AnimationState Null => new() { StateIndex = -1 };
+        internal readonly AnimationStateBlob StateBlob => StateMachineBlob.Value.States[StateIndex];
+        internal readonly StateType Type => StateBlob.Type;
         
-        public AnimationSamplerType Type;
-        public float TransitionDuration;
-        public bool Loop;
+        internal void Update(float dt)
+        {
+            NormalizedTime += dt * Speed;
+        }
         
-        //for blend trees only
-        public float Blend;
-        //
-
-        public void Update(float dt, ref DynamicBuffer<ClipSampler> samplers)
+        internal readonly BoneTransform SampleBone(float time, int boneIndex)
         {
             switch (Type)
             {
-                case AnimationSamplerType.Single:
-                    Update_SingleClip(dt, ref samplers);
-                    break;
-                case AnimationSamplerType.LinearBlend:
-                    Update_LinearBlend(dt, ref samplers);
-                    break;
+                case StateType.Single:
+                    return SampleBone_SingleClip(time, boneIndex);
+                case StateType.LinearBlend:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public readonly BoneTransform SampleBone(int boneIndex, float timeShift, in DynamicBuffer<ClipSampler> samplers)
+        internal readonly void SamplePose(float time, float blend, ref BufferPoseBlender blender)
         {
             switch (Type)
             {
-                case AnimationSamplerType.Single:
-                    return SampleBone_SingleClip(boneIndex, timeShift, samplers);
-                case AnimationSamplerType.LinearBlend:
-                    return SampleBone_LinearBlend(boneIndex, timeShift, samplers);
+                case StateType.Single:
+                    SamplePose_SingleClip(time, blend, ref blender);
+                    break;
+                case StateType.LinearBlend:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public void SamplePose(ref BufferPoseBlender blender, float timeShift, in DynamicBuffer<ClipSampler> samplers, float blend = 1f)
+        internal readonly float Speed
         {
-            switch (Type)
+            get
             {
-                case AnimationSamplerType.Single:
-                    SamplePose_SingleClip(ref blender, timeShift, samplers, blend);
-                    break;
-                case AnimationSamplerType.LinearBlend:
-                    SamplePose_LinearBlend(ref blender, timeShift, samplers, blend);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (Type)
+                {
+                    case StateType.Single:
+                        return StateMachineBlob.Value.SingleClipStates[StateIndex].Speed;
+                    case StateType.LinearBlend:
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 
-        public float GetStateTime(in DynamicBuffer<ClipSampler> samplers)
+        internal readonly float GetNormalizedTimeShifted(float dt)
         {
-            switch (Type)
-            {
-                case AnimationSamplerType.Single:
-                    return Time_Single(samplers);
-                case AnimationSamplerType.LinearBlend:
-                    return Time_LinearBlend(samplers);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-        public readonly float GetNormalizedStateTime(in DynamicBuffer<ClipSampler> samplers)
-        {
-            switch (Type)
-            {
-                case AnimationSamplerType.Single:
-                    return NormalizedTime_Single(samplers);
-                case AnimationSamplerType.LinearBlend:
-                    return NormalizedTime_LinearBlend(samplers);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            return NormalizedTime - dt * Speed;
         }
 
-        public readonly int GetActiveSamplerIndex(in DynamicBuffer<ClipSampler> samplers)
+        internal readonly ref SingleClipStateBlob AsSingleClip => ref StateMachineBlob.Value.SingleClipStates[StateIndex];
+
+        internal readonly ref SkeletonClip GetClip(int index)
         {
-            switch (Type)
-            {
-                case AnimationSamplerType.Single:
-                    return GetActiveSamplerIndex_Single(samplers);
-                case AnimationSamplerType.LinearBlend:
-                    return GetActiveSamplerIndex_LinearBlend(samplers);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            return ref Clips.Value.clips[index];
+        }
+        internal readonly BoneTransform SampleBone_SingleClip(float time, int boneIndex)
+        {
+            ref var singleClipState = ref AsSingleClip;
+            ref var clip = ref GetClip(singleClipState.ClipIndex);
+            var normalizedTime = singleClipState.Loop ? clip.LoopToClipTime(time) : time;
+            return clip.SampleBone(boneIndex, normalizedTime);
         }
 
-        public void ResetTime(ref DynamicBuffer<ClipSampler> samplers)
+        internal readonly void SamplePose_SingleClip(float time, float blend, ref BufferPoseBlender blender)
         {
-            switch (Type)
-            {
-                case AnimationSamplerType.Single:
-                    ResetTime_Single(ref samplers);
-                    break;
-                case AnimationSamplerType.LinearBlend:
-                    ResetTime_LinearBlend(ref samplers);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            ref var singleClipState = ref AsSingleClip;
+            ref var clip = ref GetClip(singleClipState.ClipIndex);
+            var normalizedTime = singleClipState.Loop ? clip.LoopToClipTime(time) : time;
+            clip.SamplePose(ref blender, blend, normalizedTime);
         }
     }
 }

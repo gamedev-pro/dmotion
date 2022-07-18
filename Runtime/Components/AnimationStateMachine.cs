@@ -1,29 +1,39 @@
-using Unity.Collections;
+using Latios.Kinemation;
 using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public struct AnimationStateRef
+    internal struct StateTransition
     {
-        internal int Index;
+        internal short TransitionIndex;
+        internal bool IsValid => TransitionIndex >= 0;
+        internal static StateTransition Null => new() { TransitionIndex = -1 };
     }
     
-    public struct AnimationStateMachine : IComponentData
+    internal struct AnimationStateMachine : IComponentData
     {
-        internal StateRef CurrentState;
-        internal StateRef NextState;
-        internal StateRef PrevState;
-        internal StateRef RequestedNextState;
-        internal struct StateRef
+        internal BlobAssetReference<SkeletonClipSetBlob> ClipsBlob;
+        internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
+        internal AnimationState CurrentState;
+        internal AnimationState NextState;
+        internal StateTransition CurrentTransition;
+        
+        //TODO (perf): Do those get inlined? It's just syntax sugar
+        internal readonly ref AnimationTransitionGroup CurrentTransitionBlob =>
+            ref StateMachineBlob.Value.Transitions[CurrentTransition.TransitionIndex];
+        internal readonly ref BlobArray<AnimationTransitionGroup> TransitionsBlob => ref StateMachineBlob.Value.Transitions;
+        internal readonly ref BlobArray<AnimationEventBlob> EventsBlob => ref StateMachineBlob.Value.Events;
+
+        internal AnimationState CreateState(short stateIndex)
         {
-            internal int StateIndex;
-            internal bool IsOneShot;
-
-            internal bool IsValid => StateIndex >= 0;
-
-            internal static StateRef Null => new StateRef() { StateIndex = -1 };
+            return new AnimationState()
+            {
+                Clips = ClipsBlob,
+                StateMachineBlob = StateMachineBlob,
+                StateIndex = stateIndex,
+                NormalizedTime = 0,
+            };
         }
-
     }
 
     public struct BoolParameter : IBufferElementData

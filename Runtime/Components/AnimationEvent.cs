@@ -10,14 +10,10 @@ namespace DOTSAnimation
         public Entity AnimatorOwner;
     }
     
-    public struct AnimationEvent : IBufferElementData, IComparable<AnimationEvent>
+    internal struct AnimationEventBlob
     {
         internal int EventHash;
-        internal int SamplerIndex;
+        internal int StateIndex;
         internal float NormalizedTime;
-        public int CompareTo(AnimationEvent other)
-        {
-            return NormalizedTime.CompareTo(other.NormalizedTime);
-        }
     }
 }

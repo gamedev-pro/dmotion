@@ -11,10 +11,8 @@ namespace DOTSAnimation
     [WithNone(typeof(SkeletonRootTag))]
     internal partial struct SampleNonOptimizedBones : IJobEntity
     {
-        [ReadOnly] public ComponentDataFromEntity<AnimationStateMachine> CfeStateMachine;
-        [ReadOnly] public BufferFromEntity<ClipSampler> CfeClipSampler;
-        [ReadOnly] public BufferFromEntity<AnimationState> CfeAnimationState;
-        public void Execute(
+        [ReadOnly] internal ComponentDataFromEntity<AnimationStateMachine> CfeStateMachine;
+        internal void Execute(
             ref Translation translation,
             ref Rotation rotation,
             ref NonUniformScale scale,
@@ -23,17 +21,18 @@ namespace DOTSAnimation
         )
         {
             var stateMachine = CfeStateMachine[skeletonRef.skeletonRoot];
-            var states = CfeAnimationState[skeletonRef.skeletonRoot];
-            var samplers = CfeClipSampler[skeletonRef.skeletonRoot];
             
             //Sample blended (current and next states)
-            if (stateMachine.NextState.IsValid)
+            if (stateMachine.CurrentTransition.IsValid)
             {
-                var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
-                var nextState = states.ElementAtSafe(stateMachine.NextState.StateIndex);
+                var blend = math.clamp(
+                    stateMachine.NextState.NormalizedTime / stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
 
-                var blend = math.clamp(nextState.GetNormalizedStateTime(samplers) / nextState.TransitionDuration, 0, 1);
-                var bone = SingleClipSampling.SampleBoneBlended(boneIndex.index, blend, 0, currentState, nextState, samplers);
+                var bone = SingleClipSampling.SampleBoneBlended(stateMachine.CurrentState,
+                    stateMachine.CurrentState.NormalizedTime,
+                    stateMachine.NextState, stateMachine.NextState.NormalizedTime,
+                    blend, boneIndex.index);
+                
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;
@@ -41,8 +40,9 @@ namespace DOTSAnimation
             //Sample current state
             else
             {
-                var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
-                var bone = currentState.SampleBone(boneIndex.index, timeShift:0 ,samplers);
+                var bone = stateMachine.CurrentState.SampleBone(stateMachine.CurrentState.NormalizedTime,
+                    boneIndex.index);
+                
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;
