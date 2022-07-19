@@ -139,26 +139,24 @@ namespace DOTSAnimation.Authoring
             ref StateMachineBlobConverter converter,
             Allocator allocator)
         {
-            converter.Events = new UnsafeList<AnimationClipEventsBlobConvertData>(stateMachineAsset.ClipCount, allocator);
-            converter.Events.Resize(stateMachineAsset.ClipCount);
-
-            var i = 0;
+            var eventCount = stateMachineAsset.Clips.Sum(c => c.Events.Length);
+            converter.ClipEvents = new UnsafeList<DOTSAnimation.AnimationClipEvent>(eventCount, allocator);
+            converter.ClipEvents.Resize(eventCount);
+            short clipIndex = 0;
+            short eventIndex = 0;
             foreach (var clip in stateMachineAsset.Clips)
             {
-                var clipEvents = new AnimationClipEventsBlobConvertData()
+                for (short i = 0; i < clip.Events.Length; i++)
                 {
-                    Events = new UnsafeList<ClipEventBlob>(clip.Events.Length, allocator)
-                };
-                clipEvents.Events.Resize(clip.Events.Length);
-                for (short j = 0; j < clipEvents.Events.Length; j++)
-                {
-                    clipEvents.Events[j] = new ClipEventBlob()
+                    converter.ClipEvents[eventIndex] = new DOTSAnimation.AnimationClipEvent()
                     {
-                        EventHash = clip.Events[j].Hash,
-                        NormalizedTime = clip.Events[j].NormalizedTime
+                        ClipIndex = clipIndex,
+                        EventHash = clip.Events[i].Hash,
+                        NormalizedTime = clip.Events[i].NormalizedTime
                     };
+                    eventIndex++;
                 }
-                converter.Events[i++] = clipEvents;
+                clipIndex++;
             }
         }
     }

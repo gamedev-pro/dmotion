@@ -81,7 +81,6 @@ namespace DOTSAnimation
             {
                 case StateType.Single:
                     ref var singleClipState = ref AsSingleClip;
-                    ref var clipEvents = ref StateMachineBlob.Value.ClipEvents[singleClipState.ClipIndex];
                     var currentNormalizedTime = NormalizedTime;
                     var previousNormalizedTime = GetNormalizedTimeShifted(dt);
                     
@@ -91,12 +90,15 @@ namespace DOTSAnimation
                         currentNormalizedTime = clip.LoopToClipTime(currentNormalizedTime);
                         previousNormalizedTime = clip.LoopToClipTime(previousNormalizedTime);
                     }
-                    
-                    for (short i = 0; i < clipEvents.Events.Length; i++)
+
+                    ref var clipEvents = ref StateMachineBlob.Value.ClipEvents;
+                    for (short i = 0; i < clipEvents.Length; i++)
                     {
-                        ref var e = ref clipEvents.Events[i];
-                        if (e.NormalizedTime >= previousNormalizedTime && e.NormalizedTime <= currentNormalizedTime)
+                        ref var e = ref clipEvents[i];
+                        if (e.ClipIndex == singleClipState.ClipIndex &&
+                            e.NormalizedTime >= previousNormalizedTime && e.NormalizedTime <= currentNormalizedTime)
                         {
+                            Debug.Log("YO");
                             Writer.Write(new RaisedAnimationEvent()
                             {
                                 EventHash = e.EventHash,

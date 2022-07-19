@@ -9,14 +9,10 @@ namespace DOTSAnimation
         public Entity AnimatorEntity;
         public Entity AnimatorOwner;
     }
-
-    internal struct AnimationClipEventsBlob
-    {
-        internal BlobArray<ClipEventBlob> Events;
-    }
     
-    internal struct ClipEventBlob
+    internal struct AnimationClipEvent
     {
+        internal short ClipIndex;
         internal int EventHash;
         internal float NormalizedTime;
     }
