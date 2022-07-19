@@ -13,6 +13,7 @@ namespace DOTSAnimation
             in DynamicBuffer<BoolParameter> boolParameters
             )
         {
+            ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
             //Evaluate if current transition ended
             {
                 if (stateMachine.CurrentTransition.IsValid)
@@ -32,7 +33,7 @@ namespace DOTSAnimation
                     ? stateMachine.NextState.StateIndex
                     : stateMachine.CurrentState.StateIndex;
                 
-                var shouldStartTransition = EvaluateTransitions(stateMachine, stateToEvaluate, boolParameters,
+                var shouldStartTransition = EvaluateTransitions(ref stateMachineBlob, stateToEvaluate, boolParameters,
                     out var transitionIndex);
 
                 if (shouldStartTransition)
@@ -71,15 +72,14 @@ namespace DOTSAnimation
         
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(in AnimationStateMachine stateMachine, short stateToEvaluate,
+        private bool EvaluateTransitions(ref StateMachineBlob stateMachine, short stateToEvaluate,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
-            for (short i = 0; i < stateMachine.TransitionsBlob.Length; i++)
+            for (short i = 0; i < stateMachine.Transitions.Length; i++)
             {
-                ref var group = ref stateMachine.TransitionsBlob[i];
-                if (group.FromStateIndex == stateToEvaluate)
+                if (stateMachine.Transitions[i].FromStateIndex == stateToEvaluate)
                 {
-                    if (EvaluateTransitionGroup(i, ref group, boolParameters))
+                    if (EvaluateTransitionGroup(i, ref stateMachine, boolParameters))
                     {
                         transitionIndex = i;
                         return true;
@@ -92,10 +92,10 @@ namespace DOTSAnimation
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(short groupIndex, ref AnimationTransitionGroup group,
+        private bool EvaluateTransitionGroup(short groupIndex, ref StateMachineBlob stateMachine,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            ref var boolTransitions = ref group.BoolTransitions;
+            ref var boolTransitions = ref stateMachine.BoolTransitions;
             var shouldTriggerTransition = boolTransitions.Length > 0;
             for (var i = 0; i < boolTransitions.Length; i++)
             {

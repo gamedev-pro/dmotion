@@ -11,7 +11,6 @@ namespace DOTSAnimation
         internal short FromStateIndex;
         internal short ToStateIndex;
         internal float NormalizedTransitionDuration;
-        internal BlobArray<BoolTransition> BoolTransitions;
     }
     internal struct BoolTransition
     {

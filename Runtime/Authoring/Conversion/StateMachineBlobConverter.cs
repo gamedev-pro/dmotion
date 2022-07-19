@@ -20,8 +20,9 @@ namespace DOTSAnimation.Authoring
         internal UnsafeList<SingleClipStateBlob> SingleClipStates;
         internal UnsafeList<AnimationStateBlob> States;
         internal UnsafeList<StateMachineParameter> Parameters;
-        internal UnsafeList<TransitionGroupConvertData> Transitions;
         internal UnsafeList<DOTSAnimation.AnimationClipEvent> ClipEvents;
+        internal UnsafeList<DOTSAnimation.AnimationTransitionGroup> Transitions;
+        internal UnsafeList<BoolTransition> BoolTransitions;
 
         public unsafe BlobAssetReference<StateMachineBlob> BuildBlob()
         {
@@ -31,20 +32,8 @@ namespace DOTSAnimation.Authoring
             builder.ConstructFromNativeArray(ref root.States, States.Ptr, States.Length);
             builder.ConstructFromNativeArray(ref root.Parameters, Parameters.Ptr, Parameters.Length);
             builder.ConstructFromNativeArray(ref root.ClipEvents, ClipEvents.Ptr, ClipEvents.Length);
-            
-            var transitions = builder.Allocate(ref root.Transitions, Transitions.Length);
-            for (short i = 0; i < transitions.Length; i++)
-            {
-                var transitionConvertData = Transitions[i];
-                transitions[i] = new DOTSAnimation.AnimationTransitionGroup()
-                {
-                    NormalizedTransitionDuration = transitionConvertData.NormalizedTransitionDuration,
-                    FromStateIndex = transitionConvertData.FromStateIndex,
-                    ToStateIndex = transitionConvertData.ToStateIndex
-                };
-                builder.ConstructFromNativeArray(ref transitions[i].BoolTransitions,
-                    transitionConvertData.BoolTransitions.Ptr, transitionConvertData.BoolTransitions.Length);
-            }
+            builder.ConstructFromNativeArray(ref root.Transitions, Transitions.Ptr, Transitions.Length);
+            builder.ConstructFromNativeArray(ref root.BoolTransitions, BoolTransitions.Ptr, BoolTransitions.Length);
             
             return builder.CreateBlobAssetReference<StateMachineBlob>(Allocator.Persistent);
         }

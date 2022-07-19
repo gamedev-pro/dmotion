@@ -8,8 +8,11 @@ namespace DOTSAnimation
         internal BlobArray<SingleClipStateBlob> SingleClipStates;
         // internal BlobArray<LinearBlendStateBlob> LinearBlendStates;
         
-        internal BlobArray<AnimationTransitionGroup> Transitions;
         internal BlobArray<StateMachineParameter> Parameters;
+        
         internal BlobArray<AnimationClipEvent> ClipEvents;
+        
+        internal BlobArray<AnimationTransitionGroup> Transitions;
+        internal BlobArray<BoolTransition> BoolTransitions;
     }
 }

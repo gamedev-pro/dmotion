@@ -44,7 +44,8 @@ namespace DOTSAnimation.Authoring
             var allocator = World.UpdateAllocator.ToAllocator;
             BuildStates(stateMachineAsset, ref converter, allocator);
             BuildParameters(stateMachineAsset, ref converter, allocator);
-            BuildTransitions(stateMachineAsset, ref converter, allocator);
+            BuildTransitionGroups(stateMachineAsset, ref converter, allocator);
+            BuildBoolTransitions(stateMachineAsset, ref converter, allocator);
             BuildEvents(stateMachineAsset, ref converter, allocator);
             
             return true;
@@ -94,19 +95,12 @@ namespace DOTSAnimation.Authoring
                 };
             }
         }
-        private void BuildTransitions(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
+        private void BuildTransitionGroups(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
             Allocator allocator)
         {
             TransitionGroupConvertData BuildTransition(int groupIndex, AnimationTransitionGroup transitionAsset, List<AnimationParameterAsset> parameters)
             {
                 var transitionGroup = new TransitionGroupConvertData();
-                transitionGroup.NormalizedTransitionDuration = transitionAsset.NormalizedTransitionDuration;
-                
-                transitionGroup.FromStateIndex = (short) stateMachineAsset.SingleClipStates.FindIndex(s => s == transitionAsset.FromState);
-                Assert.IsTrue(transitionGroup.FromStateIndex >= 0, $"State {transitionAsset.FromState.name} not present on State Machine {stateMachineAsset.name}");
-                transitionGroup.ToStateIndex = (short) stateMachineAsset.SingleClipStates.FindIndex(s => s == transitionAsset.ToState);
-                Assert.IsTrue(transitionGroup.ToStateIndex >= 0, $"State {transitionAsset.ToState.name} not present on State Machine {stateMachineAsset.name}");
-
                 transitionGroup.BoolTransitions =
                     new UnsafeList<BoolTransition>(transitionAsset.BoolTransitions.Count, allocator);
                 transitionGroup.BoolTransitions.Resize(transitionAsset.BoolTransitions.Count);
@@ -126,12 +120,46 @@ namespace DOTSAnimation.Authoring
                 return transitionGroup;
             }
 
-            converter.Transitions = new UnsafeList<TransitionGroupConvertData>(stateMachineAsset.Transitions.Count, allocator);
+            converter.Transitions = new UnsafeList<DOTSAnimation.AnimationTransitionGroup>(stateMachineAsset.Transitions.Count, allocator);
             converter.Transitions.Resize(stateMachineAsset.Transitions.Count);
             for (short i = 0; i < converter.Transitions.Length; i++)
             {
-                converter.Transitions[i] =
-                    BuildTransition(i, stateMachineAsset.Transitions[i], stateMachineAsset.Parameters);
+                var transitionGroup = new DOTSAnimation.AnimationTransitionGroup();
+                var transitionAsset = stateMachineAsset.Transitions[i];
+                transitionGroup.NormalizedTransitionDuration = transitionAsset.NormalizedTransitionDuration;
+                
+                transitionGroup.FromStateIndex = (short) stateMachineAsset.SingleClipStates.FindIndex(s => s == transitionAsset.FromState);
+                Assert.IsTrue(transitionGroup.FromStateIndex >= 0, $"State {transitionAsset.FromState.name} not present on State Machine {stateMachineAsset.name}");
+                transitionGroup.ToStateIndex = (short) stateMachineAsset.SingleClipStates.FindIndex(s => s == transitionAsset.ToState);
+                Assert.IsTrue(transitionGroup.ToStateIndex >= 0, $"State {transitionAsset.ToState.name} not present on State Machine {stateMachineAsset.name}");
+
+                converter.Transitions[i] = transitionGroup;
+            }
+        }
+
+        private void BuildBoolTransitions(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
+            Allocator allocator)
+        {
+            var boolTransitionCount = stateMachineAsset.Transitions.Sum(t => t.BoolTransitions.Count);
+            converter.BoolTransitions = new UnsafeList<BoolTransition>(boolTransitionCount, allocator);
+            converter.BoolTransitions.Resize(boolTransitionCount);
+            short boolTransitionIndex = 0;
+            for (short groupIndex = 0; groupIndex < stateMachineAsset.Transitions.Count; groupIndex++)
+            {
+                var transitionGroup = stateMachineAsset.Transitions[groupIndex];
+                for (short i = 0; i < transitionGroup.BoolTransitions.Count; i++)
+                {
+                    var boolTransition = transitionGroup.BoolTransitions[i];
+                    var parameterIndex = stateMachineAsset.Parameters.FindIndex(p => p == boolTransition.Parameter);
+                    Assert.IsTrue(parameterIndex >= 0, $"({stateMachineAsset.name}) Couldn't find parameter {boolTransition.Parameter.Name}, for transition");
+                    converter.BoolTransitions[boolTransitionIndex] = new BoolTransition()
+                    {
+                        GroupIndex = groupIndex,
+                        ComparisonValue = boolTransition.ComparisonValue,
+                        ParameterIndex = parameterIndex
+                    };
+                    boolTransitionIndex++;
+                }
             }
         }
 
