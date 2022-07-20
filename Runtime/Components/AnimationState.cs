@@ -28,12 +28,12 @@ namespace DOTSAnimation
     [BurstCompile]
     internal struct AnimationState
     {
-        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal short StateIndex;
-        internal bool IsValid => StateIndex >= 0;
         internal float NormalizedTime;
         internal byte StartSamplerIndex;
+        
+        internal bool IsValid => StateIndex >= 0;
         internal static AnimationState Null => new() { StateIndex = -1 };
         internal readonly AnimationStateBlob StateBlob => StateMachineBlob.Value.States[StateIndex];
         internal readonly StateType Type => StateBlob.Type;
@@ -63,23 +63,23 @@ namespace DOTSAnimation
             }
         }
 
-        internal void Initialize(ref DynamicBuffer<ClipSampler> samplers)
+        internal void Initialize(BlobAssetReference<SkeletonClipSetBlob> clips, ref DynamicBuffer<ClipSampler> samplers)
         {
             StartSamplerIndex = (byte)samplers.Length;
             switch (Type)
             {
                 case StateType.Single:
-                    Initialize_Single(ref samplers);
+                    Initialize_Single(clips, ref samplers);
                     break;
                 case StateType.LinearBlend:
-                    Initialize_LinearBlend(ref samplers);
+                    Initialize_LinearBlend(clips, ref samplers);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void Initialize_LinearBlend(ref DynamicBuffer<ClipSampler> samplers)
+        private void Initialize_LinearBlend(BlobAssetReference<SkeletonClipSetBlob> clips, ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var linearBlendState = ref AsLinearBlend;
             samplers.Length += linearBlendState.ClipSortedByThreshold.Length;
@@ -89,7 +89,7 @@ namespace DOTSAnimation
                 samplers[StartSamplerIndex + i] = new ClipSampler()
                 {
                     ClipIndex = clip.ClipIndex,
-                    Clips = Clips,
+                    Clips = clips,
                     PreviousNormalizedTime = 0,
                     NormalizedTime = 0,
                     Weight = 0
@@ -97,13 +97,13 @@ namespace DOTSAnimation
             }
         }
 
-        private void Initialize_Single(ref DynamicBuffer<ClipSampler> samplers)
+        private void Initialize_Single(BlobAssetReference<SkeletonClipSetBlob> clips, ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var singleClip = ref AsSingleClip;
             samplers.Add(new ClipSampler()
             {
                 ClipIndex = singleClip.ClipIndex,
-                Clips = Clips,
+                Clips = clips,
                 PreviousNormalizedTime = 0,
                 NormalizedTime = 0,
                 Weight = 0
@@ -134,8 +134,6 @@ namespace DOTSAnimation
             var samplerIndex = StartSamplerIndex;
 
             var sampler = samplers[samplerIndex];
-            sampler.Clips = Clips;
-            sampler.ClipIndex = singleClip.ClipIndex;
             sampler.Weight = blendWeight;
 
             sampler.PreviousNormalizedTime = sampler.NormalizedTime;

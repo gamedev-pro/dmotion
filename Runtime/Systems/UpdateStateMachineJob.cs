@@ -87,12 +87,11 @@ namespace DOTSAnimation
         {
             var state = new AnimationState()
             {
-                Clips = clipsBlob,
                 StateMachineBlob = stateMachineBlob,
                 StateIndex = stateIndex,
                 NormalizedTime = 0,
             };
-            state.Initialize(ref samplers);
+            state.Initialize(clipsBlob, ref samplers);
             return state;
         }
         
