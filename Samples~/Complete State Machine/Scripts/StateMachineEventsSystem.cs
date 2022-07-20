@@ -4,21 +4,31 @@ using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
+public struct StateMachineExampleEvents : IComponentData
+{
+    public int StartAttackEventHash;
+    public int EndAttackEventHash;
+    public int FootStepEventHash;
+}
+
 public partial class StateMachineEventsSystem : SystemBase
 {
     private struct AttackWindowEventJob : IJobAnimationEvent
-    { 
+    {
+        public int StartAttackEventHash;
+        public int EndAttackEventHash;
+        
         [NativeDisableParallelForRestriction]
         public ComponentDataFromEntity<AttackWindow> CfeAttackWindow;
         public void Execute(RaisedAnimationEvent e)
         {
-            if (e.EventHash == AnimationEvents.StartAttackEventHash)
+            if (e.EventHash == StartAttackEventHash)
             {
                 var atkWindow = CfeAttackWindow[e.AnimatorOwner];
                 atkWindow.IsOpen = true;
                 CfeAttackWindow[e.AnimatorOwner] = atkWindow;
             }
-            else if (e.EventHash == AnimationEvents.EndAttackEventHash)
+            else if (e.EventHash == EndAttackEventHash)
             {
                 var atkWindow = CfeAttackWindow[e.AnimatorOwner];
                 atkWindow.IsOpen = false;
@@ -27,20 +37,13 @@ public partial class StateMachineEventsSystem : SystemBase
         }
     }
     
-    private struct FootstepEventJob1 : IJobAnimationSingleEvent
-    { 
-        public int EventHash => AnimationEvents.FootstepEvent1;
+    private struct FootstepEventJob : IJobAnimationSingleEvent
+    {
+        public int FootStepEventHash;
+        public int EventHash => FootStepEventHash;
         public void Execute(RaisedAnimationEvent e)
         {
-            Debug.Log("Footstep 1");
-        }
-    }
-    private struct FootstepEventJob2 : IJobAnimationSingleEvent
-    { 
-        public int EventHash => AnimationEvents.FootstepEvent2;
-        public void Execute(RaisedAnimationEvent e)
-        {
-            Debug.Log("Footstep 2");
+            Debug.Log("Footstep");
         }
     }
 
@@ -50,23 +53,24 @@ public partial class StateMachineEventsSystem : SystemBase
     {
         base.OnCreate();
         animationEventsSystem = World.GetExistingSystem<EventSystem>();
+        RequireSingletonForUpdate<StateMachineExampleEvents>();
     }
 
     protected override void OnUpdate()
     {
+        var exampleEvents = GetSingleton<StateMachineExampleEvents>();
         //Example of job that manually read multiple event types
         Dependency = new AttackWindowEventJob
         {
+            StartAttackEventHash = exampleEvents.StartAttackEventHash,
+            EndAttackEventHash = exampleEvents.EndAttackEventHash,
             CfeAttackWindow = GetComponentDataFromEntity<AttackWindow>(),
         }.ScheduleParallel(animationEventsSystem, Dependency);
         
         //Example of IJobSingleAnimationEvent
-        Dependency = new FootstepEventJob1()
+        Dependency = new FootstepEventJob()
         {
-        }.ScheduleParallel(animationEventsSystem, Dependency);
-        
-        Dependency = new FootstepEventJob2()
-        {
+            FootStepEventHash = exampleEvents.FootStepEventHash
         }.ScheduleParallel(animationEventsSystem, Dependency);
     }
 }

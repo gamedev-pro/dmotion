@@ -3,12 +3,12 @@ using Unity.Entities;
 
 public partial class StateMachineExampleUISystem : SystemBase
 {
-    private static int IsJumpingHash => AnimationStateMachineUtils.GetHashCode("IsJumping");
-    private static int IsFallingHash => AnimationStateMachineUtils.GetHashCode("IsFalling");
-    private static int SpeedHash => AnimationStateMachineUtils.GetHashCode("Speed");
+    private static int IsJumpingHash => StateMachineParameterUtils.GetHashCode("IsJumping");
+    private static int IsFallingHash => StateMachineParameterUtils.GetHashCode("IsFalling");
+    private static int SpeedHash => StateMachineParameterUtils.GetHashCode("Speed");
     
-    private bool playAtkAnim = false;
-    private bool playBlockAnim = false;
+    private bool playCircleSlash = false;
+    private bool playSlash = false;
 
     protected override void OnStartRunning()
     {
@@ -19,40 +19,50 @@ public partial class StateMachineExampleUISystem : SystemBase
     }
     private void OnAttackRmButtonPressed()
     {
-        playAtkAnim = true;
+        playCircleSlash = true;
     }
 
     private void OnAttackButtonPressed()
     {
-        playBlockAnim = true;
+        playSlash = true;
     }
 
     protected override void OnUpdate()
     {
+        var oneShots = GetSingleton<StateMachineExampleOneShots>();
         var stateMachineUI = this.GetSingleton<StateMachineExampleUI>();
         Entities
-            .WithChangeFilter<AnimationStateMachine>()
-            .ForEach((ref AnimationStateMachine stateMachine,
+            .ForEach((
+                ref PlayOneShotRequest playOneShot,
                 ref DynamicBuffer<BlendParameter> blendParameters,
-                ref DynamicBuffer<BoolParameter> boolParameters,
-                in DynamicBuffer<AnimationState> states,
-                in CombatAnimations combatAnimations) =>
+                ref DynamicBuffer<BoolParameter> boolParameters) =>
             {
                 boolParameters.SetParameter(IsFallingHash, stateMachineUI.IsFallingToggle.isOn);
                 boolParameters.SetParameter(IsJumpingHash, stateMachineUI.IsJumpingToggle.isOn);
                 blendParameters.SetParameter(SpeedHash, stateMachineUI.BlendSlider.value);
                 
-                if (playAtkAnim)
+                if (playSlash)
                 {
-                    combatAnimations.Attack.PlayOneShot(ref stateMachine);
+                    playOneShot = new PlayOneShotRequest()
+                    {
+                        Clips = oneShots.Clips,
+                        ClipIndex = (short)oneShots.SlashClipIndex,
+                        NormalizedTransitionDuration = 0.15f,
+                        Speed = 1,
+                    };
                 }
-                else if (playBlockAnim)
+                else if (playCircleSlash)
                 {
-                    combatAnimations.Block.PlayOneShot(ref stateMachine);
+                    playOneShot = new PlayOneShotRequest()
+                    {
+                        Clips = oneShots.Clips,
+                        ClipIndex = (short)oneShots.CircleSlashClipIndex,
+                        NormalizedTransitionDuration = 0.15f,
+                        Speed = 1,
+                    };
                 }
-            
-                playAtkAnim = false;
-                playBlockAnim = false;
+
+                playSlash = playCircleSlash = false;
             }).WithoutBurst().Run();
     }
 }
