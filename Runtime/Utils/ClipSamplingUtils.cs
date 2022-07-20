@@ -8,28 +8,6 @@ namespace DOTSAnimation
     [BurstCompile]
     internal static class ClipSamplingUtils
     {
-        public static BoneTransform SampleAllClips(int boneIndex, in DynamicBuffer<ClipSampler> samplers,
-            in ActiveSamplersCount activeSamplersCount)
-        {
-            if (activeSamplersCount.Value == 0)
-            {
-                //TODO: assert? Or return reference pose, or boolean. This is not right
-                return default;
-            }
-            
-            var firstSampler = samplers[0];
-            var bone = ClipSamplingUtils.SampleWeightedFirstIndex(
-                boneIndex, ref firstSampler.Clip, firstSampler.NormalizedTime, firstSampler.Weight);
-            
-            for (byte i = 1; i < activeSamplersCount.Value; i++)
-            {
-                var sampler = samplers[i];
-                ClipSamplingUtils.SampleWeightedNIndex(
-                    ref bone, boneIndex, ref sampler.Clip, sampler.NormalizedTime, sampler.Weight);
-            }
-            return bone;
-        }
-        
         public static BoneTransform SampleWeightedFirstIndex(int boneIndex, ref SkeletonClip clip, float normalizedTime, float weight)
         {
             var bone = clip.SampleBone(boneIndex, normalizedTime);

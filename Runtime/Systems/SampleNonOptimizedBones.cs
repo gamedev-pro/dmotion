@@ -26,7 +26,20 @@ namespace DOTSAnimation
 
             if (activeSamplersCount.Value > 0)
             {
-                var bone = ClipSamplingUtils.SampleAllClips(boneIndex.index, samplers, activeSamplersCount);
+                var firstSampler = samplers[0];
+                var bone = ClipSamplingUtils.SampleWeightedFirstIndex(
+                    boneIndex.index, ref firstSampler.Clip,
+                    firstSampler.NormalizedTime,
+                    firstSampler.Weight);
+                
+                for (byte i = 1; i < activeSamplersCount.Value; i++)
+                {
+                    var sampler = samplers[i];
+                    ClipSamplingUtils.SampleWeightedNIndex(
+                        ref bone, boneIndex.index, ref sampler.Clip,
+                        sampler.NormalizedTime, sampler.Weight);
+                }
+                
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;

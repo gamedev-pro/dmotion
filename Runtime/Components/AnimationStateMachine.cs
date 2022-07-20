@@ -46,7 +46,6 @@ namespace DOTSAnimation
     public struct BlendParameter : IBufferElementData
     {
         public int Hash;
-        public int StateIndex;
         public float Value;
     }
 }

@@ -86,12 +86,12 @@ namespace DOTSAnimation
             sampler.PreviousNormalizedTime = prevNormalizedTime;
             sampler.NormalizedTime = NormalizedTime;
             sampler.Weight = blendWeight;
-            samplers[samplerIndex] = sampler;
-            
             if (Loop)
             {
                 sampler.LoopToClipTime();
             }
+            
+            samplers[samplerIndex] = sampler;
         }
 
         private void UpdateSamplers_LinearBlend(

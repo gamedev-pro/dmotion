@@ -4,6 +4,7 @@ using Latios.Kinemation;
 using Latios.Kinemation.Authoring;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace DOTSAnimation.Authoring
@@ -56,7 +57,11 @@ namespace DOTSAnimation.Authoring
 
             var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
             dstManager.AddComponentData(ownerEntity, new AnimatorOwner() { AnimatorEntity = entity });
+            dstManager.AddComponentData(ownerEntity, new TransferRootMotion());
             dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity});
+
+            dstManager.AddComponentData(entity, new RootDeltaTranslation());
+            dstManager.AddComponentData(entity, new RootDeltaRotation());
         }
 
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager, GameObjectConversionSystem conversionSystem)
