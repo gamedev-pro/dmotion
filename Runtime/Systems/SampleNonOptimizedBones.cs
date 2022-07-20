@@ -2,7 +2,6 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Transforms;
 
 namespace DOTSAnimation
@@ -11,7 +10,9 @@ namespace DOTSAnimation
     [WithNone(typeof(SkeletonRootTag))]
     internal partial struct SampleNonOptimizedBones : IJobEntity
     {
-        [ReadOnly] internal ComponentDataFromEntity<AnimationStateMachine> CfeStateMachine;
+        [ReadOnly] internal BufferFromEntity<ClipSampler> BfeClipSampler;
+        [ReadOnly] internal ComponentDataFromEntity<ActiveSamplersCount> CfeActiveSamplerCount;
+
         internal void Execute(
             ref Translation translation,
             ref Rotation rotation,
@@ -20,29 +21,12 @@ namespace DOTSAnimation
             in BoneIndex boneIndex
         )
         {
-            var stateMachine = CfeStateMachine[skeletonRef.skeletonRoot];
-            
-            //Sample blended (current and next states)
-            if (stateMachine.CurrentTransition.IsValid)
-            {
-                var blend = math.clamp(
-                    stateMachine.NextState.NormalizedTime / stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
+            var samplers = BfeClipSampler[skeletonRef.skeletonRoot];
+            var activeSamplersCount = CfeActiveSamplerCount[skeletonRef.skeletonRoot];
 
-                var bone = SingleClipSampling.SampleBoneBlended(stateMachine.CurrentState,
-                    stateMachine.CurrentState.NormalizedTime,
-                    stateMachine.NextState, stateMachine.NextState.NormalizedTime,
-                    blend, boneIndex.index);
-                
-                translation.Value = bone.translation;
-                rotation.Value = bone.rotation;
-                scale.Value = bone.scale;
-            }
-            //Sample current state
-            else
+            if (activeSamplersCount.Value > 0)
             {
-                var bone = stateMachine.CurrentState.SampleBone(stateMachine.CurrentState.NormalizedTime,
-                    boneIndex.index);
-                
+                var bone = ClipSamplingUtils.SampleAllClips(boneIndex.index, samplers, activeSamplersCount);
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;

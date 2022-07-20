@@ -3,7 +3,7 @@ using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public static partial class AnimationStateMachineUtils
+    public static class StateMachineParameterUtils
     {
         public static int HashToIndex(this DynamicBuffer<BoolParameter> parameters, int hash)
         {

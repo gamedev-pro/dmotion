@@ -1,54 +1,35 @@
 ﻿using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
 
 namespace DOTSAnimation
 {
+    
     [BurstCompile]
     [WithAll(typeof(SkeletonRootTag))]
     internal partial struct SampleRootJob : IJobEntity
     {
-        internal float DeltaTime;
         internal void Execute(
-            ref RootDeltaPosition rootDeltaPosition,
+            ref RootTranslation rootTranslation,
+            ref RootRotation rootRotation,
+            ref RootPreviousTranslation rootPreviousTranslation,
+            ref RootPreviousRotation rootPreviousRotation,
+            ref RootDeltaTranslation rootDeltaTranslation,
             ref RootDeltaRotation rootDeltaRotation,
-            in AnimationStateMachine stateMachine
+            in DynamicBuffer<ClipSampler> samplers,
+            in ActiveSamplersCount activeSamplersCount
         )
         {
-            //Sample root blended and calculate motion deltas
-            if (stateMachine.CurrentTransition.IsValid)
+            rootPreviousTranslation.Value = rootTranslation.Value;
+            rootPreviousRotation.Value = rootRotation.Value;
+            if (activeSamplersCount.Value > 0)
             {
-                var blend = math.clamp(
-                    stateMachine.NextState.NormalizedTime/ stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
-
-                var prevCurrentStateTime = stateMachine.CurrentState.GetNormalizedTimeShifted(DeltaTime);
-                var prevNextStateTime = stateMachine.NextState.GetNormalizedTimeShifted(DeltaTime);
+                var root = ClipSamplingUtils.SampleAllClips(0, samplers, activeSamplersCount);
+                rootTranslation.Value = root.translation;
+                rootRotation.Value = root.rotation;
                 
-                var prevRoot = SingleClipSampling.SampleBoneBlended(stateMachine.CurrentState,
-                    prevCurrentStateTime,
-                    stateMachine.NextState, prevNextStateTime,
-                    blend, 0);
-                
-                var newRoot = SingleClipSampling.SampleBoneBlended(stateMachine.CurrentState,
-                    stateMachine.CurrentState.NormalizedTime,
-                    stateMachine.NextState, stateMachine.NextState.NormalizedTime,
-                    blend, 0);
-                
-                rootDeltaPosition.Value = newRoot.translation - prevRoot.translation;
-                rootDeltaRotation.Value = mathex.delta(prevRoot.rotation, newRoot.rotation);
-            }
-            //Sample root and calculate motion deltas
-            else
-            {
-                var prevCurrentStateTime =
-                    stateMachine.CurrentState.NormalizedTime - DeltaTime*stateMachine.CurrentState.Speed;
-
-                var prevRoot = stateMachine.CurrentState.SampleBone(prevCurrentStateTime, 0);
-                var newRoot = stateMachine.CurrentState.SampleBone(stateMachine.CurrentState.NormalizedTime, 0);
-                
-                rootDeltaPosition.Value = newRoot.translation - prevRoot.translation;
-                rootDeltaRotation.Value = mathex.delta(prevRoot.rotation, newRoot.rotation);
+                rootDeltaTranslation.Value = rootTranslation.Value - rootPreviousTranslation.Value;
+                rootDeltaRotation.Value = mathex.delta(rootRotation.Value, rootPreviousRotation.Value);
             }
         }
     }

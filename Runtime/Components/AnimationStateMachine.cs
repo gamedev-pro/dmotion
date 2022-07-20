@@ -12,6 +12,8 @@ namespace DOTSAnimation
     
     internal struct AnimationStateMachine : IComponentData
     {
+        //Max 2 states transitioning at a time, max 3 *active* clips per state, +1 clip for one shot
+        internal const int kMaxSamplerCount = 2 * 3 + 1;
         internal BlobAssetReference<SkeletonClipSetBlob> ClipsBlob;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal AnimationState CurrentState;

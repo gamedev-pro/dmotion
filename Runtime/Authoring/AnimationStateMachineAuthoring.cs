@@ -32,7 +32,11 @@ namespace DOTSAnimation.Authoring
             stateMachine.CurrentState = stateMachine.CreateState(0);
             dstManager.AddComponentData(entity, stateMachine);
 
-            var boolParameters = dstManager.GetOrCreateBuffer<BoolParameter>(entity);
+            var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
+            clipSamplers.Length = AnimationStateMachine.kMaxSamplerCount;
+            dstManager.AddComponent<ActiveSamplersCount>(entity);
+
+            var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
             for (ushort i = 0; i < stateMachineBlob.Value.Parameters.Length; i++)
             {
                 boolParameters.Add(new BoolParameter()

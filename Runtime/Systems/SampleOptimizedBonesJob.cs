@@ -10,33 +10,24 @@ namespace DOTSAnimation
     {
         internal void Execute(
             ref DynamicBuffer<OptimizedBoneToRoot> boneToRootBuffer,
-            in AnimationStateMachine stateMachine,
+            in DynamicBuffer<ClipSampler> samplers,
+            in ActiveSamplersCount activeSamplersCount,
             in OptimizedSkeletonHierarchyBlobReference hierarchyRef)
         {
             var blender = new BufferPoseBlender(boneToRootBuffer);
-            var requiresNormalization = true;
-            
-            //Sample blended (current and next states)
-            if (stateMachine.NextState.IsValid)
+            var requiresNormalization = activeSamplersCount.Value > 1;
+
+            for (byte i = 0; i < activeSamplersCount.Value; i++)
             {
-                var blend = math.clamp(stateMachine.NextState.NormalizedTime /
-                                       stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
-                stateMachine.CurrentState.SamplePose(stateMachine.CurrentState.NormalizedTime, 1-blend, ref blender);
-                stateMachine.NextState.SamplePose(stateMachine.NextState.NormalizedTime, blend, ref blender);
+                var sampler = samplers[i];
+                sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.NormalizedTime);
             }
-            //Sample current state
-            else
-            {
-                //Skip normalization when there is only one pose since the rotations will already be normalized
-                requiresNormalization = stateMachine.CurrentState.Type != StateType.Single;
-                stateMachine.CurrentState.SamplePose(stateMachine.CurrentState.NormalizedTime, 1, ref blender);
-            }
-            
             if (requiresNormalization)
             {
                 blender.NormalizeRotations();
             }
             blender.ApplyBoneHierarchyAndFinish(hierarchyRef.blob);
         }
+        
     }
 }

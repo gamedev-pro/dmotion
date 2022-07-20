@@ -5,7 +5,8 @@ using UnityEngine.Assertions;
 
 namespace DOTSAnimation
 {
-    public static partial class AnimationStateMachineUtils
+    internal static class StateMachineUtils
     {
+        
     }
 }

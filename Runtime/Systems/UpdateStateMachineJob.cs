@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace DOTSAnimation
 {
@@ -10,6 +11,8 @@ namespace DOTSAnimation
         internal float DeltaTime;
         internal void Execute(
             ref AnimationStateMachine stateMachine,
+            ref DynamicBuffer<ClipSampler> clipSamplers,
+            ref ActiveSamplersCount activeSamplersCount,
             in DynamicBuffer<BoolParameter> boolParameters
             )
         {
@@ -45,10 +48,17 @@ namespace DOTSAnimation
             
             //Update samplers
             {
-                stateMachine.CurrentState.Update(DeltaTime);
+                activeSamplersCount.Value = 0;
                 if (stateMachine.CurrentTransition.IsValid)
                 {
-                    stateMachine.NextState.Update(DeltaTime);
+                    var nextStateBlend = math.clamp(stateMachine.NextState.NormalizedTime /
+                                       stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
+                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1 - nextStateBlend, ref clipSamplers, ref activeSamplersCount);
+                    stateMachine.NextState.UpdateSamplers(DeltaTime, nextStateBlend, ref clipSamplers, ref activeSamplersCount);
+                }
+                else
+                {
+                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1, ref clipSamplers, ref activeSamplersCount);
                 }
             }
             

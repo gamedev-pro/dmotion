@@ -25,17 +25,17 @@ namespace DOTSAnimation
             }.ScheduleParallel(updateFmsHandle);
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones()
             {
-                CfeStateMachine = GetComponentDataFromEntity<AnimationStateMachine>(true),
+                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                CfeActiveSamplerCount = GetComponentDataFromEntity<ActiveSamplersCount>(true)
             }.ScheduleParallel(updateFmsHandle);
             
             var sampleRootHandle = new SampleRootJob()
             {
-                DeltaTime = Time.DeltaTime
             }.ScheduleParallel(updateFmsHandle);
 
             var transferRootMotionHandle = new TransferRootMotionJob()
             {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaPosition>(true),
+                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
                 CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
             }.ScheduleParallel(sampleRootHandle);
             //end sample bones

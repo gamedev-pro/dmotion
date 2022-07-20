@@ -8,6 +8,21 @@ using UnityEngine;
 
 namespace DOTSAnimation
 {
+    internal struct ClipSampler : IBufferElementData
+    {
+        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
+        internal ushort ClipIndex;
+        internal float NormalizedTime;
+        internal float Weight;
+
+        internal ref SkeletonClip Clip => ref Clips.Value.clips[ClipIndex];
+    }
+
+    internal struct ActiveSamplersCount : IComponentData
+    {
+        internal byte Value;
+    }
+    
     [BurstCompile]
     internal struct AnimationState
     {
@@ -21,30 +36,15 @@ namespace DOTSAnimation
         internal readonly StateType Type => StateBlob.Type;
         internal readonly ref SingleClipStateBlob AsSingleClip => ref StateMachineBlob.Value.SingleClipStates[StateIndex];
         internal readonly float Speed => StateBlob.Speed;
+        internal readonly bool Loop => StateBlob.Loop;
 
-        internal void Update(float dt)
+        internal void UpdateSamplers(float dt, float blendWeight, ref DynamicBuffer<ClipSampler> samplers, ref ActiveSamplersCount activeSamplersCount)
         {
             NormalizedTime += dt * Speed;
-        }
-        
-        internal readonly BoneTransform SampleBone(float time, int boneIndex)
-        {
             switch (Type)
             {
                 case StateType.Single:
-                    return SampleBone_SingleClip(time, boneIndex);
-                case StateType.LinearBlend:
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        internal readonly void SamplePose(float time, float blend, ref BufferPoseBlender blender)
-        {
-            switch (Type)
-            {
-                case StateType.Single:
-                    SamplePose_SingleClip(time, blend, ref blender);
+                    UpdateSamplers_Single(blendWeight, ref samplers, ref activeSamplersCount);
                     break;
                 case StateType.LinearBlend:
                 default:
@@ -52,26 +52,24 @@ namespace DOTSAnimation
             }
         }
 
+        private readonly void UpdateSamplers_Single(float blendWeight, ref DynamicBuffer<ClipSampler> samplers, ref ActiveSamplersCount activeSamplersCount)
+        {
+            var samplerIndex = activeSamplersCount.Value;
+            
+            var sampler = samplers[samplerIndex];
+            sampler.Clips = Clips;
+            sampler.ClipIndex = AsSingleClip.ClipIndex;
+            sampler.NormalizedTime = Loop ? sampler.Clip.LoopToClipTime(NormalizedTime) : NormalizedTime;
+            sampler.Weight = blendWeight;
+            samplers[samplerIndex] = sampler;
+            
+            activeSamplersCount.Value++;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal readonly float GetNormalizedTimeShifted(float dt)
         {
             return NormalizedTime - dt * Speed;
-        }
-
-        internal readonly BoneTransform SampleBone_SingleClip(float time, int boneIndex)
-        {
-            ref var singleClipState = ref AsSingleClip;
-            ref var clip = ref Clips.Value.clips[singleClipState.ClipIndex];
-            var normalizedTime = StateBlob.Loop ? clip.LoopToClipTime(time) : time;
-            return clip.SampleBone(boneIndex, normalizedTime);
-        }
-
-        internal readonly void SamplePose_SingleClip(float time, float blend, ref BufferPoseBlender blender)
-        {
-            ref var singleClipState = ref AsSingleClip;
-            ref var clip = ref Clips.Value.clips[singleClipState.ClipIndex];
-            var normalizedTime = StateBlob.Loop ? clip.LoopToClipTime(time) : time;
-            clip.SamplePose(ref blender, blend, normalizedTime);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
