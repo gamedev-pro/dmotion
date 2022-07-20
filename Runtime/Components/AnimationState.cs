@@ -7,6 +7,28 @@ using Unity.Mathematics;
 
 namespace DOTSAnimation
 {
+    public struct PlayOneShotRequest : IComponentData
+    {
+        public BlobAssetReference<SkeletonClipSetBlob> Clips;
+        public short ClipIndex;
+        public float NormalizedTransitionDuration;
+        public float Speed;
+
+        public bool IsValid => ClipIndex >= 0 && Clips.IsCreated;
+
+        public static PlayOneShotRequest Null => new() { ClipIndex = -1 };
+    }
+    
+    internal struct OneShotState : IComponentData
+    {
+        internal short SamplerIndex;
+        internal float NormalizedTransitionDuration;
+        internal float Speed;
+
+        internal bool IsValid => SamplerIndex >= 0;
+        internal static OneShotState Null => new() { SamplerIndex = -1 };
+    }
+    
     internal struct ClipSampler : IBufferElementData
     {
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;

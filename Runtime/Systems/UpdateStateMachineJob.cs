@@ -3,6 +3,7 @@ using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace DOTSAnimation
 {
@@ -13,6 +14,8 @@ namespace DOTSAnimation
         internal void Execute(
             ref AnimationStateMachine stateMachine,
             ref DynamicBuffer<ClipSampler> clipSamplers,
+            ref PlayOneShotRequest playOneShot,
+            ref OneShotState oneShotState,
             in DynamicBuffer<BlendParameter> blendParameters,
             in DynamicBuffer<BoolParameter> boolParameters
             )
@@ -38,6 +41,7 @@ namespace DOTSAnimation
                         var removeCount = stateMachine.CurrentState.ClipCount;
                         clipSamplers.RemoveRange(stateMachine.CurrentState.StartSamplerIndex, removeCount);
                         stateMachine.NextState.StartSamplerIndex -= removeCount;
+                        oneShotState.SamplerIndex -= removeCount;
                         
                         stateMachine.CurrentState = stateMachine.NextState;
                         stateMachine.NextState = AnimationState.Null;
@@ -45,37 +49,129 @@ namespace DOTSAnimation
                     }
                 }
             }
-            
+
+            //Evaluate requested one shot
+            {
+                if (playOneShot.IsValid)
+                {
+                    //initialize
+                    oneShotState = new OneShotState
+                    {
+                        NormalizedTransitionDuration = playOneShot.NormalizedTransitionDuration,
+                        Speed = playOneShot.Speed,
+                        SamplerIndex = (short) clipSamplers.Length
+                    };
+
+                    clipSamplers.Add(new ClipSampler()
+                    {
+                        ClipIndex = (byte)playOneShot.ClipIndex,
+                        Clips = playOneShot.Clips,
+                        NormalizedTime = 0,
+                        PreviousNormalizedTime = 0,
+                        Weight = 1
+                    });
+
+                    playOneShot = PlayOneShotRequest.Null;
+                }
+            }
             //Evaluate transitions
             {
-                var stateToEvaluate = stateMachine.CurrentTransition.IsValid
-                    ? stateMachine.NextState.StateIndex
-                    : stateMachine.CurrentState.StateIndex;
-                
-                var shouldStartTransition = EvaluateTransitions(ref stateMachineBlob, stateToEvaluate, boolParameters,
-                    out var transitionIndex);
-
-                if (shouldStartTransition)
+                if (!oneShotState.IsValid)
                 {
-                    stateMachine.CurrentTransition = new StateTransition() { TransitionIndex = transitionIndex };
-                    stateMachine.NextState = CreateState(stateMachine.CurrentTransitionBlob.ToStateIndex,
-                        stateMachine.StateMachineBlob, stateMachine.ClipsBlob,
-                        ref clipSamplers);
+                    var stateToEvaluate = stateMachine.CurrentTransition.IsValid
+                        ? stateMachine.NextState.StateIndex
+                        : stateMachine.CurrentState.StateIndex;
+                    
+                    var shouldStartTransition = EvaluateTransitions(ref stateMachineBlob, stateToEvaluate, boolParameters,
+                        out var transitionIndex);
+
+                    if (shouldStartTransition)
+                    {
+                        stateMachine.CurrentTransition = new StateTransition() { TransitionIndex = transitionIndex };
+                        stateMachine.NextState = CreateState(stateMachine.CurrentTransitionBlob.ToStateIndex,
+                            stateMachine.StateMachineBlob, stateMachine.ClipsBlob,
+                            ref clipSamplers);
+                    }
                 }
             }
             
+            //Update One shot
+            {
+                if (oneShotState.IsValid)
+                {
+                    var sampler = clipSamplers[oneShotState.SamplerIndex];
+                    sampler.PreviousNormalizedTime = sampler.NormalizedTime;
+                    sampler.NormalizedTime += DeltaTime * oneShotState.Speed;
+
+                    float oneShotWeight;
+                    //blend out
+                    if (sampler.NormalizedTime > 0.9f)
+                    {
+                        oneShotWeight = math.clamp((1 - sampler.NormalizedTime) /
+                                               oneShotState.NormalizedTransitionDuration, 0, 1);
+                    }
+                    //blend in
+                    else
+                    {
+                        oneShotWeight = math.clamp(sampler.NormalizedTime /
+                                               oneShotState.NormalizedTransitionDuration, 0, 1);
+                    }
+
+                    sampler.Weight = oneShotWeight;
+                    stateMachine.Weight = 1 - oneShotWeight;
+                    
+                    clipSamplers[oneShotState.SamplerIndex] = sampler;
+                    
+                    if (sampler.NormalizedTime >= 1)
+                    {
+                        stateMachine.Weight = 1;
+                        clipSamplers.RemoveAt(oneShotState.SamplerIndex);
+                        if (oneShotState.SamplerIndex < stateMachine.CurrentState.StartSamplerIndex)
+                        {
+                            stateMachine.CurrentState.StartSamplerIndex -= 1;
+                        }
+                        if (stateMachine.NextState.IsValid && oneShotState.SamplerIndex < stateMachine.NextState.StartSamplerIndex)
+                        {
+                            stateMachine.NextState.StartSamplerIndex -= 1;
+                        }
+                        
+                        oneShotState = OneShotState.Null;
+                    }
+                }
+            }
             //Update samplers
             {
                 if (stateMachine.CurrentTransition.IsValid)
                 {
                     var nextStateBlend = math.clamp(stateMachine.NextState.NormalizedTime /
                                        stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
-                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1 - nextStateBlend, blendParameters, ref clipSamplers);
-                    stateMachine.NextState.UpdateSamplers(DeltaTime, nextStateBlend, blendParameters, ref clipSamplers);
+                    stateMachine.CurrentState.UpdateSamplers(
+                        DeltaTime, (1 - nextStateBlend)*stateMachine.Weight,
+                        blendParameters, ref clipSamplers);
+                    stateMachine.NextState.UpdateSamplers(
+                        DeltaTime, nextStateBlend*stateMachine.Weight,
+                        blendParameters, ref clipSamplers);
                 }
                 else
                 {
-                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1, blendParameters, ref clipSamplers);
+                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, stateMachine.Weight, blendParameters, ref clipSamplers);
+                }
+            }
+
+            //Normalized weights if needed
+            {
+                var sumWeights = 0.0f;
+                for (var i = 0; i < clipSamplers.Length; i++)
+                {
+                    sumWeights += clipSamplers[i].Weight;
+                }
+
+                var inverseSumWeights = 1.0f / sumWeights;
+                for (var i = 0; i < clipSamplers.Length; i++)
+                {
+                    var sampler = clipSamplers[i];
+                    sampler.Weight *= inverseSumWeights;
+                    clipSamplers[i] = sampler;
                 }
             }
         }

@@ -55,7 +55,7 @@ namespace DOTSAnimation
         private static bool ShouldIncludeSampler(in ClipSampler sampler)
         {
             //Since we're calculating deltas, we need to avoid the loop point (the character would teleport back to the initial root position)
-            return sampler.NormalizedTime - sampler.PreviousNormalizedTime > 0;
+            return !mathex.iszero(sampler.Weight) && sampler.NormalizedTime - sampler.PreviousNormalizedTime > 0;
         }
 
         private static bool TryGetFirstSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte startIndex)

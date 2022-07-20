@@ -1,6 +1,7 @@
 ﻿using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace DOTSAnimation
 {
@@ -13,14 +14,19 @@ namespace DOTSAnimation
             in OptimizedSkeletonHierarchyBlobReference hierarchyRef)
         {
             var blender = new BufferPoseBlender(boneToRootBuffer);
-            var requiresNormalization = samplers.Length > 1;
+            var activeSamplerCount = 0;
 
             for (byte i = 0; i < samplers.Length; i++)
             {
                 var sampler = samplers[i];
-                sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.NormalizedTime);
+                if (!mathex.iszero(sampler.Weight))
+                {
+                    activeSamplerCount++;
+                    sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.NormalizedTime);
+                }
             }
-            if (requiresNormalization)
+            
+            if (activeSamplerCount > 1)
             {
                 blender.NormalizeRotations();
             }

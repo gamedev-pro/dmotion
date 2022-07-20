@@ -22,26 +22,44 @@ namespace DOTSAnimation
         {
             var samplers = BfeClipSampler[skeletonRef.skeletonRoot];
 
-            if (samplers.Length > 0)
+            if (samplers.Length > 0 && TryFindFirstActiveSamplerIndex(samplers, out var firstSamplerIndex))
             {
-                var firstSampler = samplers[0];
+                var firstSampler = samplers[firstSamplerIndex];
                 var bone = ClipSamplingUtils.SampleWeightedFirstIndex(
                     boneIndex.index, ref firstSampler.Clip,
                     firstSampler.NormalizedTime,
                     firstSampler.Weight);
                 
-                for (byte i = 1; i < samplers.Length; i++)
+                for (var i = firstSamplerIndex + 1; i < samplers.Length; i++)
                 {
                     var sampler = samplers[i];
-                    ClipSamplingUtils.SampleWeightedNIndex(
-                        ref bone, boneIndex.index, ref sampler.Clip,
-                        sampler.NormalizedTime, sampler.Weight);
+                    if (!mathex.iszero(sampler.Weight))
+                    {
+                        ClipSamplingUtils.SampleWeightedNIndex(
+                            ref bone, boneIndex.index, ref sampler.Clip,
+                            sampler.NormalizedTime, sampler.Weight);
+                    }
                 }
                 
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;
             }
+        }
+
+        private bool TryFindFirstActiveSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte samplerIndex)
+        {
+            for (byte i = 0; i < samplers.Length; i++)
+            {
+                if (!mathex.iszero(samplers[i].Weight))
+                {
+                    samplerIndex = i;
+                    return true;
+                }
+            }
+
+            samplerIndex = 0;
+            return false;
         }
     }
 }
