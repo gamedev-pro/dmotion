@@ -37,12 +37,20 @@ namespace DOTSAnimation.Authoring
             dstManager.AddComponent<ActiveSamplersCount>(entity);
 
             var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
-            for (ushort i = 0; i < stateMachineBlob.Value.Parameters.Length; i++)
+            for (ushort i = 0; i < StateMachineAsset.BoolParameters.Count; i++)
             {
                 boolParameters.Add(new BoolParameter()
                 {
-                    Hash = stateMachineBlob.Value.Parameters[i].Hash,
+                    Hash = StateMachineAsset.BoolParameters[i].Hash,
                     Value = false
+                });
+            }
+            var floatParameters = dstManager.AddBuffer<BlendParameter>(entity);
+            for (ushort i = 0; i < StateMachineAsset.FloatParameters.Count; i++)
+            {
+                floatParameters.Add(new BlendParameter()
+                {
+                    Hash = StateMachineAsset.FloatParameters[i].Hash,
                 });
             }
 

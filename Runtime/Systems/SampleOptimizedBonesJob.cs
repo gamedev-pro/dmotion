@@ -1,7 +1,6 @@
 ﻿using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
 
 namespace DOTSAnimation
 {

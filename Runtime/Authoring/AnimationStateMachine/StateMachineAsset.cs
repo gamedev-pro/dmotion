@@ -8,12 +8,19 @@ namespace DOTSAnimation.Authoring
     public class StateMachineAsset : ScriptableObject
     {
         public List<SingleClipStateAsset> SingleClipStates;
-        public List<AnimationParameterAsset> Parameters;
+        public List<LinearBlendStateAsset> LinearBlendStates;
+        public List<BoolParameterAsset> BoolParameters;
+        public List<FloatParameterAsset> FloatParameters;
         public List<AnimationTransitionGroup> Transitions;
-        public IEnumerable<AnimationClipAsset> Clips => SingleClipStates.SelectMany(s => s.Clips);
-        public int ClipCount => SingleClipStates.Sum(s => s.ClipCount);
-        public int StateCount => SingleClipStates.Count;
+        public IEnumerable<AnimationClipAsset> Clips => SingleClipStates
+            .SelectMany(s => s.Clips)
+            .Concat(LinearBlendStates.SelectMany(s => s.Clips));
+        
+        public int ClipCount => SingleClipStates.Sum(s => s.ClipCount) +
+                                LinearBlendStates.Sum(s => s.ClipCount);
+        public int StateCount => SingleClipStates.Count + LinearBlendStates.Count;
 
-        public IEnumerable<AnimationStateAsset> States => SingleClipStates;
+        public IEnumerable<AnimationStateAsset> States => SingleClipStates
+            .Concat(LinearBlendStates.OfType<AnimationStateAsset>());
     }
 }

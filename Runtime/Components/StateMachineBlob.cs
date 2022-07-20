@@ -6,9 +6,10 @@ namespace DOTSAnimation
     {
         internal BlobArray<AnimationStateBlob> States;
         internal BlobArray<SingleClipStateBlob> SingleClipStates;
-        // internal BlobArray<LinearBlendStateBlob> LinearBlendStates;
+        internal BlobArray<LinearBlendStateBlob> LinearBlendStates;
         
-        internal BlobArray<StateMachineParameter> Parameters;
+        // internal BlobArray<StateMachineParameter> Parameters;
+        // internal BlobArray<StateMachineParameter> BoolParameters;
         
         internal BlobArray<AnimationClipEvent> ClipEvents;
         
