@@ -26,7 +26,6 @@ namespace DOTSAnimation
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones()
             {
                 BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
-                CfeActiveSamplerCount = GetComponentDataFromEntity<ActiveSamplersCount>(true)
             }.ScheduleParallel(updateFmsHandle);
             
             var sampleRootHandle = new SampleRootJob()

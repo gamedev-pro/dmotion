@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -12,18 +13,32 @@ namespace DOTSAnimation
         internal void Execute(
             ref AnimationStateMachine stateMachine,
             ref DynamicBuffer<ClipSampler> clipSamplers,
-            ref ActiveSamplersCount activeSamplersCount,
             in DynamicBuffer<BlendParameter> blendParameters,
             in DynamicBuffer<BoolParameter> boolParameters
             )
         {
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
+
+            //Initialize if necessary
+            {
+                if (!stateMachine.CurrentState.IsValid)
+                {
+                    clipSamplers.Clear();
+                    stateMachine.CurrentState = CreateState(stateMachineBlob.DefaultStateIndex,
+                        stateMachine.StateMachineBlob, stateMachine.ClipsBlob,
+                        ref clipSamplers);
+                }
+            }
             //Evaluate if current transition ended
             {
                 if (stateMachine.CurrentTransition.IsValid)
                 {
                     if (stateMachine.NextState.NormalizedTime > stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration)
                     {
+                        var removeCount = stateMachine.CurrentState.ClipCount;
+                        clipSamplers.RemoveRange(stateMachine.CurrentState.StartSamplerIndex, removeCount);
+                        stateMachine.NextState.StartSamplerIndex -= removeCount;
+                        
                         stateMachine.CurrentState = stateMachine.NextState;
                         stateMachine.NextState = AnimationState.Null;
                         stateMachine.CurrentTransition = StateTransition.Null;
@@ -43,25 +58,42 @@ namespace DOTSAnimation
                 if (shouldStartTransition)
                 {
                     stateMachine.CurrentTransition = new StateTransition() { TransitionIndex = transitionIndex };
-                    stateMachine.NextState = stateMachine.CreateState(stateMachine.CurrentTransitionBlob.ToStateIndex);
+                    stateMachine.NextState = CreateState(stateMachine.CurrentTransitionBlob.ToStateIndex,
+                        stateMachine.StateMachineBlob, stateMachine.ClipsBlob,
+                        ref clipSamplers);
                 }
             }
             
             //Update samplers
             {
-                activeSamplersCount.Value = 0;
                 if (stateMachine.CurrentTransition.IsValid)
                 {
                     var nextStateBlend = math.clamp(stateMachine.NextState.NormalizedTime /
                                        stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
-                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1 - nextStateBlend, blendParameters, ref clipSamplers, ref activeSamplersCount);
-                    stateMachine.NextState.UpdateSamplers(DeltaTime, nextStateBlend, blendParameters, ref clipSamplers, ref activeSamplersCount);
+                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1 - nextStateBlend, blendParameters, ref clipSamplers);
+                    stateMachine.NextState.UpdateSamplers(DeltaTime, nextStateBlend, blendParameters, ref clipSamplers);
                 }
                 else
                 {
-                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1, blendParameters, ref clipSamplers, ref activeSamplersCount);
+                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, 1, blendParameters, ref clipSamplers);
                 }
             }
+        }
+
+        private AnimationState CreateState(short stateIndex,
+            BlobAssetReference<StateMachineBlob> stateMachineBlob,
+            BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            ref DynamicBuffer<ClipSampler> samplers)
+        {
+            var state = new AnimationState()
+            {
+                Clips = clipsBlob,
+                StateMachineBlob = stateMachineBlob,
+                StateIndex = stateIndex,
+                NormalizedTime = 0,
+            };
+            state.Initialize(ref samplers);
+            return state;
         }
         
         [BurstCompile]

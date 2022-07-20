@@ -13,14 +13,13 @@ namespace DOTSAnimation
             Entity animatorEntity,
             in AnimationStateMachine stateMachine,
             in DynamicBuffer<ClipSampler> samplers,
-            in ActiveSamplersCount activeSamplersCount,
             in AnimatorEntity animatorOwner
         )
         {
             //TODO: Events should not be tied to a state machine, but to a separate blob instead (otherwise one shots can't raise events)
             ref var clipEvents = ref stateMachine.StateMachineBlob.Value.ClipEvents;
 
-            if (TryGetHighestWeightSamplerIndex(samplers, activeSamplersCount, out var samplerIndex))
+            if (TryGetHighestWeightSamplerIndex(samplers, out var samplerIndex))
             {
                 var sampler = samplers[samplerIndex];
                 var clipIndex = sampler.ClipIndex;
@@ -43,12 +42,11 @@ namespace DOTSAnimation
             }
         }
 
-        private bool TryGetHighestWeightSamplerIndex(in DynamicBuffer<ClipSampler> samplers,
-            in ActiveSamplersCount activeSamplersCount, out byte samplerIndex)
+        private bool TryGetHighestWeightSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte samplerIndex)
         {
             var maxWeight = 0.0f;
             var maxWeightSamplerIndex = -1;
-            for (byte i = 0; i < activeSamplersCount.Value; i++)
+            for (byte i = 0; i < samplers.Length; i++)
             {
                 if (samplers[i].Weight > maxWeight)
                 {

@@ -32,14 +32,8 @@ namespace DOTSAnimation.Authoring
                 CurrentTransition = StateTransition.Null
             };
 
-            var startStateIndex = StateMachineAsset.States.ToList().FindIndex(s => s == StateMachineAsset.DefaultState);
-            Assert.IsTrue(startStateIndex >= 0, $"Couldn't find start state ${StateMachineAsset.DefaultState.name} in state machine {StateMachineAsset.name}");
-            stateMachine.CurrentState = stateMachine.CreateState((short)startStateIndex);
             dstManager.AddComponentData(entity, stateMachine);
-
-            var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
-            clipSamplers.Length = AnimationStateMachine.kMaxSamplerCount;
-            dstManager.AddComponent<ActiveSamplersCount>(entity);
+            dstManager.AddBuffer<ClipSampler>(entity);
 
             var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
             for (ushort i = 0; i < StateMachineAsset.BoolParameters.Count; i++)

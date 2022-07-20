@@ -12,8 +12,6 @@ namespace DOTSAnimation
     
     internal struct AnimationStateMachine : IComponentData
     {
-        //Max 2 states transitioning at a time, max 3 *active* clips per state, +1 clip for one shot
-        internal const int kMaxSamplerCount = 2 * 3 + 1;
         internal BlobAssetReference<SkeletonClipSetBlob> ClipsBlob;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal AnimationState CurrentState;
@@ -25,16 +23,6 @@ namespace DOTSAnimation
             ref StateMachineBlob.Value.Transitions[CurrentTransition.TransitionIndex];
         internal readonly ref BlobArray<AnimationTransitionGroup> TransitionsBlob => ref StateMachineBlob.Value.Transitions;
 
-        internal AnimationState CreateState(short stateIndex)
-        {
-            return new AnimationState()
-            {
-                Clips = ClipsBlob,
-                StateMachineBlob = StateMachineBlob,
-                StateIndex = stateIndex,
-                NormalizedTime = 0,
-            };
-        }
     }
 
     public struct BoolParameter : IBufferElementData

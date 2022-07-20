@@ -10,13 +10,12 @@ namespace DOTSAnimation
         internal void Execute(
             ref DynamicBuffer<OptimizedBoneToRoot> boneToRootBuffer,
             in DynamicBuffer<ClipSampler> samplers,
-            in ActiveSamplersCount activeSamplersCount,
             in OptimizedSkeletonHierarchyBlobReference hierarchyRef)
         {
             var blender = new BufferPoseBlender(boneToRootBuffer);
-            var requiresNormalization = activeSamplersCount.Value > 1;
+            var requiresNormalization = samplers.Length > 1;
 
-            for (byte i = 0; i < activeSamplersCount.Value; i++)
+            for (byte i = 0; i < samplers.Length; i++)
             {
                 var sampler = samplers[i];
                 sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.NormalizedTime);

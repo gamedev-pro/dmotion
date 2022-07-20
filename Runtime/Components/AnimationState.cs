@@ -25,24 +25,15 @@ namespace DOTSAnimation
         }
     }
 
-    internal struct ActiveSamplersCount : IComponentData
-    {
-        internal byte Value;
-
-        internal int Take()
-        {
-            return Value++;
-        }
-    }
-
     [BurstCompile]
     internal struct AnimationState
     {
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal short StateIndex;
-        internal float NormalizedTime;
         internal bool IsValid => StateIndex >= 0;
+        internal float NormalizedTime;
+        internal byte StartSamplerIndex;
         internal static AnimationState Null => new() { StateIndex = -1 };
         internal readonly AnimationStateBlob StateBlob => StateMachineBlob.Value.States[StateIndex];
         internal readonly StateType Type => StateBlob.Type;
@@ -56,120 +47,187 @@ namespace DOTSAnimation
         internal readonly float Speed => StateBlob.Speed;
         internal readonly bool Loop => StateBlob.Loop;
 
-        internal void UpdateSamplers(float dt, float blendWeight, in DynamicBuffer<BlendParameter> blendParameters,
-            ref DynamicBuffer<ClipSampler> samplers, ref ActiveSamplersCount activeSamplersCount)
+        internal byte ClipCount
         {
-            var prevNormalizedTime = NormalizedTime;
-            NormalizedTime += dt * Speed;
+            get
+            {
+                switch (Type)
+                {
+                    case StateType.Single:
+                        return 1;
+                    case StateType.LinearBlend:
+                        return (byte)AsLinearBlend.ClipSortedByThreshold.Length;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        internal void Initialize(ref DynamicBuffer<ClipSampler> samplers)
+        {
+            StartSamplerIndex = (byte)samplers.Length;
             switch (Type)
             {
                 case StateType.Single:
-                    UpdateSamplers_Single(prevNormalizedTime, blendWeight, ref samplers, ref activeSamplersCount);
+                    Initialize_Single(ref samplers);
                     break;
                 case StateType.LinearBlend:
-                    UpdateSamplers_LinearBlend(prevNormalizedTime, blendWeight, blendParameters, ref samplers, ref activeSamplersCount);
+                    Initialize_LinearBlend(ref samplers);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private readonly void UpdateSamplers_Single(float prevNormalizedTime, float blendWeight,
-            ref DynamicBuffer<ClipSampler> samplers, ref ActiveSamplersCount activeSamplersCount)
+        private void Initialize_LinearBlend(ref DynamicBuffer<ClipSampler> samplers)
+        {
+            ref var linearBlendState = ref AsLinearBlend;
+            samplers.Length += linearBlendState.ClipSortedByThreshold.Length;
+            for (var i = 0; i < linearBlendState.ClipSortedByThreshold.Length; i++)
+            {
+                var clip = linearBlendState.ClipSortedByThreshold[i];
+                samplers[StartSamplerIndex + i] = new ClipSampler()
+                {
+                    ClipIndex = clip.ClipIndex,
+                    Clips = Clips,
+                    PreviousNormalizedTime = 0,
+                    NormalizedTime = 0,
+                    Weight = 0
+                };
+            }
+        }
+
+        private void Initialize_Single(ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var singleClip = ref AsSingleClip;
-            var samplerIndex = activeSamplersCount.Take();
+            samplers.Add(new ClipSampler()
+            {
+                ClipIndex = singleClip.ClipIndex,
+                Clips = Clips,
+                PreviousNormalizedTime = 0,
+                NormalizedTime = 0,
+                Weight = 0
+            });
+        }
+
+        internal void UpdateSamplers(float dt, float blendWeight, in DynamicBuffer<BlendParameter> blendParameters,
+            ref DynamicBuffer<ClipSampler> samplers)
+        {
+            NormalizedTime += dt * Speed;
+            switch (Type)
+            {
+                case StateType.Single:
+                    UpdateSamplers_Single(dt, blendWeight, ref samplers);
+                    break;
+                case StateType.LinearBlend:
+                    UpdateSamplers_LinearBlend(dt, blendWeight, blendParameters, ref samplers);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private readonly void UpdateSamplers_Single(float dt, float blendWeight,
+            ref DynamicBuffer<ClipSampler> samplers)
+        {
+            ref var singleClip = ref AsSingleClip;
+            var samplerIndex = StartSamplerIndex;
 
             var sampler = samplers[samplerIndex];
             sampler.Clips = Clips;
             sampler.ClipIndex = singleClip.ClipIndex;
-            sampler.PreviousNormalizedTime = prevNormalizedTime;
-            sampler.NormalizedTime = NormalizedTime;
             sampler.Weight = blendWeight;
+
+            sampler.PreviousNormalizedTime = sampler.NormalizedTime;
+            sampler.NormalizedTime += dt * Speed;
             if (Loop)
             {
                 sampler.LoopToClipTime();
             }
-            
+
             samplers[samplerIndex] = sampler;
         }
 
         private void UpdateSamplers_LinearBlend(
-            float prevNormalizedTime, float blendWeight,
+            float dt, float blendWeight,
             in DynamicBuffer<BlendParameter> blendParameters,
-            ref DynamicBuffer<ClipSampler> samplers, ref ActiveSamplersCount activeSamplersCount)
+            ref DynamicBuffer<ClipSampler> samplers)
         {
+            if (mathex.iszero(blendWeight))
+            {
+                return;
+            }
             ref var linearBlendState = ref AsLinearBlend;
             ref var sortedClips = ref linearBlendState.ClipSortedByThreshold;
-            var startIndex = 0;
-            var endIndex = sortedClips.Length - 1;
+            var startIndex = StartSamplerIndex;
+            var endIndex = StartSamplerIndex + sortedClips.Length - 1;
+
             var blendRatio = blendParameters[linearBlendState.BlendParameterIndex].Value;
 
             //we assume thresholds are sorted here
-            blendRatio = math.clamp(blendRatio, sortedClips[startIndex].Threshold, sortedClips[endIndex].Threshold);
+            blendRatio = math.clamp(blendRatio, sortedClips[0].Threshold, sortedClips[sortedClips.Length - 1].Threshold);
+            
             //find clip tuple to be blended
             var firstClipIndex = -1;
-            for (var i = startIndex + 1; i <= endIndex; i++)
+            var secondClipIndex = -1;
+            for (var i = 1; i < sortedClips.Length; i++)
             {
                 var currentClip = sortedClips[i];
                 var prevClip = sortedClips[i - 1];
                 if (blendRatio >= prevClip.Threshold && blendRatio <= currentClip.Threshold)
                 {
                     firstClipIndex = i - 1;
+                    secondClipIndex = i;
                     break;
                 }
             }
 
             var firstClip = sortedClips[firstClipIndex];
-            var secondClip = sortedClips[firstClipIndex + 1];
+            var secondClip = sortedClips[secondClipIndex];
 
-            var firstSamplerIndex = activeSamplersCount.Take();
-            var secondSamplerIndex = activeSamplersCount.Take();
+            var firstSamplerIndex = startIndex + firstClipIndex;
+            var secondSamplerIndex = startIndex + secondClipIndex;
 
             var firstSampler = samplers[firstSamplerIndex];
             var secondSampler = samplers[secondSamplerIndex];
-
-            //Update sampler clip references
+            
+            //Update clip weights
             {
-                firstSampler.Clips = Clips;
-                firstSampler.ClipIndex = firstClip.ClipIndex;
-                
-                secondSampler.Clips = Clips;
-                secondSampler.ClipIndex = secondClip.ClipIndex;
-            }
+                for (var i = startIndex; i <= endIndex; i++)
+                {
+                    var sampler = samplers[i];
+                    sampler.Weight = 0;
+                    samplers[i] = sampler;
+                }
 
-            //Update sampler weights
-            {
                 var t = (blendRatio - firstClip.Threshold) / (secondClip.Threshold - firstClip.Threshold);
                 firstSampler.Weight = (1 - t)*blendWeight;
                 secondSampler.Weight = t*blendWeight;
+                samplers[firstSamplerIndex] = firstSampler;
+                samplers[secondSamplerIndex] = secondSampler;
             }
-
-            //Update sampler times
+            
+            //Update clip times
             {
                 var loopDuration = firstSampler.Clip.duration * firstSampler.Weight +
                                    secondSampler.Clip.duration * secondSampler.Weight;
 
                 var invLoopDuration = 1.0f / loopDuration;
-
-                var firstSamplerRatio = firstSampler.Clip.duration * invLoopDuration;
-                var secondSamplerRatio = secondSampler.Clip.duration * invLoopDuration;
-
-                firstSampler.NormalizedTime = NormalizedTime * firstSamplerRatio;
-                firstSampler.PreviousNormalizedTime = prevNormalizedTime * firstSamplerRatio;
-                
-                secondSampler.NormalizedTime = NormalizedTime * secondSamplerRatio;
-                secondSampler.PreviousNormalizedTime = prevNormalizedTime * secondSamplerRatio;
-
-                if (Loop)
+                var stateSpeed = Speed;
+                for (var i = startIndex; i <= endIndex; i++)
                 {
-                    firstSampler.LoopToClipTime();
-                    secondSampler.LoopToClipTime();
+                    var sampler = samplers[i];
+                    var samplerSpeed = stateSpeed * sampler.Clip.duration * invLoopDuration;
+                    sampler.PreviousNormalizedTime = sampler.NormalizedTime;
+                    sampler.NormalizedTime += dt * samplerSpeed;
+
+                    if (Loop)
+                    {
+                        sampler.LoopToClipTime();
+                    }
+                    samplers[i] = sampler;
                 }
             }
-
-            samplers[firstSamplerIndex] = firstSampler;
-            samplers[secondSamplerIndex] = secondSampler;
         }
     }
 }

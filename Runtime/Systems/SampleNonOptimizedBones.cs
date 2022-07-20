@@ -11,7 +11,6 @@ namespace DOTSAnimation
     internal partial struct SampleNonOptimizedBones : IJobEntity
     {
         [ReadOnly] internal BufferFromEntity<ClipSampler> BfeClipSampler;
-        [ReadOnly] internal ComponentDataFromEntity<ActiveSamplersCount> CfeActiveSamplerCount;
 
         internal void Execute(
             ref Translation translation,
@@ -22,9 +21,8 @@ namespace DOTSAnimation
         )
         {
             var samplers = BfeClipSampler[skeletonRef.skeletonRoot];
-            var activeSamplersCount = CfeActiveSamplerCount[skeletonRef.skeletonRoot];
 
-            if (activeSamplersCount.Value > 0)
+            if (samplers.Length > 0)
             {
                 var firstSampler = samplers[0];
                 var bone = ClipSamplingUtils.SampleWeightedFirstIndex(
@@ -32,7 +30,7 @@ namespace DOTSAnimation
                     firstSampler.NormalizedTime,
                     firstSampler.Weight);
                 
-                for (byte i = 1; i < activeSamplersCount.Value; i++)
+                for (byte i = 1; i < samplers.Length; i++)
                 {
                     var sampler = samplers[i];
                     ClipSamplingUtils.SampleWeightedNIndex(

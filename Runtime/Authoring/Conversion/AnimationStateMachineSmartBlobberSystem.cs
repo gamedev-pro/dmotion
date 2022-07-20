@@ -39,6 +39,9 @@ namespace DOTSAnimation.Authoring
             var stateMachineAsset = input.StateMachineAsset;
 
             var allocator = World.UpdateAllocator.ToAllocator;
+            var defaultStateIndex = stateMachineAsset.States.ToList().IndexOf(stateMachineAsset.DefaultState);
+            Assert.IsTrue(defaultStateIndex >= 0, $"Couldn't find state {stateMachineAsset.DefaultState.name}, in state machine {stateMachineAsset.name}");
+            converter.DefaultStateIndex = (byte)defaultStateIndex;
             BuildStates(stateMachineAsset, ref converter, allocator);
             BuildTransitionGroups(stateMachineAsset, ref converter, allocator);
             BuildBoolTransitions(stateMachineAsset, ref converter, allocator);

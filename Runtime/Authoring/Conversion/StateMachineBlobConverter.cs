@@ -13,6 +13,7 @@ namespace DOTSAnimation.Authoring
     }
     internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>
     {
+        internal byte DefaultStateIndex;
         internal UnsafeList<SingleClipStateBlob> SingleClipStates;
         internal UnsafeList<LinearBlendStateConversionData> LinearBlendStates;
         internal UnsafeList<AnimationStateBlob> States;
@@ -24,6 +25,7 @@ namespace DOTSAnimation.Authoring
         {
             var builder = new BlobBuilder(Allocator.Temp);
             ref var root = ref builder.ConstructRoot<StateMachineBlob>();
+            root.DefaultStateIndex = DefaultStateIndex;
             builder.ConstructFromNativeArray(ref root.SingleClipStates, SingleClipStates.Ptr, SingleClipStates.Length);
             builder.ConstructFromNativeArray(ref root.States, States.Ptr, States.Length);
             builder.ConstructFromNativeArray(ref root.ClipEvents, ClipEvents.Ptr, ClipEvents.Length);

@@ -13,13 +13,12 @@ namespace DOTSAnimation
         internal void Execute(
             ref RootDeltaTranslation rootDeltaTranslation,
             ref RootDeltaRotation rootDeltaRotation,
-            in DynamicBuffer<ClipSampler> samplers,
-            in ActiveSamplersCount activeSamplersCount
+            in DynamicBuffer<ClipSampler> samplers
         )
         {
             rootDeltaTranslation.Value = 0;
             rootDeltaRotation.Value = quaternion.identity;
-            if (activeSamplersCount.Value > 0 && TryGetFirstSamplerIndex(samplers, activeSamplersCount, out var startIndex))
+            if (samplers.Length > 0 && TryGetFirstSamplerIndex(samplers, out var startIndex))
             {
                 var firstSampler = samplers[startIndex];
                 var root = ClipSamplingUtils.SampleWeightedFirstIndex(
@@ -32,7 +31,7 @@ namespace DOTSAnimation
                     firstSampler.PreviousNormalizedTime,
                     firstSampler.Weight);
 
-                for (var i = startIndex + 1; i < activeSamplersCount.Value; i++)
+                for (var i = startIndex + 1; i < samplers.Length; i++)
                 {
                     var sampler = samplers[i];
                     if (ShouldIncludeSampler(sampler))
@@ -59,10 +58,9 @@ namespace DOTSAnimation
             return sampler.NormalizedTime - sampler.PreviousNormalizedTime > 0;
         }
 
-        private static bool TryGetFirstSamplerIndex(in DynamicBuffer<ClipSampler> samplers,
-            in ActiveSamplersCount activeSamplersCount, out byte startIndex)
+        private static bool TryGetFirstSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte startIndex)
         {
-            for (byte i = 0; i < activeSamplersCount.Value; i++)
+            for (byte i = 0; i < samplers.Length; i++)
             {
                 if (ShouldIncludeSampler(samplers[i]))
                 {
