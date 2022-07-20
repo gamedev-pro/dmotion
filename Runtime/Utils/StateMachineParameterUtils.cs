@@ -111,7 +111,7 @@ namespace DOTSAnimation
             return parameters.TryGetValue(hash, out value);
         }
 
-        public static int GetHashCode(in FixedString32Bytes name)
+        public static int GetHashCode(string name)
         {
             return name.GetHashCode();
         }

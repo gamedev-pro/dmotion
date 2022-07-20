@@ -7,6 +7,7 @@ namespace DOTSAnimation.Authoring
     [CreateAssetMenu(menuName = "DOTSAnimation/State Machine")]
     public class StateMachineAsset : ScriptableObject
     {
+        public AnimationStateAsset DefaultState;
         public List<SingleClipStateAsset> SingleClipStates;
         public List<LinearBlendStateAsset> LinearBlendStates;
         public List<BoolParameterAsset> BoolParameters;
