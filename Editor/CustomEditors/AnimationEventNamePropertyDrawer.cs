@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Codice.CM.WorkspaceServer.DataStore.WkTree;
 using DOTSAnimation.Authoring;
 using UnityEditor;
 using UnityEngine;
@@ -42,6 +43,10 @@ namespace DOTSAnimation.Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            position.width = EditorGUIUtility.labelWidth;
+            EditorGUI.LabelField(position, label);
+            position.x += EditorGUIUtility.labelWidth;
+            position.width = EditorGUIUtility.currentViewWidth - EditorGUIUtility.labelWidth - 25f;
             var currEventName = property.objectReferenceValue as AnimationEventName;
             var index = Array.FindIndex(EventNameAssets, e => e == currEventName);
             var newIndex = EditorGUI.Popup(position, index, EventNameOptions);
