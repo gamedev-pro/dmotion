@@ -3,21 +3,25 @@ using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public struct RaisedAnimationEvent
+    public struct RaisedAnimationEvent : IBufferElementData
     {
         public int EventHash;
-        public Entity AnimatorEntity;
-        public Entity AnimatorOwner;
     }
     
-    public struct AnimationEvent : IBufferElementData, IComparable<AnimationEvent>
+    internal struct AnimationClipEvent
     {
+        internal short ClipIndex;
         internal int EventHash;
-        internal int SamplerIndex;
         internal float NormalizedTime;
-        public int CompareTo(AnimationEvent other)
-        {
-            return NormalizedTime.CompareTo(other.NormalizedTime);
-        }
+    }
+
+    internal struct ClipEvents
+    {
+        internal BlobArray<AnimationClipEvent> Events;
+    }
+    
+    public struct ClipEventsBlob
+    {
+        internal BlobArray<ClipEvents> ClipEvents;
     }
 }

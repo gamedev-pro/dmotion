@@ -2,13 +2,20 @@ using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public struct AnimationTransitionGroup : IBufferElementData
+    internal struct StateTransition
     {
-        internal int FromStateIndex;
-        internal int ToStateIndex;
+        internal short TransitionIndex;
+        internal bool IsValid => TransitionIndex >= 0;
+        internal static StateTransition Null => new StateTransition() { TransitionIndex = -1 };
     }
     
-    public struct BoolTransition : IBufferElementData
+    internal struct AnimationTransitionGroup
+    {
+        internal short FromStateIndex;
+        internal short ToStateIndex;
+        internal float NormalizedTransitionDuration;
+    }
+    internal struct BoolTransition
     {
         internal int GroupIndex;
         internal int ParameterIndex;
@@ -17,13 +24,5 @@ namespace DOTSAnimation
         {
             return parameter.Value == ComparisonValue;
         }
-    }
-
-    public struct ExitTimeTransition : IBufferElementData
-    {
-        internal int FromStateIndex;
-        internal int ToStateIndex;
-        internal float NormalizedExitTime;
-        internal bool IsTransitionToStateMachine => ToStateIndex < 0;
     }
 }

@@ -1,41 +1,20 @@
-using Unity.Collections;
+using Latios.Kinemation;
 using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public struct AnimationStateRef
+    internal struct AnimationStateMachine : IComponentData
     {
-        internal int Index;
-    }
-    
-    public struct AnimationStateMachine : IComponentData
-    {
-        internal StateRef CurrentState;
-        internal StateRef NextState;
-        internal StateRef PrevState;
-        internal StateRef RequestedNextState;
-        internal struct StateRef
-        {
-            internal int StateIndex;
-            internal bool IsOneShot;
-
-            internal bool IsValid => StateIndex >= 0;
-
-            internal static StateRef Null => new StateRef() { StateIndex = -1 };
-        }
-
-    }
-
-    public struct BoolParameter : IBufferElementData
-    {
-        public int Hash;
-        public bool Value;
-    }
-    
-    public struct BlendParameter : IBufferElementData
-    {
-        public int Hash;
-        public int StateIndex;
-        public float Value;
+        internal BlobAssetReference<SkeletonClipSetBlob> ClipsBlob;
+        internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
+        internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
+        internal AnimationState CurrentState;
+        internal AnimationState NextState;
+        internal StateTransition CurrentTransition;
+        internal float Weight;
+        
+        //TODO (perf): Do those get inlined? It's just syntax sugar
+        internal readonly ref AnimationTransitionGroup CurrentTransitionBlob =>
+            ref StateMachineBlob.Value.Transitions[CurrentTransition.TransitionIndex];
     }
 }

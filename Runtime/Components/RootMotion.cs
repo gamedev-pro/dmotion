@@ -3,7 +3,7 @@ using Unity.Mathematics;
 
 namespace DOTSAnimation
 {
-    public struct RootDeltaPosition : IComponentData
+    public struct RootDeltaTranslation : IComponentData
     {
         public float3 Value;
     }
@@ -13,7 +13,11 @@ namespace DOTSAnimation
         public quaternion Value;
     }
 
-    public struct TransferRootMotion : IComponentData
+    internal struct ApplyRootMotionToEntity : IComponentData
+    {
+    }
+
+    internal struct TransferRootMotionToOwner : IComponentData
     {
     }
 }

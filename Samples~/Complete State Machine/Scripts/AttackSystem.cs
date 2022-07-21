@@ -1,15 +1,18 @@
 ﻿using Unity.Collections;
 using Unity.Entities;
+using Unity.Transforms;
 using UnityEngine;
 
+[UpdateInGroup(typeof(TransformSystemGroup))]
+[UpdateAfter(typeof(StateMachineEventsSystem))]
 public partial class AttackSystem : SystemBase
 {
     protected override void OnUpdate()
     {
         Entities.ForEach((in AttackWindow attackWindow) =>
         {
-            var value = attackWindow.IsOpen ? 1 : 0;
-            Debug.Log(FixedString.Format("Attack Window is: {0}", value));
+            FixedString32Bytes open = attackWindow.IsOpen ? "Open" : "Closed";
+            Debug.Log(FixedString.Format("Attack window is: {0}", open));
         }).Schedule();
     }
 }

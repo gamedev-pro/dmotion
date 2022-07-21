@@ -1,17 +1,25 @@
-﻿using Latios.Kinemation;
+﻿using System.Runtime.CompilerServices;
+using Latios.Kinemation;
 using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public struct ClipSampler : IBufferElementData
+    internal struct ClipSampler : IBufferElementData
     {
-        public BlobAssetReference<SkeletonClipSetBlob> Blob;
-        public int ClipIndex;
-        public float Threshold;
-        public float Time;
-        public float Weight;
-        public float Speed;
-        
-        public ref SkeletonClip Clip => ref Blob.Value.clips[ClipIndex];
+        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
+        internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
+        internal ushort ClipIndex;
+        internal float PreviousNormalizedTime;
+        internal float NormalizedTime;
+        internal float Weight;
+
+        internal ref SkeletonClip Clip => ref Clips.Value.clips[ClipIndex];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void LoopToClipTime()
+        {
+            NormalizedTime = Clip.LoopToClipTime(NormalizedTime);
+            PreviousNormalizedTime = Clip.LoopToClipTime(PreviousNormalizedTime);
+        }
     }
 }

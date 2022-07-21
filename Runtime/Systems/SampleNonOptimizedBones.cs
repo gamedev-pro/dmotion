@@ -2,7 +2,6 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Transforms;
 
 namespace DOTSAnimation
@@ -11,10 +10,9 @@ namespace DOTSAnimation
     [WithNone(typeof(SkeletonRootTag))]
     internal partial struct SampleNonOptimizedBones : IJobEntity
     {
-        [ReadOnly] public ComponentDataFromEntity<AnimationStateMachine> CfeStateMachine;
-        [ReadOnly] public BufferFromEntity<ClipSampler> CfeClipSampler;
-        [ReadOnly] public BufferFromEntity<AnimationState> CfeAnimationState;
-        public void Execute(
+        [ReadOnly] internal BufferFromEntity<ClipSampler> BfeClipSampler;
+
+        internal void Execute(
             ref Translation translation,
             ref Rotation rotation,
             ref NonUniformScale scale,
@@ -22,31 +20,46 @@ namespace DOTSAnimation
             in BoneIndex boneIndex
         )
         {
-            var stateMachine = CfeStateMachine[skeletonRef.skeletonRoot];
-            var states = CfeAnimationState[skeletonRef.skeletonRoot];
-            var samplers = CfeClipSampler[skeletonRef.skeletonRoot];
-            
-            //Sample blended (current and next states)
-            if (stateMachine.NextState.IsValid)
-            {
-                var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
-                var nextState = states.ElementAtSafe(stateMachine.NextState.StateIndex);
+            var samplers = BfeClipSampler[skeletonRef.skeletonRoot];
 
-                var blend = math.clamp(nextState.GetNormalizedStateTime(samplers) / nextState.TransitionDuration, 0, 1);
-                var bone = SingleClipSampling.SampleBoneBlended(boneIndex.index, blend, 0, currentState, nextState, samplers);
-                translation.Value = bone.translation;
-                rotation.Value = bone.rotation;
-                scale.Value = bone.scale;
-            }
-            //Sample current state
-            else
+            if (samplers.Length > 0 && TryFindFirstActiveSamplerIndex(samplers, out var firstSamplerIndex))
             {
-                var currentState = states.ElementAtSafe(stateMachine.CurrentState.StateIndex);
-                var bone = currentState.SampleBone(boneIndex.index, timeShift:0 ,samplers);
+                var firstSampler = samplers[firstSamplerIndex];
+                var bone = ClipSamplingUtils.SampleWeightedFirstIndex(
+                    boneIndex.index, ref firstSampler.Clip,
+                    firstSampler.NormalizedTime,
+                    firstSampler.Weight);
+                
+                for (var i = firstSamplerIndex + 1; i < samplers.Length; i++)
+                {
+                    var sampler = samplers[i];
+                    if (!mathex.iszero(sampler.Weight))
+                    {
+                        ClipSamplingUtils.SampleWeightedNIndex(
+                            ref bone, boneIndex.index, ref sampler.Clip,
+                            sampler.NormalizedTime, sampler.Weight);
+                    }
+                }
+                
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;
             }
+        }
+
+        private bool TryFindFirstActiveSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte samplerIndex)
+        {
+            for (byte i = 0; i < samplers.Length; i++)
+            {
+                if (!mathex.iszero(samplers[i].Weight))
+                {
+                    samplerIndex = i;
+                    return true;
+                }
+            }
+
+            samplerIndex = 0;
+            return false;
         }
     }
 }

@@ -25,24 +25,26 @@ namespace DOTSAnimation
             }.ScheduleParallel(updateFmsHandle);
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones()
             {
-                CfeAnimationState = GetBufferFromEntity<AnimationState>(true),
-                CfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
-                CfeStateMachine = GetComponentDataFromEntity<AnimationStateMachine>(true),
+                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
             }.ScheduleParallel(updateFmsHandle);
             
-            var sampleRootHandle = new SampleRootJob()
+            var sampleRootDeltasHandle = new SampleRootDeltasJob()
             {
-                DeltaTime = Time.DeltaTime
             }.ScheduleParallel(updateFmsHandle);
-
+            
+            var applyRootMotionHandle = new ApplyRootMotionToEntityJob()
+            {
+            }.ScheduleParallel(sampleRootDeltasHandle);
+            
             var transferRootMotionHandle = new TransferRootMotionJob()
             {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaPosition>(true),
+                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
                 CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
-            }.ScheduleParallel(sampleRootHandle);
+            }.ScheduleParallel(sampleRootDeltasHandle);
             //end sample bones
             
             Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle, transferRootMotionHandle);
+            Dependency = JobHandle.CombineDependencies(Dependency, applyRootMotionHandle);
         }
     }
 }

@@ -1,65 +1,60 @@
-using System.Runtime.CompilerServices;
-using BovineLabs.Event.Containers;
 using Unity.Burst;
 using Unity.Entities;
-using UnityEngine.Assertions;
 
 namespace DOTSAnimation
 {
     [BurstCompile]
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
-        public NativeEventStream.ThreadWriter Writer;
-        public float DeltaTime;
-        
-        public void Execute(
-            Entity animatorEntity,
-            in AnimationStateMachine stateMachine,
-            in DynamicBuffer<ClipSampler> samplers,
-            in DynamicBuffer<AnimationState> states,
-            in AnimatorEntity animatorOwner,
-            in DynamicBuffer<AnimationEvent> animationEvents
+        internal void Execute(
+            ref DynamicBuffer<RaisedAnimationEvent> raisedAnimationEvents,
+            in DynamicBuffer<ClipSampler> samplers
         )
         {
-            //Raise events
-            RaiseStateEvents(animatorEntity, stateMachine.CurrentState, animatorOwner.Owner, states, samplers,
-                animationEvents);
-            if (stateMachine.NextState.IsValid)
+            raisedAnimationEvents.Clear();
+            if (TryGetHighestWeightSamplerIndex(samplers, out var samplerIndex))
             {
-                RaiseStateEvents(animatorEntity, stateMachine.NextState, animatorOwner.Owner, states, samplers,
-                    animationEvents);
-            }
-        }
-        
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RaiseStateEvents(Entity animatorEntity,
-            in AnimationStateMachine.StateRef stateRef,
-            Entity ownerEntity, in DynamicBuffer<AnimationState> states, in DynamicBuffer<ClipSampler> samplers,
-            in DynamicBuffer<AnimationEvent> events)
-        {
-            Assert.IsTrue(states.IsValidIndex(stateRef.StateIndex));
-            var state = states.ElementAtSafe(stateRef.StateIndex);
-            var samplerIndex = state.GetActiveSamplerIndex(samplers);
-            
-            var sampler = samplers[samplerIndex];
-            var normalizedSamplerTime = sampler.Clip.LoopToClipTime(sampler.Time);
-            var previousSamplerTime = sampler.Clip.LoopToClipTime(sampler.Time - DeltaTime * sampler.Speed);
-            
-            for (var j = 0; j < events.Length; j++)
-            {
-                var e = events[j];
-                if (e.SamplerIndex == samplerIndex && e.NormalizedTime >= previousSamplerTime &&
-                    e.NormalizedTime <= normalizedSamplerTime)
+                var sampler = samplers[samplerIndex];
+                var clipIndex = sampler.ClipIndex;
+                var previousSamplerTime = sampler.PreviousNormalizedTime;
+                var currentSamplerTime = sampler.NormalizedTime;
+                ref var clipEvents = ref sampler.ClipEventsBlob.Value.ClipEvents[clipIndex].Events;
+                for (short i = 0; i < clipEvents.Length; i++)
                 {
-                    Writer.Write(new RaisedAnimationEvent()
+                    ref var e = ref clipEvents[i];
+                    if (e.ClipIndex == clipIndex &&
+                        e.NormalizedTime >= previousSamplerTime && e.NormalizedTime <= currentSamplerTime)
                     {
-                        EventHash = e.EventHash,
-                        AnimatorEntity = animatorEntity,
-                        AnimatorOwner = ownerEntity,
-                    });
+                        raisedAnimationEvents.Add(new RaisedAnimationEvent()
+                        {
+                            EventHash = e.EventHash,
+                        });
+                    }
                 }
             }
+        }
+
+        private bool TryGetHighestWeightSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte samplerIndex)
+        {
+            var maxWeight = 0.0f;
+            var maxWeightSamplerIndex = -1;
+            for (byte i = 0; i < samplers.Length; i++)
+            {
+                if (samplers[i].Weight > maxWeight)
+                {
+                    maxWeight = samplers[i].Weight;
+                    maxWeightSamplerIndex = i;
+                }
+            }
+
+            if (maxWeightSamplerIndex > 0)
+            {
+                samplerIndex = (byte)maxWeightSamplerIndex;
+                return true;
+            }
+
+            samplerIndex = 0;
+            return false;
         }
     }
 }
