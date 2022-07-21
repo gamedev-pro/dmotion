@@ -38,6 +38,7 @@ namespace DOTSAnimation.Editor
         }
     }
 
+    [InitializeOnLoad]
     public class AnimationEventsPropertyDrawer
     {
         private static readonly Texture2D whiteTex;

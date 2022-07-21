@@ -82,6 +82,8 @@ namespace DOTSAnimation.Editor
             
             instance.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild | HideFlags.HideInHierarchy |
                                  HideFlags.HideInInspector | HideFlags.NotEditable;
+            // leaving this here for debug purposes
+            // instance.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
             animator = instance.GetComponentInChildren<Animator>();
             skinnedMeshRenderer = instance.GetComponentInChildren<SkinnedMeshRenderer>();
             instance.SetActive(false);
@@ -148,6 +150,7 @@ namespace DOTSAnimation.Editor
         {
             AnimationMode.StopAnimationMode();
             previewRenderUtility?.Cleanup();
+            DestroyPreviewInstance();
         }
         
         private bool TryFindSkeletonFromClip(AnimationClip Clip, out GameObject armatureGo)
