@@ -26,6 +26,7 @@ namespace DOTSAnimation
         internal ushort ClipIndex;
         internal float Threshold;
     }
+    
     internal struct LinearBlendStateBlob
     {
         internal BlobArray<ClipWithThreshold> ClipSortedByThreshold;

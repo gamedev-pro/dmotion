@@ -6,7 +6,7 @@ using UnityEngine;
 namespace DOTSAnimation.Editor
 {
     [CustomEditor(typeof(AnimationClipAsset))]
-    public class AnimationClipAssetEditor : UnityEditor.Editor
+    internal class AnimationClipAssetEditor : UnityEditor.Editor
     {
         private SingleClipPreview preview;
         private AnimationClipAsset ClipTarget => (AnimationClipAsset)target;

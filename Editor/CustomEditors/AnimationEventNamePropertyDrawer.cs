@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Codice.CM.WorkspaceServer.DataStore.WkTree;
 using DOTSAnimation.Authoring;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +7,7 @@ using UnityEngine;
 namespace DOTSAnimation.Editor
 {
     [CustomPropertyDrawer(typeof(AnimationEventName))]
-    public class AnimationEventNamePropertyDrawer : PropertyDrawer
+    internal class AnimationEventNamePropertyDrawer : PropertyDrawer
     {
         private AnimationEventName[] allEventNameAssets;
         private string[] allEventNameOptions;

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DOTSAnimation.Authoring;
@@ -7,41 +6,9 @@ using UnityEngine;
 
 namespace DOTSAnimation.Editor
 {
-    public struct RectElement
+    internal class AnimationEventsPropertyDrawer
     {
-        public Rect Rect;
-        public float ControlWidth;
-        public float VisualWidth;
-
-        public RectElement(Rect rect, float controlWidth, float visualWidth)
-        {
-            Rect = rect;
-            ControlWidth = controlWidth;
-            VisualWidth = visualWidth;
-        }
-        
-        public Rect VisualRect
-        {
-            get
-            {
-                Rect.width = VisualWidth;
-                return Rect;
-            }
-        }
-        public Rect ControlRect
-        {
-            get
-            {
-                Rect.width = ControlWidth;
-                return Rect;
-            }
-        }
-    }
-
-    [InitializeOnLoad]
-    public class AnimationEventsPropertyDrawer
-    {
-        private static readonly Texture2D whiteTex;
+        private static Texture2D whiteTex;
         private static Texture2D eventMarkerTex;
         private static GUIStyle addRemoveEventStyle;
         private static GUIContent addEventContent;
@@ -61,6 +28,18 @@ namespace DOTSAnimation.Editor
         private readonly SerializedProperty property;
         private readonly AnimationClipAsset clipAsset;
 
+        private static Texture2D WhiteTex
+        {
+            get
+            {
+                if (whiteTex == null)
+                {
+                    whiteTex = new Texture2D(1, 1);
+                }
+
+                return whiteTex;
+            }
+        }
         private static Texture2D EventMarkerTex
         {
             get
@@ -115,12 +94,6 @@ namespace DOTSAnimation.Editor
                 return addEventContent;
             }
         }
-
-        static AnimationEventsPropertyDrawer()
-        {
-            whiteTex = new Texture2D(1, 1);
-        }
-
         public AnimationEventsPropertyDrawer(AnimationClipAsset clipAsset, SerializedProperty property, SingleClipPreview preview)
         {
             this.clipAsset = clipAsset;
@@ -305,7 +278,7 @@ namespace DOTSAnimation.Editor
                 var dragAreaColor = Color.black;
                 dragAreaColor.a = 0.2f;
                 GUI.color = dragAreaColor;
-                GUI.DrawTexture(dragAreaRect, whiteTex);
+                GUI.DrawTexture(dragAreaRect, WhiteTex);
             }
             {
                 var bottomBarRect = area;
@@ -313,13 +286,13 @@ namespace DOTSAnimation.Editor
                 bottomBarRect.y = bottomBarRect.y + bottomBarRect.height - barHeight;
                 bottomBarRect.height = barHeight;
                 GUI.color = Color.gray;
-                GUI.DrawTexture(bottomBarRect, whiteTex);
+                GUI.DrawTexture(bottomBarRect, WhiteTex);
             }
             {
                 timeMarker = new RectElement(area, 10, 2);
                 timeMarker.Rect.x = NormalizedTimeToPixels(timeMarkerTime, timeMarker.VisualRect, area);
                 GUI.color = Color.red;
-                GUI.DrawTexture(timeMarker.VisualRect, whiteTex);
+                GUI.DrawTexture(timeMarker.VisualRect, WhiteTex);
             }
             {
                 eventMarkers.Clear();

@@ -19,6 +19,7 @@ This marks the first version ready for public use and with somewhat stable API.
     - Enabled Automatic: Root motion is automatically applied to the root object
     - Enabled Manual: Root motion deltas are calculated and stored to be used by external systems for custom use cases
 - Enable/Disable animation events
+- True support for one shots: Any clip can be played at any time, without needing to be added to the state machine before hand. The system handles blending out of the state machine, and back in when the one shot animation finishes
 
 ### Changed
 

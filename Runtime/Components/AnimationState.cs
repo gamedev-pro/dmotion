@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
@@ -7,60 +6,6 @@ using Unity.Mathematics;
 
 namespace DOTSAnimation
 {
-    public struct PlayOneShotRequest : IComponentData
-    {
-        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
-        internal BlobAssetReference<ClipEventsBlob> ClipEvents;
-        internal short ClipIndex;
-        internal float NormalizedTransitionDuration;
-        internal float Speed;
-
-        public bool IsValid => ClipIndex >= 0 && Clips.IsCreated;
-
-        public static PlayOneShotRequest Null => new PlayOneShotRequest() { ClipIndex = -1 };
-
-        public PlayOneShotRequest(BlobAssetReference<SkeletonClipSetBlob> clips,
-            BlobAssetReference<ClipEventsBlob> clipEvents, int clipIndex,
-            float normalizedTransitionDuration = 0.15f,
-            float speed = 1)
-        {
-            Clips = clips;
-            ClipEvents = clipEvents;
-            ClipIndex = (short) clipIndex;
-            NormalizedTransitionDuration = normalizedTransitionDuration;
-            Speed = speed;
-        }
-    }
-    
-    internal struct OneShotState : IComponentData
-    {
-        internal short SamplerIndex;
-        internal float NormalizedTransitionDuration;
-        internal float Speed;
-
-        internal bool IsValid => SamplerIndex >= 0;
-        internal static OneShotState Null => new OneShotState() { SamplerIndex = -1 };
-    }
-    
-    internal struct ClipSampler : IBufferElementData
-    {
-        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
-        internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
-        internal ushort ClipIndex;
-        internal float PreviousNormalizedTime;
-        internal float NormalizedTime;
-        internal float Weight;
-
-        internal ref SkeletonClip Clip => ref Clips.Value.clips[ClipIndex];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void LoopToClipTime()
-        {
-            NormalizedTime = Clip.LoopToClipTime(NormalizedTime);
-            PreviousNormalizedTime = Clip.LoopToClipTime(PreviousNormalizedTime);
-        }
-    }
-
     [BurstCompile]
     internal struct AnimationState
     {

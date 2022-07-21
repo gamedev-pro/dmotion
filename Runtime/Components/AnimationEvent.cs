@@ -15,7 +15,7 @@ namespace DOTSAnimation
         internal float NormalizedTime;
     }
 
-    public struct ClipEvents
+    internal struct ClipEvents
     {
         internal BlobArray<AnimationClipEvent> Events;
     }

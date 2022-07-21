@@ -10,7 +10,7 @@ namespace DOTSAnimation
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateBefore(typeof(TRSToLocalToParentSystem))]
     [UpdateBefore(typeof(TRSToLocalToWorldSystem))]
-    internal partial class AnimationStateMachineSystem : SystemBase
+    public partial class AnimationStateMachineSystem : SystemBase
     {
         protected override void OnUpdate()
         {

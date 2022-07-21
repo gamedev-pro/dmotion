@@ -7,7 +7,7 @@ namespace DOTSAnimation.Authoring
     public struct AnimationClipEvent
     {
         public AnimationEventName Name;
-        [InspectorReadOnly, Range(0,1)]
+        [Range(0,1)]
         public float NormalizedTime;
 
         public int Hash => Name.Hash;
