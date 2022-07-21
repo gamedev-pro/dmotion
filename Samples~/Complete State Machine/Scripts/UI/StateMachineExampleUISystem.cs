@@ -43,23 +43,17 @@ public partial class StateMachineExampleUISystem : SystemBase
                 
                 if (playSlash)
                 {
-                    playOneShot = new PlayOneShotRequest()
-                    {
-                        Clips = oneShots.Clips,
-                        ClipIndex = (short)oneShots.SlashClipIndex,
-                        NormalizedTransitionDuration = 0.15f,
-                        Speed = 1,
-                    };
+                    playOneShot = new PlayOneShotRequest(
+                        oneShots.Clips,
+                        oneShots.ClipEvents,
+                        oneShots.SlashClipIndex);
                 }
                 else if (playCircleSlash)
                 {
-                    playOneShot = new PlayOneShotRequest()
-                    {
-                        Clips = oneShots.Clips,
-                        ClipIndex = (short)oneShots.CircleSlashClipIndex,
-                        NormalizedTransitionDuration = 0.15f,
-                        Speed = 1,
-                    };
+                    playOneShot = new PlayOneShotRequest(
+                        oneShots.Clips,
+                        oneShots.ClipEvents,
+                        oneShots.CircleSlashClipIndex);
                 }
 
                 playSlash = playCircleSlash = false;
