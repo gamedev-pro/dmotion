@@ -8,7 +8,7 @@ namespace DOTSAnimation
 {
     [BurstCompile]
     [WithAll(typeof(SkeletonRootTag))]
-    internal partial struct SampleRootJob : IJobEntity
+    internal partial struct SampleRootDeltasJob : IJobEntity
     {
         internal void Execute(
             ref RootDeltaTranslation rootDeltaTranslation,

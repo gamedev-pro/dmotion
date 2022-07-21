@@ -28,18 +28,23 @@ namespace DOTSAnimation
                 BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
             }.ScheduleParallel(updateFmsHandle);
             
-            var sampleRootHandle = new SampleRootJob()
+            var sampleRootDeltasHandle = new SampleRootDeltasJob()
             {
             }.ScheduleParallel(updateFmsHandle);
-
+            
+            var applyRootMotionHandle = new ApplyRootMotionToEntityJob()
+            {
+            }.ScheduleParallel(sampleRootDeltasHandle);
+            
             var transferRootMotionHandle = new TransferRootMotionJob()
             {
                 CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
                 CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
-            }.ScheduleParallel(sampleRootHandle);
+            }.ScheduleParallel(sampleRootDeltasHandle);
             //end sample bones
             
             Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle, transferRootMotionHandle);
+            Dependency = JobHandle.CombineDependencies(Dependency, applyRootMotionHandle);
         }
     }
 }

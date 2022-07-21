@@ -9,7 +9,7 @@ namespace DOTSAnimation
 {
     [BurstCompile]
     [WithEntityQueryOptions(EntityQueryOptions.FilterWriteGroup)]
-    [WithAll(typeof(TransferRootMotion))]
+    [WithAll(typeof(TransferRootMotionToOwner))]
     internal partial struct TransferRootMotionJob : IJobEntity
     {
         [ReadOnly] public ComponentDataFromEntity<RootDeltaTranslation> CfeDeltaPosition;

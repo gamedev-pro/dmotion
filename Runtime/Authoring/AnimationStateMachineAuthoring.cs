@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
@@ -6,11 +7,26 @@ using UnityEngine;
 
 namespace DOTSAnimation.Authoring
 {
+    [Serializable]
+    public enum RootMotionMode : byte
+    {
+        [Tooltip("No root motion")]
+        Disabled,
+        [Tooltip("Automatically apply root motion to the owner")]
+        EnabledAutomatic,
+        [Tooltip("Store root motion deltas, which can be applied by a separated system")]
+        EnabledManual
+    }
+    
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;
         public Animator Animator;
         public StateMachineAsset StateMachineAsset;
+
+        public RootMotionMode RootMotionMode;
+        public bool EnableEvents = true;
+        
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsBlobHandle;
         private SmartBlobberHandle<StateMachineBlob> stateMachineBlobHandle;
         private SmartBlobberHandle<ClipEventsBlob> clipEventsBlobHandle;
@@ -36,7 +52,7 @@ namespace DOTSAnimation.Authoring
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
 
-            if (StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
+            if (EnableEvents && StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
             {
                 dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
             }
@@ -62,13 +78,38 @@ namespace DOTSAnimation.Authoring
             dstManager.AddComponentData(entity, PlayOneShotRequest.Null);
             dstManager.AddComponentData(entity, OneShotState.Null);
 
-            var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
-            dstManager.AddComponentData(ownerEntity, new AnimatorOwner() { AnimatorEntity = entity });
-            dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity});
+            if (gameObject != Owner)
+            {
+                var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
+                dstManager.AddComponentData(ownerEntity, new AnimatorOwner() { AnimatorEntity = entity });
+                dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity});
+            }
 
-            dstManager.AddComponentData(ownerEntity, new TransferRootMotion());
-            dstManager.AddComponentData(entity, new RootDeltaTranslation());
-            dstManager.AddComponentData(entity, new RootDeltaRotation());
+            switch (RootMotionMode)
+            {
+                case RootMotionMode.Disabled:
+                    break;
+                case RootMotionMode.EnabledAutomatic:
+                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
+                    dstManager.AddComponentData(entity, new RootDeltaRotation());
+                    if (gameObject != Owner)
+                    {
+                        var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
+                        dstManager.AddComponentData(ownerEntity, new TransferRootMotionToOwner());
+                    }
+                    else
+                    {
+                        dstManager.AddComponentData(entity, new ApplyRootMotionToEntity());
+                    }
+                    break;
+                case RootMotionMode.EnabledManual:
+                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
+                    dstManager.AddComponentData(entity, new RootDeltaRotation());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
         }
 
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager, GameObjectConversionSystem conversionSystem)

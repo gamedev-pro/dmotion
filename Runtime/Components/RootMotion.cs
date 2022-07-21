@@ -13,7 +13,11 @@ namespace DOTSAnimation
         public quaternion Value;
     }
 
-    public struct TransferRootMotion : IComponentData
+    internal struct ApplyRootMotionToEntity : IComponentData
+    {
+    }
+
+    internal struct TransferRootMotionToOwner : IComponentData
     {
     }
 }
