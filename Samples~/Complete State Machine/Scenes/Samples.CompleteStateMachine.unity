@@ -1243,6 +1243,8 @@ MonoBehaviour:
   Owner: {fileID: 779924501}
   Animator: {fileID: 652637613}
   StateMachineAsset: {fileID: 11400000, guid: 9640d20d2a36ab941aa69db1a5053a55, type: 2}
+  RootMotionMode: 1
+  EnableEvents: 1
 --- !u!1 &664745978
 GameObject:
   m_ObjectHideFlags: 0

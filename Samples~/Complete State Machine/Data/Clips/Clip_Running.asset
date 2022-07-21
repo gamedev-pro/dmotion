@@ -15,6 +15,6 @@ MonoBehaviour:
   Clip: {fileID: 6564411413370888346, guid: 16114d403eabb53438de032c6f0d1deb, type: 3}
   Events:
   - Name: {fileID: 11400000, guid: 76a22800f4761b44b8c6343a5d264b3a, type: 2}
-    NormalizedTime: 0.35278854
+    NormalizedTime: 0.273
   - Name: {fileID: 11400000, guid: 76a22800f4761b44b8c6343a5d264b3a, type: 2}
     NormalizedTime: 0.8694336
