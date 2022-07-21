@@ -1,61 +1,30 @@
-using System.Collections.Generic;
-using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
-using Latios.Kinemation.Authoring;
-using Unity.Assertions;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace DOTSAnimation.Authoring
 {
-    public static class DOTSAnimationAuthoringUtils
-    {
-        public static SmartBlobberHandle<SkeletonClipSetBlob> RequestClipsBlob(
-            this GameObjectConversionSystem conversionSystem,
-            Animator animator,
-            params AnimationClipAsset[] clipAssets)
-        {
-            return conversionSystem.RequestClipsBlob(animator, (IEnumerable<AnimationClipAsset>) clipAssets);
-        }
-        
-        public static SmartBlobberHandle<SkeletonClipSetBlob> RequestClipsBlob(
-            this GameObjectConversionSystem conversionSystem,
-            Animator animator,
-            IEnumerable<AnimationClipAsset> clipAssets)
-        {
-            var clips = clipAssets.Select(c => new SkeletonClipConfig()
-            {
-                clip = c.Clip,
-                settings = SkeletonClipCompressionSettings.kDefaultSettings
-            });
-            return conversionSystem.CreateBlob(animator.gameObject, new SkeletonClipSetBakeData()
-            {
-                animator = animator,
-                clips = clips.ToArray()
-            });
-        }
-    }
-    
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;
         public Animator Animator;
         public StateMachineAsset StateMachineAsset;
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsBlobHandle;
-        private SmartBlobberHandle<StateMachineBlob> stateMachinBlobHandle;
+        private SmartBlobberHandle<StateMachineBlob> stateMachineBlobHandle;
+        private SmartBlobberHandle<ClipEventsBlob> clipEventsBlobHandle;
         
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            var stateMachineBlob = stateMachinBlobHandle.Resolve();
+            var stateMachineBlob = stateMachineBlobHandle.Resolve();
             var clipsBlob = clipsBlobHandle.Resolve();
+            var clipEventsBlob = clipEventsBlobHandle.Resolve();
 
             var stateMachine = new AnimationStateMachine()
             {
                 StateMachineBlob = stateMachineBlob,
                 ClipsBlob = clipsBlob,
+                ClipEventsBlob = clipEventsBlob,
                 CurrentState = AnimationState.Null,
                 NextState = AnimationState.Null,
                 CurrentTransition = StateTransition.Null,
@@ -99,10 +68,11 @@ namespace DOTSAnimation.Authoring
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager, GameObjectConversionSystem conversionSystem)
         {
             clipsBlobHandle = conversionSystem.RequestClipsBlob(Animator, StateMachineAsset.Clips);
-            stateMachinBlobHandle = conversionSystem.CreateBlob(Animator.gameObject, new StateMachineBlobBakeData()
+            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject, new StateMachineBlobBakeData()
             {
                 StateMachineAsset = StateMachineAsset
             });
+            clipEventsBlobHandle = conversionSystem.RequestClipEventsBlob(Animator.gameObject, StateMachineAsset.Clips);
         }
     }
 }

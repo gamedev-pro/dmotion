@@ -9,14 +9,27 @@ namespace DOTSAnimation
 {
     public struct PlayOneShotRequest : IComponentData
     {
-        public BlobAssetReference<SkeletonClipSetBlob> Clips;
-        public short ClipIndex;
-        public float NormalizedTransitionDuration;
-        public float Speed;
+        internal BlobAssetReference<SkeletonClipSetBlob> Clips;
+        internal BlobAssetReference<ClipEventsBlob> ClipEvents;
+        internal short ClipIndex;
+        internal float NormalizedTransitionDuration;
+        internal float Speed;
 
         public bool IsValid => ClipIndex >= 0 && Clips.IsCreated;
 
         public static PlayOneShotRequest Null => new() { ClipIndex = -1 };
+
+        public PlayOneShotRequest(BlobAssetReference<SkeletonClipSetBlob> clips,
+            BlobAssetReference<ClipEventsBlob> clipEvents, int clipIndex,
+            float normalizedTransitionDuration = 0.15f,
+            float speed = 1)
+        {
+            Clips = clips;
+            ClipEvents = clipEvents;
+            ClipIndex = (short) clipIndex;
+            NormalizedTransitionDuration = normalizedTransitionDuration;
+            Speed = speed;
+        }
     }
     
     internal struct OneShotState : IComponentData
@@ -32,6 +45,7 @@ namespace DOTSAnimation
     internal struct ClipSampler : IBufferElementData
     {
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
+        internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal ushort ClipIndex;
         internal float PreviousNormalizedTime;
         internal float NormalizedTime;
@@ -85,23 +99,28 @@ namespace DOTSAnimation
             }
         }
 
-        internal void Initialize(BlobAssetReference<SkeletonClipSetBlob> clips, ref DynamicBuffer<ClipSampler> samplers)
+        internal void Initialize(BlobAssetReference<SkeletonClipSetBlob> clips,
+            BlobAssetReference<ClipEventsBlob> clipEvents,
+            ref DynamicBuffer<ClipSampler> samplers)
         {
             StartSamplerIndex = (byte)samplers.Length;
             switch (Type)
             {
                 case StateType.Single:
-                    Initialize_Single(clips, ref samplers);
+                    Initialize_Single(clips, clipEvents, ref samplers);
                     break;
                 case StateType.LinearBlend:
-                    Initialize_LinearBlend(clips, ref samplers);
+                    Initialize_LinearBlend(clips, clipEvents, ref samplers);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void Initialize_LinearBlend(BlobAssetReference<SkeletonClipSetBlob> clips, ref DynamicBuffer<ClipSampler> samplers)
+        private void Initialize_LinearBlend(
+            BlobAssetReference<SkeletonClipSetBlob> clips,
+            BlobAssetReference<ClipEventsBlob> clipEvents,
+            ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var linearBlendState = ref AsLinearBlend;
             samplers.Length += linearBlendState.ClipSortedByThreshold.Length;
@@ -112,6 +131,7 @@ namespace DOTSAnimation
                 {
                     ClipIndex = clip.ClipIndex,
                     Clips = clips,
+                    ClipEventsBlob = clipEvents,
                     PreviousNormalizedTime = 0,
                     NormalizedTime = 0,
                     Weight = 0
@@ -119,13 +139,17 @@ namespace DOTSAnimation
             }
         }
 
-        private void Initialize_Single(BlobAssetReference<SkeletonClipSetBlob> clips, ref DynamicBuffer<ClipSampler> samplers)
+        private void Initialize_Single(
+            BlobAssetReference<SkeletonClipSetBlob> clips,
+            BlobAssetReference<ClipEventsBlob> clipEvents,
+            ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var singleClip = ref AsSingleClip;
             samplers.Add(new ClipSampler()
             {
                 ClipIndex = singleClip.ClipIndex,
                 Clips = clips,
+                ClipEventsBlob = clipEvents,
                 PreviousNormalizedTime = 0,
                 NormalizedTime = 0,
                 Weight = 0

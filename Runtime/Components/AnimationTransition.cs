@@ -2,10 +2,10 @@ using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    internal struct StateMachineParameter
-    {
-        internal int Hash;
-    }
+    // internal struct StateMachineParameter
+    // {
+    //     internal int Hash;
+    // }
     internal struct AnimationTransitionGroup
     {
         internal short FromStateIndex;

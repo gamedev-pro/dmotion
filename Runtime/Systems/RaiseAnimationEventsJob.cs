@@ -8,23 +8,19 @@ namespace DOTSAnimation
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
         internal NativeEventStream.ThreadWriter Writer;
-        internal float DeltaTime;
         internal void Execute(
             Entity animatorEntity,
-            in AnimationStateMachine stateMachine,
             in DynamicBuffer<ClipSampler> samplers,
             in AnimatorEntity animatorOwner
         )
         {
-            //TODO: Events should not be tied to a state machine, but to a separate blob instead (otherwise one shots can't raise events)
-            ref var clipEvents = ref stateMachine.StateMachineBlob.Value.ClipEvents;
-
             if (TryGetHighestWeightSamplerIndex(samplers, out var samplerIndex))
             {
                 var sampler = samplers[samplerIndex];
                 var clipIndex = sampler.ClipIndex;
                 var previousSamplerTime = sampler.PreviousNormalizedTime;
                 var currentSamplerTime = sampler.NormalizedTime;
+                ref var clipEvents = ref sampler.ClipEventsBlob.Value.ClipEvents[clipIndex].Events;
                 for (short i = 0; i < clipEvents.Length; i++)
                 {
                     ref var e = ref clipEvents[i];

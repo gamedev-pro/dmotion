@@ -17,7 +17,6 @@ namespace DOTSAnimation.Authoring
         internal UnsafeList<SingleClipStateBlob> SingleClipStates;
         internal UnsafeList<LinearBlendStateConversionData> LinearBlendStates;
         internal UnsafeList<AnimationStateBlob> States;
-        internal UnsafeList<DOTSAnimation.AnimationClipEvent> ClipEvents;
         internal UnsafeList<DOTSAnimation.AnimationTransitionGroup> Transitions;
         internal UnsafeList<BoolTransition> BoolTransitions;
 
@@ -28,7 +27,6 @@ namespace DOTSAnimation.Authoring
             root.DefaultStateIndex = DefaultStateIndex;
             builder.ConstructFromNativeArray(ref root.SingleClipStates, SingleClipStates.Ptr, SingleClipStates.Length);
             builder.ConstructFromNativeArray(ref root.States, States.Ptr, States.Length);
-            builder.ConstructFromNativeArray(ref root.ClipEvents, ClipEvents.Ptr, ClipEvents.Length);
             builder.ConstructFromNativeArray(ref root.Transitions, Transitions.Ptr, Transitions.Length);
             builder.ConstructFromNativeArray(ref root.BoolTransitions, BoolTransitions.Ptr, BoolTransitions.Length);
 

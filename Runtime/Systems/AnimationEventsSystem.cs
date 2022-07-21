@@ -21,7 +21,6 @@ namespace DOTSAnimation
             new RaiseAnimationEventsJob()
             {
                 Writer = eventSystem.CreateEventWriter<RaisedAnimationEvent>(),
-                DeltaTime = Time.DeltaTime,
             }.ScheduleParallel();
             eventSystem.AddJobHandleForProducer<RaisedAnimationEvent>(Dependency);
         }

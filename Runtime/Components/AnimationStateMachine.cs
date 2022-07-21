@@ -13,6 +13,7 @@ namespace DOTSAnimation
     internal struct AnimationStateMachine : IComponentData
     {
         internal BlobAssetReference<SkeletonClipSetBlob> ClipsBlob;
+        internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal AnimationState CurrentState;
         internal AnimationState NextState;

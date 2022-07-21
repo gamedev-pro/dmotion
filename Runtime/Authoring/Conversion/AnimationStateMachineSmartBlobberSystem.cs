@@ -1,5 +1,4 @@
 using System.Linq;
-using Latios.Authoring;
 using Latios.Authoring.Systems;
 using Latios.Kinemation.Authoring.Systems;
 using Unity.Assertions;
@@ -13,18 +12,6 @@ namespace DOTSAnimation.Authoring
     public struct StateMachineBlobBakeData
     {
         internal StateMachineAsset StateMachineAsset;
-    }
-
-    public static class AnimationStateMachineConversionUtils
-    {
-        public static SmartBlobberHandle<StateMachineBlob> CreateBlob(
-            this GameObjectConversionSystem conversionSystem,
-            GameObject gameObject,
-            StateMachineBlobBakeData bakeData)
-        {
-            return conversionSystem.World.GetExistingSystem<AnimationStateMachineSmartBlobberSystem>()
-                .AddToConvert(gameObject, bakeData);
-        }
     }
 
     [UpdateAfter(typeof(SkeletonClipSetSmartBlobberSystem))]
@@ -45,7 +32,6 @@ namespace DOTSAnimation.Authoring
             BuildStates(stateMachineAsset, ref converter, allocator);
             BuildTransitionGroups(stateMachineAsset, ref converter, allocator);
             BuildBoolTransitions(stateMachineAsset, ref converter, allocator);
-            BuildEvents(stateMachineAsset, ref converter, allocator);
 
             return true;
         }
@@ -182,32 +168,6 @@ namespace DOTSAnimation.Authoring
                     };
                     boolTransitionIndex++;
                 }
-            }
-        }
-
-        private void BuildEvents(StateMachineAsset stateMachineAsset,
-            ref StateMachineBlobConverter converter,
-            Allocator allocator)
-        {
-            var eventCount = stateMachineAsset.Clips.Sum(c => c.Events.Length);
-            converter.ClipEvents = new UnsafeList<DOTSAnimation.AnimationClipEvent>(eventCount, allocator);
-            converter.ClipEvents.Resize(eventCount);
-            short clipIndex = 0;
-            short eventIndex = 0;
-            foreach (var clip in stateMachineAsset.Clips)
-            {
-                for (short i = 0; i < clip.Events.Length; i++)
-                {
-                    converter.ClipEvents[eventIndex] = new DOTSAnimation.AnimationClipEvent()
-                    {
-                        ClipIndex = clipIndex,
-                        EventHash = clip.Events[i].Hash,
-                        NormalizedTime = clip.Events[i].NormalizedTime
-                    };
-                    eventIndex++;
-                }
-
-                clipIndex++;
             }
         }
     }

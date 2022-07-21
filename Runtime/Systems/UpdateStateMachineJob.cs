@@ -27,8 +27,11 @@ namespace DOTSAnimation
                 if (!stateMachine.CurrentState.IsValid)
                 {
                     clipSamplers.Clear();
-                    stateMachine.CurrentState = CreateState(stateMachineBlob.DefaultStateIndex,
-                        stateMachine.StateMachineBlob, stateMachine.ClipsBlob,
+                    stateMachine.CurrentState = CreateState(
+                        stateMachineBlob.DefaultStateIndex,
+                        stateMachine.StateMachineBlob,
+                        stateMachine.ClipsBlob,
+                        stateMachine.ClipEventsBlob,
                         ref clipSamplers);
                 }
             }
@@ -66,6 +69,7 @@ namespace DOTSAnimation
                     {
                         ClipIndex = (byte)playOneShot.ClipIndex,
                         Clips = playOneShot.Clips,
+                        ClipEventsBlob = playOneShot.ClipEvents,
                         NormalizedTime = 0,
                         PreviousNormalizedTime = 0,
                         Weight = 1
@@ -88,8 +92,11 @@ namespace DOTSAnimation
                     if (shouldStartTransition)
                     {
                         stateMachine.CurrentTransition = new StateTransition() { TransitionIndex = transitionIndex };
-                        stateMachine.NextState = CreateState(stateMachine.CurrentTransitionBlob.ToStateIndex,
-                            stateMachine.StateMachineBlob, stateMachine.ClipsBlob,
+                        stateMachine.NextState = CreateState(
+                            stateMachine.CurrentTransitionBlob.ToStateIndex,
+                            stateMachine.StateMachineBlob,
+                            stateMachine.ClipsBlob,
+                            stateMachine.ClipEventsBlob,
                             ref clipSamplers);
                     }
                 }
@@ -179,6 +186,7 @@ namespace DOTSAnimation
         private AnimationState CreateState(short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            BlobAssetReference<ClipEventsBlob> clipEventsBlob,
             ref DynamicBuffer<ClipSampler> samplers)
         {
             var state = new AnimationState()
@@ -187,7 +195,7 @@ namespace DOTSAnimation
                 StateIndex = stateIndex,
                 NormalizedTime = 0,
             };
-            state.Initialize(clipsBlob, ref samplers);
+            state.Initialize(clipsBlob, clipEventsBlob, ref samplers);
             return state;
         }
         
