@@ -57,13 +57,11 @@ namespace DOTSAnimation
                 if (playOneShot.IsValid)
                 {
                     //initialize
-                    oneShotState = new OneShotState
-                    {
-                        NormalizedTransitionDuration = playOneShot.NormalizedTransitionDuration,
-                        Speed = playOneShot.Speed,
-                        SamplerIndex = (short) clipSamplers.Length
-                    };
-
+                    oneShotState = new OneShotState(clipSamplers.Length,
+                        playOneShot.NormalizedTransitionDuration,
+                        playOneShot.EndTime,
+                        playOneShot.Speed);
+                    
                     clipSamplers.Add(new ClipSampler()
                     {
                         ClipIndex = (byte)playOneShot.ClipIndex,
@@ -111,10 +109,18 @@ namespace DOTSAnimation
 
                     float oneShotWeight;
                     //blend out
-                    if (sampler.NormalizedTime > 0.9f)
+                    if (sampler.NormalizedTime > oneShotState.EndTime)
                     {
-                        oneShotWeight = math.clamp((1 - sampler.NormalizedTime) /
-                                               oneShotState.NormalizedTransitionDuration, 0, 1);
+                        var blendOutTime = 1 - oneShotState.EndTime;
+                        if (!mathex.iszero(blendOutTime))
+                        {
+                            oneShotWeight = math.clamp((1 - sampler.NormalizedTime) /
+                                                   blendOutTime, 0, 1);
+                        }
+                        else
+                        {
+                            oneShotWeight = 0;
+                        }
                     }
                     //blend in
                     else
@@ -128,6 +134,7 @@ namespace DOTSAnimation
                     
                     clipSamplers[oneShotState.SamplerIndex] = sampler;
                     
+                    //if blend out finished
                     if (sampler.NormalizedTime >= 1)
                     {
                         stateMachine.Weight = 1;
