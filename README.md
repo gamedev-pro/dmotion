@@ -1,5 +1,7 @@
 # DOTSAnimation - A High Level Animation Framework and State Machine for DOTS
 
+[![DOTSAnimation Sample Video](https://img.youtube.com/vi/7lEJGOGHp2Q/0.jpg)](https://www.youtube.com/watch?v=7lEJGOGHp2Q)
+
 DOTSAnimation is a (opnionated) general purpose Animation State Machine framework for DOTS, built on top of [Kinemation](https://github.com/Dreaming381/Latios-Framework/tree/master/Kinemation).
 
 I've built this tool with usability and performance in mind. It should feel similar to Unity's Mechanim system, however there is no intention to build a feature by feature clone of Mechanim, and I deliberately excluded features of Mechanim that I believe are not useful (more on that below), and added new use features that I've found are useful for games, which Mechanim does not support.
