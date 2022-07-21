@@ -52,7 +52,7 @@ namespace DOTSAnimation.Editor
         private Rect dragArea;
         private RectElement timeMarker;
         private float timeMarkerTime;
-        private List<RectElement> eventMarkers = new();
+        private List<RectElement> eventMarkers = new List<RectElement>();
         private bool isDraggingTimeMarker = false;
         private int eventMarkerDragIndex = -1;
         

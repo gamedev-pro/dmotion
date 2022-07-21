@@ -7,7 +7,7 @@ namespace DOTSAnimation
     {
         internal short TransitionIndex;
         internal bool IsValid => TransitionIndex >= 0;
-        internal static StateTransition Null => new() { TransitionIndex = -1 };
+        internal static StateTransition Null => new StateTransition() { TransitionIndex = -1 };
     }
     
     internal struct AnimationStateMachine : IComponentData

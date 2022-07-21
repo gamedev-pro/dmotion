@@ -1,4 +1,3 @@
-using BovineLabs.Event.Systems;
 using Unity.Entities;
 using Unity.Transforms;
 

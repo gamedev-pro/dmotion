@@ -17,7 +17,7 @@ namespace DOTSAnimation
 
         public bool IsValid => ClipIndex >= 0 && Clips.IsCreated;
 
-        public static PlayOneShotRequest Null => new() { ClipIndex = -1 };
+        public static PlayOneShotRequest Null => new PlayOneShotRequest() { ClipIndex = -1 };
 
         public PlayOneShotRequest(BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents, int clipIndex,
@@ -39,7 +39,7 @@ namespace DOTSAnimation
         internal float Speed;
 
         internal bool IsValid => SamplerIndex >= 0;
-        internal static OneShotState Null => new() { SamplerIndex = -1 };
+        internal static OneShotState Null => new OneShotState() { SamplerIndex = -1 };
     }
     
     internal struct ClipSampler : IBufferElementData
@@ -70,7 +70,7 @@ namespace DOTSAnimation
         internal byte StartSamplerIndex;
         
         internal bool IsValid => StateIndex >= 0;
-        internal static AnimationState Null => new() { StateIndex = -1 };
+        internal static AnimationState Null => new AnimationState() { StateIndex = -1 };
         internal readonly AnimationStateBlob StateBlob => StateMachineBlob.Value.States[StateIndex];
         internal readonly StateType Type => StateBlob.Type;
 
