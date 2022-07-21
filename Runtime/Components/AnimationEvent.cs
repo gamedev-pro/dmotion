@@ -3,11 +3,9 @@ using Unity.Entities;
 
 namespace DOTSAnimation
 {
-    public struct RaisedAnimationEvent
+    public struct RaisedAnimationEvent : IBufferElementData
     {
         public int EventHash;
-        public Entity AnimatorEntity;
-        public Entity AnimatorOwner;
     }
     
     internal struct AnimationClipEvent

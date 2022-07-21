@@ -1,3 +1,4 @@
+using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
 using Unity.Entities;
@@ -34,6 +35,11 @@ namespace DOTSAnimation.Authoring
             dstManager.AddComponentData(entity, stateMachine);
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
+
+            if (StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
+            {
+                dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
+            }
             
             var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
             for (ushort i = 0; i < StateMachineAsset.BoolParameters.Count; i++)

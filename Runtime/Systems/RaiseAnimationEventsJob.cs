@@ -7,13 +7,12 @@ namespace DOTSAnimation
     [BurstCompile]
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
-        internal NativeEventStream.ThreadWriter Writer;
         internal void Execute(
-            Entity animatorEntity,
-            in DynamicBuffer<ClipSampler> samplers,
-            in AnimatorEntity animatorOwner
+            ref DynamicBuffer<RaisedAnimationEvent> raisedAnimationEvents,
+            in DynamicBuffer<ClipSampler> samplers
         )
         {
+            raisedAnimationEvents.Clear();
             if (TryGetHighestWeightSamplerIndex(samplers, out var samplerIndex))
             {
                 var sampler = samplers[samplerIndex];
@@ -27,11 +26,9 @@ namespace DOTSAnimation
                     if (e.ClipIndex == clipIndex &&
                         e.NormalizedTime >= previousSamplerTime && e.NormalizedTime <= currentSamplerTime)
                     {
-                        Writer.Write(new RaisedAnimationEvent()
+                        raisedAnimationEvents.Add(new RaisedAnimationEvent()
                         {
                             EventHash = e.EventHash,
-                            AnimatorEntity = animatorEntity,
-                            AnimatorOwner = animatorOwner.Owner
                         });
                     }
                 }
