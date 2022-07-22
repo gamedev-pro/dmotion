@@ -22,6 +22,11 @@
   },
   "samples": [
     {
+      "displayName": "Samples (Common - Include this)",
+      "description": "Make sure to include this for other samples",
+      "path": "Samples~/Samples (Common)"
+    },
+    {
       "displayName": "Complete State Machine",
       "description": "Complete State Machine",
       "path": "Samples~/Complete State Machine"

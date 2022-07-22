@@ -3,16 +3,19 @@ using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-[UpdateInGroup(typeof(TransformSystemGroup))]
-[UpdateAfter(typeof(StateMachineEventsSystem))]
-public partial class AttackSystem : SystemBase
+namespace DMotion.Samples.CompleteStateMachine
 {
-    protected override void OnUpdate()
+    [UpdateInGroup(typeof(TransformSystemGroup))]
+    [UpdateAfter(typeof(StateMachineEventsSystem))]
+    public partial class AttackSystem : SystemBase
     {
-        Entities.ForEach((in AttackWindow attackWindow) =>
+        protected override void OnUpdate()
         {
-            FixedString32Bytes open = attackWindow.IsOpen ? "Open" : "Closed";
-            Debug.Log(FixedString.Format("Attack window is: {0}", open));
-        }).Schedule();
+            Entities.ForEach((in AttackWindow attackWindow) =>
+            {
+                FixedString32Bytes open = attackWindow.IsOpen ? "Open" : "Closed";
+                Debug.Log(FixedString.Format("Attack window is: {0}", open));
+            }).Schedule();
+        }
     }
 }

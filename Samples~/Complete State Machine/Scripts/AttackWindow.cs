@@ -1,7 +1,10 @@
 ﻿using Unity.Entities;
 
-[GenerateAuthoringComponent]
-public struct AttackWindow : IComponentData
+namespace DMotion.Samples.CompleteStateMachine
 {
-    public bool IsOpen;
+    [GenerateAuthoringComponent]
+    public struct AttackWindow : IComponentData
+    {
+        public bool IsOpen;
+    }
 }

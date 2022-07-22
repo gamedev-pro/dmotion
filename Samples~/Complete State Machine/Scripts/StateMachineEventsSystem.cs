@@ -1,64 +1,66 @@
-using DOTSAnimation;
+using DMotion;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-public struct StateMachineExampleEvents : IComponentData
+namespace DMotion.Samples.CompleteStateMachine
 {
-    public int StartAttackEventHash;
-    public int EndAttackEventHash;
-    public int FootStepEventHash;
-}
-
-[UpdateInGroup(typeof(TransformSystemGroup))]
-[UpdateAfter(typeof(AnimationEventsSystem))]
-public partial class StateMachineEventsSystem : SystemBase
-{
-    protected override void OnCreate()
+    public struct StateMachineExampleEvents : IComponentData
     {
-        base.OnCreate();
-        RequireSingletonForUpdate<StateMachineExampleEvents>();
+        public int StartAttackEventHash;
+        public int EndAttackEventHash;
+        public int FootStepEventHash;
     }
 
-    protected override void OnUpdate()
+    [UpdateInGroup(typeof(TransformSystemGroup))]
+    [UpdateAfter(typeof(AnimationEventsSystem))]
+    public partial class StateMachineEventsSystem : SystemBase
     {
-        var exampleEvents = GetSingleton<StateMachineExampleEvents>();
-
-        var cfeAtckWindow = GetComponentDataFromEntity<AttackWindow>();
-        Entities
-            .WithNativeDisableContainerSafetyRestriction(cfeAtckWindow)
-            .ForEach((in AnimatorEntity animatorEntity, in DynamicBuffer<RaisedAnimationEvent> raisedEvents) =>
+        protected override void OnCreate()
         {
-            for (var i = 0; i < raisedEvents.Length; i++)
-            {
-                if (raisedEvents[i].EventHash == exampleEvents.StartAttackEventHash)
-                {
-                    var atkWindow = cfeAtckWindow[animatorEntity.Owner];
-                    atkWindow.IsOpen = true;
-                    cfeAtckWindow[animatorEntity.Owner] = atkWindow;
-                    Debug.Log("Opening attack window");
-                }
-                else if (raisedEvents[i].EventHash == exampleEvents.EndAttackEventHash)
-                {
-                    var atkWindow = cfeAtckWindow[animatorEntity.Owner];
-                    atkWindow.IsOpen = false;
-                    cfeAtckWindow[animatorEntity.Owner] = atkWindow;
-                    Debug.Log("Closing attack window");
-                }
-            }
-        }).ScheduleParallel();
+            base.OnCreate();
+            RequireSingletonForUpdate<StateMachineExampleEvents>();
+        }
 
-
-        Entities.ForEach((in DynamicBuffer<RaisedAnimationEvent> raisedEvents) =>
+        protected override void OnUpdate()
         {
-            for (var i = 0; i < raisedEvents.Length; i++)
-            {
-                if (raisedEvents[i].EventHash == exampleEvents.FootStepEventHash)
-                {
-                    Debug.Log("Footstep");
-                }
-            }
+            var exampleEvents = GetSingleton<StateMachineExampleEvents>();
 
-        }).ScheduleParallel();
+            var cfeAtckWindow = GetComponentDataFromEntity<AttackWindow>();
+            Entities
+                .WithNativeDisableContainerSafetyRestriction(cfeAtckWindow)
+                .ForEach((in AnimatorEntity animatorEntity, in DynamicBuffer<RaisedAnimationEvent> raisedEvents) =>
+                {
+                    for (var i = 0; i < raisedEvents.Length; i++)
+                    {
+                        if (raisedEvents[i].EventHash == exampleEvents.StartAttackEventHash)
+                        {
+                            var atkWindow = cfeAtckWindow[animatorEntity.Owner];
+                            atkWindow.IsOpen = true;
+                            cfeAtckWindow[animatorEntity.Owner] = atkWindow;
+                            Debug.Log("Opening attack window");
+                        }
+                        else if (raisedEvents[i].EventHash == exampleEvents.EndAttackEventHash)
+                        {
+                            var atkWindow = cfeAtckWindow[animatorEntity.Owner];
+                            atkWindow.IsOpen = false;
+                            cfeAtckWindow[animatorEntity.Owner] = atkWindow;
+                            Debug.Log("Closing attack window");
+                        }
+                    }
+                }).ScheduleParallel();
+
+
+            Entities.ForEach((in DynamicBuffer<RaisedAnimationEvent> raisedEvents) =>
+            {
+                for (var i = 0; i < raisedEvents.Length; i++)
+                {
+                    if (raisedEvents[i].EventHash == exampleEvents.FootStepEventHash)
+                    {
+                        Debug.Log("Footstep");
+                    }
+                }
+            }).ScheduleParallel();
+        }
     }
 }
