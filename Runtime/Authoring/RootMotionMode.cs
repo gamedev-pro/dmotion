@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     [Serializable]
     public enum RootMotionMode : byte

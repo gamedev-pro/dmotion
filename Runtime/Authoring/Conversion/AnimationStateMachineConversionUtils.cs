@@ -5,7 +5,7 @@ using Latios.Kinemation;
 using Latios.Kinemation.Authoring;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     public static class AnimationStateMachineConversionUtils
     {

@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
-    [CreateAssetMenu(menuName = "Tools/DOTSAnimation/Event Name")]
+    [CreateAssetMenu(menuName = StateMachineEditorConstants.DMotionPath + "/Event Name")]
     public class AnimationEventName : ScriptableObject
     {
         public int Hash => name.GetHashCode();

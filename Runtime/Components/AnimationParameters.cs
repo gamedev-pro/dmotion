@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     public struct BoolParameter : IBufferElementData
     {

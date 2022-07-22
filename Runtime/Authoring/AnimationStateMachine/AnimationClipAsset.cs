@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     [Serializable]
     public struct AnimationClipEvent
@@ -13,7 +13,7 @@ namespace DOTSAnimation.Authoring
         public int Hash => Name.Hash;
     }
     
-    [CreateAssetMenu(menuName = "Tools/DOTSAnimation/Clip")]
+    [CreateAssetMenu(menuName = StateMachineEditorConstants.DMotionPath + "/Clip")]
     public class AnimationClipAsset : ScriptableObject
     {
         public AnimationClip Clip;

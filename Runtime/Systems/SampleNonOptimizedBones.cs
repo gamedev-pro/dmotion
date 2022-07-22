@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     [BurstCompile]
     [WithNone(typeof(SkeletonRootTag))]

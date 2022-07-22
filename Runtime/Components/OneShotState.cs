@@ -1,7 +1,7 @@
 ﻿using Latios.Kinemation;
 using Unity.Entities;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     public struct PlayOneShotRequest : IComponentData
     {

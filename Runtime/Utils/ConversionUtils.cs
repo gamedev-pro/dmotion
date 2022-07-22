@@ -1,7 +1,7 @@
 ﻿using Unity.Collections;
 using Unity.Entities;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     public static class ConversionUtils
     {

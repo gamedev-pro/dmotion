@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace DOTSAnimation.Editor
+namespace DMotion.Editor
 {
     internal struct RectElement
     {

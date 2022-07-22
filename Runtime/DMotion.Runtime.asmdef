@@ -1,5 +1,5 @@
 {
-    "name": "DOTSAnimation.Runtime",
+    "name": "DMotion.Runtime",
     "rootNamespace": "",
     "references": [
         "GUID:11912cc675165314485c904ed61b2e92",

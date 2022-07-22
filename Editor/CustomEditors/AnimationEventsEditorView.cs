@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using DOTSAnimation.Authoring;
+using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
 
-namespace DOTSAnimation.Editor
+namespace DMotion.Editor
 {
     internal class AnimationEventsPropertyDrawer
     {
@@ -174,7 +174,7 @@ namespace DOTSAnimation.Editor
 
         private void AddEvent(float normalizedTime)
         {
-            clipAsset.Events = clipAsset.Events.Append(new AnimationClipEvent()
+            clipAsset.Events = clipAsset.Events.Append(new Authoring.AnimationClipEvent()
             {
                 NormalizedTime = normalizedTime
             }).ToArray();

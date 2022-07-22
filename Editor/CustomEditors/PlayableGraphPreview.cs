@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using Object = UnityEngine.Object;
 
-namespace DOTSAnimation.Editor
+namespace DMotion.Editor
 {
     public abstract class PlayableGraphPreview : IDisposable
     {

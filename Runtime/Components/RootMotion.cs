@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 using Unity.Mathematics;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     public struct RootDeltaTranslation : IComponentData
     {

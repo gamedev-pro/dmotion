@@ -1,6 +1,6 @@
 using System;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     [Serializable]
     public class AnimationBoolTransition

@@ -5,7 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     [BurstCompile]
     [WithAll(typeof(SkeletonRootTag), typeof(ApplyRootMotionToEntity))]

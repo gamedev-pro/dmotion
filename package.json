@@ -1,15 +1,16 @@
 {
-  "name": "com.gamedevpro.dotsanimation",
-  "displayName": "DOTS Animation",
-  "version": "0.0.1",
+  "name": "com.gamedevpro.dmotion-runtime",
+  "displayName": "DMotion",
+  "version": "0.5.3-preview-2",
   "unity": "2020.3",
-  "description": "DOTSAnimation is a high level Animation State Machine framework for DOTS",
+  "description": "DMotion is a high level Animation State Machine framework for DOTS",
   "dependencies": {
     "com.latios.latiosframework": "0.5.2",
     "com.unity.shadergraph": "10.8.1"
   },
   "unityRelease": "30f1",
   "keywords": [
+    "dmotion",
     "dots",
     "animation",
     "kinemation",
@@ -24,6 +25,11 @@
       "displayName": "Complete State Machine",
       "description": "Complete State Machine",
       "path": "Samples~/Complete State Machine"
+    },
+    {
+      "displayName": "Stress Test",
+      "description": "Stress Test",
+      "path": "Samples~/Stress Test"
     }
   ]
 }

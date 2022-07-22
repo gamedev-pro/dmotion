@@ -5,8 +5,14 @@ using Latios.Kinemation;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
+    public static class StateMachineEditorConstants
+    {
+        public const string DMotionPath = "DMotion";
+        public const string StatesPath = DMotionPath + "/States";
+        public const string ParametersPath = DMotionPath + "/Parameters";
+    }
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;

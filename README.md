@@ -1,8 +1,8 @@
-# DOTSAnimation - A High Level Animation Framework and State Machine for DOTS
+# DMotion - A High Level Animation Framework and State Machine for DOTS
 
-[![DOTSAnimation Sample Video](https://img.youtube.com/vi/7lEJGOGHp2Q/0.jpg)](https://www.youtube.com/watch?v=7lEJGOGHp2Q)
+[![DMotion Sample Video](https://img.youtube.com/vi/7lEJGOGHp2Q/0.jpg)](https://www.youtube.com/watch?v=7lEJGOGHp2Q)
 
-DOTSAnimation is a (opnionated) general purpose Animation State Machine framework for DOTS, built on top of [Kinemation](https://github.com/Dreaming381/Latios-Framework/tree/master/Kinemation).
+DMotion (DOTS Motion) is an opnionated general purpose Animation State Machine framework for DOTS, built on top of [Kinemation](https://github.com/Dreaming381/Latios-Framework/tree/master/Kinemation).
 
 I've built this tool with usability and performance in mind. It should feel similar to Unity's Mechanim system, however there is no intention to build a feature by feature clone of Mechanim, and I deliberately excluded features of Mechanim that I believe are not useful (more on that below), and added new use features that I've found are useful for games, which Mechanim does not support.
 
@@ -38,13 +38,13 @@ I've built this tool with usability and performance in mind. It should feel simi
 
 *Float and Int parameters for transitions*
 
-I personally never found a reasonable use case for float and int based transitions. Float transitions are better replaced by Blend Trees (which DOTSAnimation support), and I'm clueless to the purpose of int transitions (I've heard of developers using them for switching states based on equipped weapon, but AnimatorOverrides are a much cleaner solution).
+I personally never found a reasonable use case for float and int based transitions. Float transitions are better replaced by Blend Trees (which DMotion supports), and I'm clueless to the purpose of int transitions (I've heard of developers using them for switching states based on equipped weapon, but AnimatorOverrides are a much cleaner solution).
 
 If you have a use case for these features, let me know.
 
 *StateMachineBehaviour (a.k.a some 'code' that runs when a state is active)*
 
-I believe gameplay state should control animation state, not the way around. There is no plan to support anything similar to StateMachineBehaviour in DOTSAnimation
+I believe gameplay state should control animation state, not the way around. There is no plan to support anything similar to StateMachineBehaviour in DMotion
 
 ## Instalation
 
@@ -56,7 +56,7 @@ Add the following lines to your `Packages/manifest.json` file
 
 ```json
 "com.latios.latiosframework": "https://github.com/Dreaming381/Latios-Framework.git",
-"com.gamedevpro.dotsanimation": "https://github.com/gamedev-pro/DOTSAnimation.git",
+"com.gamedevpro.dmotion": "https://github.com/gamedev-pro/dmotion-runtime.git",
 ```
 
 ### Via Package Manager
@@ -64,13 +64,13 @@ Add the following lines to your `Packages/manifest.json` file
 - Window -> Package Manager -> Click the + button -> Add package from git url
 - Paste `https://github.com/Dreaming381/Latios-Framework.git`
 - Click again to add another git package
-- Paste `https://github.com/gamedev-pro/DOTSAnimation.git`
+- Paste `https://github.com/gamedev-pro/dmotion-runtime.git`
 
 ### Via git submodule
 
 - `cd` to your Packages folder
 - `git submodule add https://github.com/Dreaming381/Latios-Framework.git`
-- `git submodule add https://github.com/gamedev-pro/DOTSAnimation.git`
+- `git submodule add https://github.com/gamedev-pro/dmotion-runtime.git`
 
 ## Getting Started
 
@@ -82,7 +82,7 @@ I still have to write a proper documentation for this tool, for now hopefully th
 
 ## Support
 
-I will be supporting DOTSAnimation moving forward. Bug reports are definitely appreciated.
+I will be supporting DMotion moving forward. Bug reports are definitely appreciated.
 
 Suggestions and feature requests will be considered. If you have something in mind, don't hesitate in letting me know.
 

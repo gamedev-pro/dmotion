@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     [BurstCompile]
     [WithEntityQueryOptions(EntityQueryOptions.FilterWriteGroup)]

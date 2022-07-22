@@ -4,7 +4,7 @@ using Unity.Assertions;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     [Serializable]
     public class AnimationTransitionGroup

@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using DOTSAnimation.Authoring;
+using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
 
-namespace DOTSAnimation.Editor
+namespace DMotion.Editor
 {
     [CustomPropertyDrawer(typeof(AnimationEventName))]
     internal class AnimationEventNamePropertyDrawer : PropertyDrawer

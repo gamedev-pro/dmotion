@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace DOTSAnimation.Editor
+namespace DMotion.Editor
 {
     public class SingleClipPreview : PlayableGraphPreview
     {

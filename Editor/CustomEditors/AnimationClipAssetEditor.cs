@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
-using DOTSAnimation.Authoring;
+using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
 
-namespace DOTSAnimation.Editor
+namespace DMotion.Editor
 {
     [CustomEditor(typeof(AnimationClipAsset))]
     internal class AnimationClipAssetEditor : UnityEditor.Editor
