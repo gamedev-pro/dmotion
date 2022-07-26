@@ -7,7 +7,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     public struct StateMachineBlobBakeData
     {
@@ -91,13 +91,13 @@ namespace DOTSAnimation.Authoring
                         BlendParameterIndex = (ushort) blendParameterIndex
                     };
 
-                    linearBlendState.ClipsWithThresholds = new UnsafeList<DOTSAnimation.ClipWithThreshold>(
+                    linearBlendState.ClipsWithThresholds = new UnsafeList<DMotion.ClipWithThreshold>(
                         linearBlendStateAsset.BlendClips.Length, allocator);
                     
                     linearBlendState.ClipsWithThresholds.Resize(linearBlendStateAsset.BlendClips.Length);
                     for (ushort blendClipIndex = 0; blendClipIndex < linearBlendState.ClipsWithThresholds.Length; blendClipIndex++)
                     {
-                        linearBlendState.ClipsWithThresholds[blendClipIndex] = new DOTSAnimation.ClipWithThreshold()
+                        linearBlendState.ClipsWithThresholds[blendClipIndex] = new DMotion.ClipWithThreshold()
                         {
                             ClipIndex = clipIndex,
                             Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold
@@ -123,11 +123,11 @@ namespace DOTSAnimation.Authoring
             Allocator allocator)
         {
             converter.Transitions =
-                new UnsafeList<DOTSAnimation.AnimationTransitionGroup>(stateMachineAsset.Transitions.Count, allocator);
+                new UnsafeList<DMotion.AnimationTransitionGroup>(stateMachineAsset.Transitions.Count, allocator);
             converter.Transitions.Resize(stateMachineAsset.Transitions.Count);
             for (short i = 0; i < converter.Transitions.Length; i++)
             {
-                var transitionGroup = new DOTSAnimation.AnimationTransitionGroup();
+                var transitionGroup = new DMotion.AnimationTransitionGroup();
                 var transitionAsset = stateMachineAsset.Transitions[i];
                 transitionGroup.NormalizedTransitionDuration = transitionAsset.NormalizedTransitionDuration;
 

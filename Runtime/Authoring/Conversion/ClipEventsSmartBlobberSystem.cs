@@ -4,7 +4,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     public struct ClipEventsBlobBakeData
     {
@@ -26,13 +26,13 @@ namespace DOTSAnimation.Authoring
                 var clipAssetEvents = input.Clips[clipIndex].Events;
                 var clipEvents = new ClipEventsConversionData
                 {
-                    Events = new UnsafeList<DOTSAnimation.AnimationClipEvent>(clipAssetEvents.Length, allocator)
+                    Events = new UnsafeList<DMotion.AnimationClipEvent>(clipAssetEvents.Length, allocator)
                 };
                 clipEvents.Events.Resize(clipAssetEvents.Length);
                 for (var eventIndex = 0; eventIndex < clipEvents.Events.Length; eventIndex++)
                 {
                     var clipAssetEvent = clipAssetEvents[eventIndex];
-                    clipEvents.Events[eventIndex] = new DOTSAnimation.AnimationClipEvent()
+                    clipEvents.Events[eventIndex] = new DMotion.AnimationClipEvent()
                     {
                         ClipIndex = (short) clipIndex,
                         EventHash = clipAssetEvent.Hash,

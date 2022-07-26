@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.Transforms;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(AnimationStateMachineSystem))]

@@ -4,11 +4,11 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     internal struct LinearBlendStateConversionData
     {
-        internal UnsafeList<DOTSAnimation.ClipWithThreshold> ClipsWithThresholds;
+        internal UnsafeList<DMotion.ClipWithThreshold> ClipsWithThresholds;
         internal ushort BlendParameterIndex;
     }
     internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>
@@ -17,7 +17,7 @@ namespace DOTSAnimation.Authoring
         internal UnsafeList<SingleClipStateBlob> SingleClipStates;
         internal UnsafeList<LinearBlendStateConversionData> LinearBlendStates;
         internal UnsafeList<AnimationStateBlob> States;
-        internal UnsafeList<DOTSAnimation.AnimationTransitionGroup> Transitions;
+        internal UnsafeList<DMotion.AnimationTransitionGroup> Transitions;
         internal UnsafeList<BoolTransition> BoolTransitions;
 
         public unsafe BlobAssetReference<StateMachineBlob> BuildBlob()

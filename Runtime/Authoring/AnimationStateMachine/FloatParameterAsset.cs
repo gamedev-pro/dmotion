@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
-    [CreateAssetMenu(menuName = "DOTSAnimation/Parameters/Float Parameter")]
+    [CreateAssetMenu(menuName = StateMachineEditorConstants.ParametersPath + "/Float Parameter")]
     public class FloatParameterAsset : AnimationParameterAsset
     {
     }

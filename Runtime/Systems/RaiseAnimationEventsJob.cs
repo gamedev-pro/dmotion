@@ -1,7 +1,7 @@
 using Unity.Burst;
 using Unity.Entities;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     [BurstCompile]
     internal partial struct RaiseAnimationEventsJob : IJobEntity

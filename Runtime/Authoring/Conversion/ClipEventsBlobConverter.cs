@@ -4,11 +4,11 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     internal struct ClipEventsConversionData
     {
-        internal UnsafeList<DOTSAnimation.AnimationClipEvent> Events;
+        internal UnsafeList<DMotion.AnimationClipEvent> Events;
     }
     internal struct ClipEventsBlobConverter : ISmartBlobberSimpleBuilder<ClipEventsBlob>
     {

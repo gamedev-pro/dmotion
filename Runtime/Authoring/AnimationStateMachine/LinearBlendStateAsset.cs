@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace DOTSAnimation.Authoring
+namespace DMotion.Authoring
 {
     [Serializable]
     public struct ClipWithThreshold
@@ -12,7 +12,7 @@ namespace DOTSAnimation.Authoring
         public float Threshold;
     }
     
-    [CreateAssetMenu(menuName = "DOTSAnimation/States/Blend Tree 1D")]
+    [CreateAssetMenu(menuName = StateMachineEditorConstants.StatesPath + "/Blend Tree 1D")]
     public class LinearBlendStateAsset : AnimationStateAsset
     {
         public ClipWithThreshold[] BlendClips;

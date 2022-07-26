@@ -2,7 +2,7 @@
 using Unity.Burst;
 using Unity.Mathematics;
 
-namespace DOTSAnimation
+namespace DMotion
 {
     [BurstCompile]
     public static class mathex
