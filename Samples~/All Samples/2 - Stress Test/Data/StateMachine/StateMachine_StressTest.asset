@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22b96b7574545b7b931aa33424917be, type: 3}
+  m_Name: StateMachine_StressTest
+  m_EditorClassIdentifier: 
+  DefaultState: {fileID: 11400000, guid: dbb5131b6f60c72468985a840825f6f3, type: 2}
+  SingleClipStates:
+  - {fileID: 11400000, guid: 802115ae7be53e046b4a04363171b752, type: 2}
+  LinearBlendStates:
+  - {fileID: 11400000, guid: dbb5131b6f60c72468985a840825f6f3, type: 2}
+  BoolParameters:
+  - {fileID: 11400000, guid: 44252c7d4c86ba14eb7d1522d79faa59, type: 2}
+  FloatParameters:
+  - {fileID: 11400000, guid: 23e390265e1612b4c94fbb16019f6d20, type: 2}
+  Transitions:
+  - FromState: {fileID: 11400000, guid: dbb5131b6f60c72468985a840825f6f3, type: 2}
+    ToState: {fileID: 11400000, guid: 802115ae7be53e046b4a04363171b752, type: 2}
+    NormalizedTransitionDuration: 0.2
+    BoolTransitions:
+    - Parameter: {fileID: 11400000, guid: 44252c7d4c86ba14eb7d1522d79faa59, type: 2}
+      ComparisonValue: 1
+  - FromState: {fileID: 11400000, guid: 802115ae7be53e046b4a04363171b752, type: 2}
+    ToState: {fileID: 11400000, guid: dbb5131b6f60c72468985a840825f6f3, type: 2}
+    NormalizedTransitionDuration: 0.2
+    BoolTransitions:
+    - Parameter: {fileID: 11400000, guid: 44252c7d4c86ba14eb7d1522d79faa59, type: 2}
+      ComparisonValue: 0

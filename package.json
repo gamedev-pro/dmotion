@@ -3,7 +3,7 @@
   "displayName": "DMotion",
   "version": "0.2.0",
   "unity": "2020.3",
-  "description": "DMotion is a high level Animation State Machine framework for DOTS",
+  "description": "DMotion is a high level Animation framework and State Machine for DOTS",
   "dependencies": {
     "com.latios.latiosframework": "0.5.3",
     "com.unity.shadergraph": "10.8.1"
@@ -22,19 +22,9 @@
   },
   "samples": [
     {
-      "displayName": "Samples (Common - Include this)",
+      "displayName": "All Samples",
       "description": "Make sure to include this for other samples",
-      "path": "Samples~/Samples (Common)"
-    },
-    {
-      "displayName": "Complete State Machine",
-      "description": "Complete State Machine",
-      "path": "Samples~/Complete State Machine"
-    },
-    {
-      "displayName": "Stress Test",
-      "description": "Stress Test",
-      "path": "Samples~/Stress Test"
+      "path": "Samples~/All Samples"
     }
   ]
 }
