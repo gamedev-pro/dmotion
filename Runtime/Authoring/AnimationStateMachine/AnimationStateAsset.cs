@@ -8,6 +8,8 @@ namespace DMotion.Authoring
     {
         public bool Loop = true;
         public float Speed = 1;
+        
+        public List<StateOutTransition> OutTransitions;
 
         public abstract StateType Type { get; }
         public abstract int ClipCount { get; }
@@ -17,7 +19,7 @@ namespace DMotion.Authoring
         [Serializable]
         internal struct EditorData
         {
-            internal Vector2 Position;
+            internal Vector2 GraphView;
             internal string Guid;
         }
 

@@ -12,7 +12,6 @@ namespace DMotion.Authoring
         public List<LinearBlendStateAsset> LinearBlendStates;
         public List<BoolParameterAsset> BoolParameters;
         public List<FloatParameterAsset> FloatParameters;
-        public List<AnimationTransitionGroup> Transitions;
         public IEnumerable<AnimationClipAsset> Clips => SingleClipStates
             .SelectMany(s => s.Clips)
             .Concat(LinearBlendStates.SelectMany(s => s.Clips));

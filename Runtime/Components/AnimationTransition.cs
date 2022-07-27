@@ -9,15 +9,14 @@ namespace DMotion
         internal static StateTransition Null => new StateTransition() { TransitionIndex = -1 };
     }
     
-    internal struct AnimationTransitionGroup
+    internal struct StateOutTransitionGroup
     {
-        internal short FromStateIndex;
         internal short ToStateIndex;
         internal float NormalizedTransitionDuration;
+        internal BlobArray<BoolTransition> BoolTransitions;
     }
     internal struct BoolTransition
     {
-        internal int GroupIndex;
         internal int ParameterIndex;
         internal bool ComparisonValue;
         internal bool Evaluate(in BoolParameter parameter)

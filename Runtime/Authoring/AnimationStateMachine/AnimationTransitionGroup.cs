@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
-using Unity.Assertions;
-using Unity.Entities;
-using UnityEngine;
 
 namespace DMotion.Authoring
 {
     [Serializable]
-    public class AnimationTransitionGroup
+    public class StateOutTransition
     {
-        public AnimationStateAsset FromState;
         public AnimationStateAsset ToState;
         public float NormalizedTransitionDuration;
         public List<AnimationBoolTransition> BoolTransitions;
+
+        public StateOutTransition(AnimationStateAsset to,
+            float transitionDuration = 0.15f, List<AnimationBoolTransition> boolTransitions = null)
+        {
+            ToState = to;
+            NormalizedTransitionDuration = transitionDuration;
+            BoolTransitions = boolTransitions ?? new List<AnimationBoolTransition>();
+        }
     }
 }

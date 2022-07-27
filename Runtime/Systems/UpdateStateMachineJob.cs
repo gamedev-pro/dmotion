@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using DMotion.Authoring;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
@@ -80,10 +81,10 @@ namespace DMotion
                 if (!oneShotState.IsValid)
                 {
                     var stateToEvaluate = stateMachine.CurrentTransition.IsValid
-                        ? stateMachine.NextState.StateIndex
-                        : stateMachine.CurrentState.StateIndex;
+                        ? stateMachine.NextState
+                        : stateMachine.CurrentState;
                     
-                    var shouldStartTransition = EvaluateTransitions(ref stateMachineBlob, stateToEvaluate, boolParameters,
+                    var shouldStartTransition = EvaluateTransitions(ref stateToEvaluate.StateBlob, boolParameters,
                         out var transitionIndex);
 
                     if (shouldStartTransition)
@@ -207,18 +208,15 @@ namespace DMotion
         
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(ref StateMachineBlob stateMachine, short stateToEvaluate,
+        private bool EvaluateTransitions(ref AnimationStateBlob state,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
-            for (short i = 0; i < stateMachine.Transitions.Length; i++)
+            for (short i = 0; i < state.Transitions.Length; i++)
             {
-                if (stateMachine.Transitions[i].FromStateIndex == stateToEvaluate)
+                if (EvaluateTransitionGroup(ref state.Transitions[i], boolParameters))
                 {
-                    if (EvaluateTransitionGroup(i, ref stateMachine, boolParameters))
-                    {
-                        transitionIndex = i;
-                        return true;
-                    }
+                    transitionIndex = i;
+                    return true;
                 }
             }
             transitionIndex = -1;
@@ -227,18 +225,15 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(short groupIndex, ref StateMachineBlob stateMachine,
+        private bool EvaluateTransitionGroup(ref StateOutTransitionGroup transitionGroup,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            ref var boolTransitions = ref stateMachine.BoolTransitions;
+            ref var boolTransitions = ref transitionGroup.BoolTransitions;
             var shouldTriggerTransition = boolTransitions.Length > 0;
             for (var i = 0; i < boolTransitions.Length; i++)
             {
                 var transition = boolTransitions[i];
-                if (transition.GroupIndex == groupIndex)
-                {
-                    shouldTriggerTransition &= transition.Evaluate(boolParameters[transition.ParameterIndex]);
-                }
+                shouldTriggerTransition &= transition.Evaluate(boolParameters[transition.ParameterIndex]);
             }
             return shouldTriggerTransition;
         }
