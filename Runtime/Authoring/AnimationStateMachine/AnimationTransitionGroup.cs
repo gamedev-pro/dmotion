@@ -6,6 +6,7 @@ namespace DMotion.Authoring
     [Serializable]
     public class StateOutTransition
     {
+        [SubAssetsOnly]
         public AnimationStateAsset ToState;
         public float NormalizedTransitionDuration;
         public List<AnimationBoolTransition> BoolTransitions;
