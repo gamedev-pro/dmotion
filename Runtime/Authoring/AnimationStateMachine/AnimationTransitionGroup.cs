@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace DMotion.Authoring
 {
@@ -9,6 +10,10 @@ namespace DMotion.Authoring
     {
         [SubAssetsOnly]
         public AnimationStateAsset ToState;
+        public bool HasEndTime;
+        [Range(0,1)]
+        public float EndTime;
+        [Range(0,1)]
         public float NormalizedTransitionDuration;
         public List<TransitionCondition> Conditions;
 

@@ -25,6 +25,7 @@ namespace DMotion.Authoring
     {
         internal short ToStateIndex;
         internal float NormalizedTransitionDuration;
+        internal float TransitionEndTime;
         internal UnsafeList<BoolTransition> BoolTransitions;
     }
     
@@ -64,6 +65,7 @@ namespace DMotion.Authoring
                         transitions[transitionIndex] = new StateOutTransitionGroup()
                         {
                             ToStateIndex = transitionConversionData.ToStateIndex,
+                            TransitionEndTime = transitionConversionData.TransitionEndTime,
                             NormalizedTransitionDuration = transitionConversionData.NormalizedTransitionDuration
                         };
                         

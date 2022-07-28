@@ -2,18 +2,14 @@ using Unity.Entities;
 
 namespace DMotion
 {
-    internal struct StateTransition
-    {
-        internal short TransitionIndex;
-        internal bool IsValid => TransitionIndex >= 0;
-        internal static StateTransition Null => new StateTransition() { TransitionIndex = -1 };
-    }
-    
     internal struct StateOutTransitionGroup
     {
         internal short ToStateIndex;
         internal float NormalizedTransitionDuration;
+        internal float TransitionEndTime;
         internal BlobArray<BoolTransition> BoolTransitions;
+        internal bool HasEndTime => TransitionEndTime > 0;
+        internal bool HasAnyConditions => BoolTransitions.Length > 0;
     }
     internal struct BoolTransition
     {

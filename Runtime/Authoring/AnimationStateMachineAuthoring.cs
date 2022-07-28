@@ -38,7 +38,6 @@ namespace DMotion.Authoring
                 ClipEventsBlob = clipEventsBlob,
                 CurrentState = AnimationState.Null,
                 NextState = AnimationState.Null,
-                CurrentTransition = StateTransition.Null,
                 Weight = 1
             };
 
@@ -61,6 +60,7 @@ namespace DMotion.Authoring
                         var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
                         boolParameters.Add(new BoolParameter()
                         {
+                            Name = p.name,
                             Hash = p.Hash,
                         });
                         break;
@@ -68,6 +68,7 @@ namespace DMotion.Authoring
                         var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
                         floatParameters.Add(new BlendParameter()
                         {
+                            Name = p.name,
                             Hash = p.Hash,
                         });
                         break;

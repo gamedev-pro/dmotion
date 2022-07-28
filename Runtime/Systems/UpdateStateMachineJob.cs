@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using DMotion.Authoring;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
@@ -37,9 +36,9 @@ namespace DMotion
             }
             //Evaluate if current transition ended
             {
-                if (stateMachine.CurrentTransition.IsValid)
+                if (stateMachine.NextState.IsValid)
                 {
-                    if (stateMachine.NextState.NormalizedTime > stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration)
+                    if (stateMachine.NextState.NormalizedTime > stateMachine.CurrentTransitionNormalizedTime)
                     {
                         var removeCount = stateMachine.CurrentState.ClipCount;
                         clipSamplers.RemoveRange(stateMachine.CurrentState.StartSamplerIndex, removeCount);
@@ -48,7 +47,6 @@ namespace DMotion
                         
                         stateMachine.CurrentState = stateMachine.NextState;
                         stateMachine.NextState = AnimationState.Null;
-                        stateMachine.CurrentTransition = StateTransition.Null;
                     }
                 }
             }
@@ -80,18 +78,19 @@ namespace DMotion
             {
                 if (!oneShotState.IsValid)
                 {
-                    var stateToEvaluate = stateMachine.CurrentTransition.IsValid
+                    var stateToEvaluate = stateMachine.NextState.IsValid
                         ? stateMachine.NextState
                         : stateMachine.CurrentState;
                     
-                    var shouldStartTransition = EvaluateTransitions(ref stateToEvaluate.StateBlob, boolParameters,
+                    var shouldStartTransition = EvaluateTransitions(stateToEvaluate, boolParameters,
                         out var transitionIndex);
 
                     if (shouldStartTransition)
                     {
-                        stateMachine.CurrentTransition = new StateTransition() { TransitionIndex = transitionIndex };
+                        ref var transition = ref stateToEvaluate.StateBlob.Transitions[transitionIndex];
+                        stateMachine.CurrentTransitionNormalizedTime = transition.NormalizedTransitionDuration;
                         stateMachine.NextState = CreateState(
-                            stateMachine.CurrentTransitionBlob.ToStateIndex,
+                            transition.ToStateIndex,
                             stateMachine.StateMachineBlob,
                             stateMachine.ClipsBlob,
                             stateMachine.ClipEventsBlob,
@@ -155,10 +154,10 @@ namespace DMotion
             }
             //Update samplers
             {
-                if (stateMachine.CurrentTransition.IsValid)
+                if (stateMachine.NextState.IsValid)
                 {
                     var nextStateBlend = math.clamp(stateMachine.NextState.NormalizedTime /
-                                       stateMachine.CurrentTransitionBlob.NormalizedTransitionDuration, 0, 1);
+                                       stateMachine.CurrentTransitionNormalizedTime, 0, 1);
                     stateMachine.CurrentState.UpdateSamplers(
                         DeltaTime, (1 - nextStateBlend)*stateMachine.Weight,
                         blendParameters, ref clipSamplers);
@@ -208,12 +207,12 @@ namespace DMotion
         
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(ref AnimationStateBlob state,
+        private bool EvaluateTransitions(in AnimationState state,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
-            for (short i = 0; i < state.Transitions.Length; i++)
+            for (short i = 0; i < state.StateBlob.Transitions.Length; i++)
             {
-                if (EvaluateTransitionGroup(ref state.Transitions[i], boolParameters))
+                if (EvaluateTransitionGroup(state, ref state.StateBlob.Transitions[i], boolParameters))
                 {
                     transitionIndex = i;
                     return true;
@@ -225,11 +224,15 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(ref StateOutTransitionGroup transitionGroup,
+        private bool EvaluateTransitionGroup(in AnimationState state, ref StateOutTransitionGroup transitionGroup,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
+            if (transitionGroup.HasEndTime && state.NormalizedTime < transitionGroup.TransitionEndTime)
+            {
+                return false;
+            }
             ref var boolTransitions = ref transitionGroup.BoolTransitions;
-            var shouldTriggerTransition = boolTransitions.Length > 0;
+            var shouldTriggerTransition = transitionGroup.HasAnyConditions || transitionGroup.HasEndTime;
             for (var i = 0; i < boolTransitions.Length; i++)
             {
                 var transition = boolTransitions[i];

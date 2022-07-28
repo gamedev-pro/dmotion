@@ -136,6 +136,7 @@ namespace DMotion.Authoring
                 var outTransition = new StateOutTransitionConversionData()
                 {
                     ToStateIndex = toStateIndex,
+                    TransitionEndTime = outTransitionAsset.HasEndTime ? Mathf.Clamp01(outTransitionAsset.EndTime) : -1f,
                     NormalizedTransitionDuration = outTransitionAsset.NormalizedTransitionDuration,
                 };
 
