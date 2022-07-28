@@ -12,9 +12,14 @@ namespace DMotion
         )
         {
             raisedAnimationEvents.Clear();
-            if (TryGetHighestWeightSamplerIndex(samplers, out var samplerIndex))
+            for (var samplerIndex = 0; samplerIndex < samplers.Length; samplerIndex++)
             {
                 var sampler = samplers[samplerIndex];
+                if (mathex.iszero(sampler.Weight))
+                {
+                    continue;
+                }
+                
                 var clipIndex = sampler.ClipIndex;
                 var previousSamplerTime = sampler.PreviousNormalizedTime;
                 var currentSamplerTime = sampler.NormalizedTime;
@@ -22,39 +27,31 @@ namespace DMotion
                 for (short i = 0; i < clipEvents.Length; i++)
                 {
                     ref var e = ref clipEvents[i];
-                    if (e.ClipIndex == clipIndex &&
-                        e.NormalizedTime >= previousSamplerTime && e.NormalizedTime <= currentSamplerTime)
+                    bool shouldRaiseEvent;
+                    
+                    if (previousSamplerTime > currentSamplerTime)
+                    {
+                        //this mean we looped the clip
+                        shouldRaiseEvent = e.NormalizedTime >= previousSamplerTime && e.NormalizedTime <= 1 ||
+                                           e.NormalizedTime >= 0 && e.NormalizedTime <= currentSamplerTime;
+                    }
+                    else
+                    {
+                        shouldRaiseEvent = e.NormalizedTime >= previousSamplerTime &&
+                                           e.NormalizedTime <= currentSamplerTime;
+                    }
+
+                    if (shouldRaiseEvent)
                     {
                         raisedAnimationEvents.Add(new RaisedAnimationEvent()
                         {
                             EventHash = e.EventHash,
+                            ClipWeight = sampler.Weight,
+                            ClipHandle = new SkeletonClipHandle(sampler.Clips, sampler.ClipIndex),
                         });
                     }
                 }
             }
-        }
-
-        private bool TryGetHighestWeightSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte samplerIndex)
-        {
-            var maxWeight = 0.0f;
-            var maxWeightSamplerIndex = -1;
-            for (byte i = 0; i < samplers.Length; i++)
-            {
-                if (samplers[i].Weight > maxWeight)
-                {
-                    maxWeight = samplers[i].Weight;
-                    maxWeightSamplerIndex = i;
-                }
-            }
-
-            if (maxWeightSamplerIndex > 0)
-            {
-                samplerIndex = (byte)maxWeightSamplerIndex;
-                return true;
-            }
-
-            samplerIndex = 0;
-            return false;
         }
     }
 }
