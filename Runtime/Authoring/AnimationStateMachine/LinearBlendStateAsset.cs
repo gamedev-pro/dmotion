@@ -12,10 +12,9 @@ namespace DMotion.Authoring
         public float Threshold;
     }
     
-    [CreateAssetMenu(menuName = StateMachineEditorConstants.StatesPath + "/Blend Tree 1D")]
     public class LinearBlendStateAsset : AnimationStateAsset
     {
-        public ClipWithThreshold[] BlendClips;
+        public ClipWithThreshold[] BlendClips = Array.Empty<ClipWithThreshold>();
         public FloatParameterAsset BlendParameter;
         
         public override StateType Type => StateType.LinearBlend;

@@ -8,10 +8,9 @@ namespace DMotion.Authoring
     public class StateMachineAsset : ScriptableObject
     {
         public AnimationStateAsset DefaultState;
-        public List<SingleClipStateAsset> SingleClipStates;
-        public List<LinearBlendStateAsset> LinearBlendStates;
-        public List<BoolParameterAsset> BoolParameters;
-        public List<FloatParameterAsset> FloatParameters;
+        public List<SingleClipStateAsset> SingleClipStates = new List<SingleClipStateAsset>();
+        public List<LinearBlendStateAsset> LinearBlendStates = new List<LinearBlendStateAsset>();
+        public List<AnimationParameterAsset> Parameters = new List<AnimationParameterAsset>();
         public IEnumerable<AnimationClipAsset> Clips => SingleClipStates
             .SelectMany(s => s.Clips)
             .Concat(LinearBlendStates.SelectMany(s => s.Clips));
@@ -20,7 +19,8 @@ namespace DMotion.Authoring
                                 LinearBlendStates.Sum(s => s.ClipCount);
         public int StateCount => SingleClipStates.Count + LinearBlendStates.Count;
 
-        public IEnumerable<AnimationStateAsset> States => SingleClipStates
-            .Concat(LinearBlendStates.OfType<AnimationStateAsset>());
+        public IEnumerable<AnimationStateAsset> States => Enumerable.Empty<AnimationStateAsset>()
+            .Concat(SingleClipStates)
+            .Concat(LinearBlendStates);
     }
 }

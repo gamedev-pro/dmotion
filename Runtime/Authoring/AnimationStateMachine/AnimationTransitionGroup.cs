@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DMotion.Authoring
 {
@@ -9,14 +10,17 @@ namespace DMotion.Authoring
         [SubAssetsOnly]
         public AnimationStateAsset ToState;
         public float NormalizedTransitionDuration;
-        public List<AnimationBoolTransition> BoolTransitions;
+        public List<TransitionCondition> Conditions;
+
+        public IEnumerable<TransitionCondition> BoolTransitions =>
+            Conditions.Where(c => c.Parameter is BoolParameterAsset);
 
         public StateOutTransition(AnimationStateAsset to,
-            float transitionDuration = 0.15f, List<AnimationBoolTransition> boolTransitions = null)
+            float transitionDuration = 0.15f, List<TransitionCondition> boolTransitions = null)
         {
             ToState = to;
             NormalizedTransitionDuration = transitionDuration;
-            BoolTransitions = boolTransitions ?? new List<AnimationBoolTransition>();
+            Conditions = boolTransitions ?? new List<TransitionCondition>();
         }
     }
 }

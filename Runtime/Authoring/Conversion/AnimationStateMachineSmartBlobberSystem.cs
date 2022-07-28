@@ -73,10 +73,13 @@ namespace DMotion.Authoring
                 {
                     var linearBlendStateAsset = stateMachineAsset.LinearBlendStates[i];
                     var blendParameterIndex =
-                        stateMachineAsset.FloatParameters.FindIndex(f => f == linearBlendStateAsset.BlendParameter);
+                        stateMachineAsset.Parameters
+                            .OfType<FloatParameterAsset>()
+                            .ToList()
+                            .FindIndex(f => f == linearBlendStateAsset.BlendParameter);
 
                     Assert.IsTrue(blendParameterIndex >= 0,
-                        $"({stateMachineAsset.name}) Couldn't find parameter {linearBlendStateAsset.BlendParameter.Name}, for Linear Blend State");
+                        $"({stateMachineAsset.name}) Couldn't find parameter {linearBlendStateAsset.BlendParameter.name}, for Linear Blend State");
                     
                     var linearBlendState = new LinearBlendStateConversionData()
                     {
@@ -137,19 +140,23 @@ namespace DMotion.Authoring
 
                 //Create bool transitions
                 {
-                    var boolTransitionCount = outTransitionAsset.BoolTransitions.Count;
+                    var boolTransitions = outTransitionAsset.BoolTransitions.ToArray();
                     outTransition.BoolTransitions =
-                        new UnsafeList<BoolTransition>(outTransitionAsset.BoolTransitions.Count, allocator);
-                    outTransition.BoolTransitions.Resize(boolTransitionCount);
+                        new UnsafeList<BoolTransition>(boolTransitions.Length, allocator);
+                    outTransition.BoolTransitions.Resize(boolTransitions.Length);
                     for (var boolTransitionIndex = 0; boolTransitionIndex < outTransition.BoolTransitions.Length; boolTransitionIndex++)
                     {
-                        var boolTransitionAsset = outTransitionAsset.BoolTransitions[boolTransitionIndex];
-                        var parameterIndex = stateMachineAsset.BoolParameters.FindIndex(p => p == boolTransitionAsset.Parameter);
+                        var boolTransitionAsset = outTransitionAsset.Conditions[boolTransitionIndex];
+                        var parameterIndex = stateMachineAsset.Parameters
+                            .OfType<BoolParameterAsset>()
+                            .ToList()
+                            .FindIndex(p => p == boolTransitionAsset.Parameter);
+                        
                         Assert.IsTrue(parameterIndex >= 0,
-                            $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.Parameter.Name}, for transition");
+                            $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.Parameter.name}, for transition");
                         outTransition.BoolTransitions[boolTransitionIndex] = new BoolTransition()
                         {
-                            ComparisonValue = boolTransitionAsset.ComparisonValue,
+                            ComparisonValue = boolTransitionAsset.ComparisonValue == 1.0f,
                             ParameterIndex = parameterIndex
                         };
                     }
