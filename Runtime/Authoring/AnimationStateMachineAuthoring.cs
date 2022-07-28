@@ -51,19 +51,21 @@ namespace DMotion.Authoring
                 dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
             }
 
+            dstManager.AddBuffer<BoolParameter>(entity);
+            dstManager.AddBuffer<BlendParameter>(entity);
             foreach (var p in StateMachineAsset.Parameters)
             {
                 switch (p)
                 {
                     case BoolParameterAsset:
-                        var boolParameters = dstManager.GetOrCreateBuffer<BoolParameter>(entity);
+                        var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
                         boolParameters.Add(new BoolParameter()
                         {
                             Hash = p.Hash,
                         });
                         break;
                     case FloatParameterAsset:
-                        var floatParameters = dstManager.GetOrCreateBuffer<BlendParameter>(entity);
+                        var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
                         floatParameters.Add(new BlendParameter()
                         {
                             Hash = p.Hash,

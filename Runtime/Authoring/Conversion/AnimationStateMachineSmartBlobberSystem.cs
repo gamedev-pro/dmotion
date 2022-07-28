@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Latios.Authoring.Systems;
 using Latios.Kinemation.Authoring.Systems;
@@ -37,74 +38,74 @@ namespace DMotion.Authoring
         private void BuildStates(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
             Allocator allocator)
         {
+            var singleClipStates = stateMachineAsset.States.OfType<SingleClipStateAsset>().ToArray();
+            var linearBlendStates = stateMachineAsset.States.OfType<LinearBlendStateAsset>().ToArray();
+            
             converter.States =
-                new UnsafeList<AnimationStateConversionData>(stateMachineAsset.StateCount, allocator);
-            converter.States.Resize(stateMachineAsset.StateCount);
+                new UnsafeList<AnimationStateConversionData>(stateMachineAsset.States.Count, allocator);
+            converter.States.Resize(stateMachineAsset.States.Count);
 
-            ushort stateIndex = 0;
+            converter.SingleClipStates =
+                new UnsafeList<SingleClipStateBlob>(singleClipStates.Length, allocator);
+            
+            converter.LinearBlendStates =
+                new UnsafeList<LinearBlendStateConversionData>(linearBlendStates.Length,
+                    allocator);
+
             ushort clipIndex = 0;
-
-            //Build single states
+            for (var i = 0; i < converter.States.Length; i++)
             {
-                converter.SingleClipStates =
-                    new UnsafeList<SingleClipStateBlob>(stateMachineAsset.SingleClipStates.Count, allocator);
-                converter.SingleClipStates.Resize(stateMachineAsset.SingleClipStates.Count);
-                for (ushort i = 0; i < converter.SingleClipStates.Length; i++)
+                var stateAsset = stateMachineAsset.States[i];
+                var stateImplIndex = -1;
+                switch (stateAsset)
                 {
-                    var singleStateAsset = stateMachineAsset.SingleClipStates[i];
-                    converter.SingleClipStates[i] = new SingleClipStateBlob()
-                    {
-                        ClipIndex = clipIndex,
-                    };
-                    clipIndex++;
+                    case LinearBlendStateAsset linearBlendStateAsset:
+                        stateImplIndex = converter.LinearBlendStates.Length;
+                        var blendParameterIndex =
+                            stateMachineAsset.Parameters
+                                .OfType<FloatParameterAsset>()
+                                .ToList()
+                                .FindIndex(f => f == linearBlendStateAsset.BlendParameter);
+                        
+                        Assert.IsTrue(blendParameterIndex >= 0,
+                            $"({stateMachineAsset.name}) Couldn't find parameter {linearBlendStateAsset.BlendParameter.name}, for Linear Blend State");
+                        
+                        var linearBlendState = new LinearBlendStateConversionData()
+                        {
+                            BlendParameterIndex = (ushort) blendParameterIndex
+                        };
+                        
+                        linearBlendState.ClipsWithThresholds = new UnsafeList<DMotion.ClipWithThreshold>(
+                            linearBlendStateAsset.BlendClips.Length, allocator);
+                        
+                        linearBlendState.ClipsWithThresholds.Resize(linearBlendStateAsset.BlendClips.Length);
+                        for (ushort blendClipIndex = 0; blendClipIndex < linearBlendState.ClipsWithThresholds.Length; blendClipIndex++)
+                        {
+                            linearBlendState.ClipsWithThresholds[blendClipIndex] = new DMotion.ClipWithThreshold()
+                            {
+                                ClipIndex = clipIndex,
+                                Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold
+                            };
+                            clipIndex++;
+                        }
 
-                    converter.States[stateIndex] = BuildStateConversionData(stateMachineAsset, singleStateAsset, i, allocator);
-                    stateIndex++;
-                }
-            }
-
-            //Build linear blend states
-            {
-                converter.LinearBlendStates =
-                    new UnsafeList<LinearBlendStateConversionData>(stateMachineAsset.LinearBlendStates.Count,
-                        allocator);
-                converter.LinearBlendStates.Resize(stateMachineAsset.LinearBlendStates.Count);
-                for (ushort i = 0; i < converter.LinearBlendStates.Length; i++)
-                {
-                    var linearBlendStateAsset = stateMachineAsset.LinearBlendStates[i];
-                    var blendParameterIndex =
-                        stateMachineAsset.Parameters
-                            .OfType<FloatParameterAsset>()
-                            .ToList()
-                            .FindIndex(f => f == linearBlendStateAsset.BlendParameter);
-
-                    Assert.IsTrue(blendParameterIndex >= 0,
-                        $"({stateMachineAsset.name}) Couldn't find parameter {linearBlendStateAsset.BlendParameter.name}, for Linear Blend State");
-                    
-                    var linearBlendState = new LinearBlendStateConversionData()
-                    {
-                        BlendParameterIndex = (ushort) blendParameterIndex
-                    };
-
-                    linearBlendState.ClipsWithThresholds = new UnsafeList<DMotion.ClipWithThreshold>(
-                        linearBlendStateAsset.BlendClips.Length, allocator);
-                    
-                    linearBlendState.ClipsWithThresholds.Resize(linearBlendStateAsset.BlendClips.Length);
-                    for (ushort blendClipIndex = 0; blendClipIndex < linearBlendState.ClipsWithThresholds.Length; blendClipIndex++)
-                    {
-                        linearBlendState.ClipsWithThresholds[blendClipIndex] = new DMotion.ClipWithThreshold()
+                        converter.LinearBlendStates.Add(linearBlendState);
+                        break;
+                    case SingleClipStateAsset singleClipStateAsset:
+                        stateImplIndex = converter.SingleClipStates.Length;
+                        converter.SingleClipStates.Add(new SingleClipStateBlob()
                         {
                             ClipIndex = clipIndex,
-                            Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold
-                        };
+                        });
                         clipIndex++;
-                    }
-
-                    converter.LinearBlendStates[i] = linearBlendState;
-
-                    converter.States[stateIndex] = BuildStateConversionData(stateMachineAsset, linearBlendStateAsset, i, allocator);
-                    stateIndex++;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(stateAsset));
                 }
+                
+                Assert.IsTrue(stateImplIndex >= 0, $"Index to state implementation needs to be assigned");
+                converter.States[i] =
+                    BuildStateConversionData(stateMachineAsset, stateAsset, stateImplIndex, allocator);
             }
         }
 
