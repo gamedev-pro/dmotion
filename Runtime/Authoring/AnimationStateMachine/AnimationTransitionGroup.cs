@@ -8,7 +8,6 @@ namespace DMotion.Authoring
     [Serializable]
     public class StateOutTransition
     {
-        [SubAssetsOnly]
         public AnimationStateAsset ToState;
         public bool HasEndTime;
         [Range(0,1)]

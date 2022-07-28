@@ -1,0 +1,33 @@
+#left-panel-content {
+    flex-grow: 1;
+}
+
+#right-panel-content {
+    flex-grow: 1;
+}
+
+#sm-grid-bg {
+    --grid-background-color: rgb(40, 40, 40);
+    --line-color: rgba(193, 196, 192, 0.1);
+    --thick-line-color: rgba(193, 196, 192, 0.1);
+    --spacing: 15;
+}
+
+#sm-graph-content {
+    flex-grow: 1;
+}
+
+#left-panel-content {
+}
+
+.inspector-container {
+    background-color: rgba(56, 56, 56, 255);
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 10px;
+}
+
+#parameters-inspector {
+    background-color: rgb(51, 51, 51);
+}

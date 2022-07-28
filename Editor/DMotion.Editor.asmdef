@@ -1,0 +1,16 @@
+{
+    "name": "DMotion.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c39b61f68344c5e46ad36a286c992104"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
