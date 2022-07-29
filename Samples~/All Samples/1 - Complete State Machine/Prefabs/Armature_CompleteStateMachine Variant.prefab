@@ -55,6 +55,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sword
       objectReference: {fileID: 0}
+    - target: {fileID: 2604039259613560991, guid: 44be7b1c7c99a7f4f9a613ee65df8ebf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 44be7b1c7c99a7f4f9a613ee65df8ebf, type: 3}
 --- !u!1001 &7110503413644600164
@@ -114,9 +118,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc45015275b906c4eb59ce82f8038c56, type: 3}
---- !u!1 &7957012815488753205 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: fc45015275b906c4eb59ce82f8038c56, type: 3}
+--- !u!4 &606812165286506934 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1529463153523125550, guid: fc45015275b906c4eb59ce82f8038c56, type: 3}
   m_PrefabInstance: {fileID: 7110503413644600164}
   m_PrefabAsset: {fileID: 0}
 --- !u!95 &3730951398196354805 stripped
@@ -124,9 +128,9 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: fc45015275b906c4eb59ce82f8038c56, type: 3}
   m_PrefabInstance: {fileID: 7110503413644600164}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &606812165286506934 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -1529463153523125550, guid: fc45015275b906c4eb59ce82f8038c56, type: 3}
+--- !u!1 &7957012815488753205 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: fc45015275b906c4eb59ce82f8038c56, type: 3}
   m_PrefabInstance: {fileID: 7110503413644600164}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &917321538

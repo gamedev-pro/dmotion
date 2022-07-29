@@ -2231,10 +2231,6 @@ PrefabInstance:
       propertyPath: Owner
       value: 
       objectReference: {fileID: 779924501}
-    - target: {fileID: 2403813879335660453, guid: eebc1de96842acf4193aba1516831de6, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7288843261190358159, guid: eebc1de96842acf4193aba1516831de6, type: 3}
       propertyPath: m_RootOrder
       value: 0
