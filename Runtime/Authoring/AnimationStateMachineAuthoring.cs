@@ -56,7 +56,7 @@ namespace DMotion.Authoring
             {
                 switch (p)
                 {
-                    case BoolParameterAsset:
+                    case BoolParameterAsset _:
                         var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
                         boolParameters.Add(new BoolParameter()
                         {
@@ -64,7 +64,7 @@ namespace DMotion.Authoring
                             Hash = p.Hash,
                         });
                         break;
-                    case FloatParameterAsset:
+                    case FloatParameterAsset _:
                         var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
                         floatParameters.Add(new BlendParameter()
                         {

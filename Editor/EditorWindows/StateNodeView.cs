@@ -61,8 +61,8 @@ namespace DMotion.Editor
         {
             StateNodeView view = model.StateAsset switch
             {
-                SingleClipStateAsset => new SingleClipStateNodeView(model.ParentView.StateNodeXml),
-                LinearBlendStateAsset => new LinearBlendStateNodeView(model.ParentView.StateNodeXml),
+                SingleClipStateAsset _ => new SingleClipStateNodeView(model.ParentView.StateNodeXml),
+                LinearBlendStateAsset _ => new LinearBlendStateNodeView(model.ParentView.StateNodeXml),
                 _ => throw new NotImplementedException()
             };
 

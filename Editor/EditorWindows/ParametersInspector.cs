@@ -20,13 +20,6 @@ namespace DMotion.Editor
     }
     internal class ParametersInspector : StateMachineInspector<ParameterInspectorModel>
     {
-        private SerializedProperty parametersProperty;
-
-        private void OnEnable()
-        {
-            parametersProperty = serializedObject.FindProperty(nameof(StateMachineAsset.Parameters));
-        }
-
         public override void OnInspectorGUI()
         {
             using (new EditorGUILayout.VerticalScope())
@@ -45,6 +38,7 @@ namespace DMotion.Editor
                     }
                 }
 
+                var parametersProperty = serializedObject.FindProperty(nameof(StateMachineAsset.Parameters));
                 var it = parametersProperty.GetEnumerator();
                 while (it.MoveNext())
                 {

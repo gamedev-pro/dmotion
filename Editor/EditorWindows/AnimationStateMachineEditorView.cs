@@ -136,7 +136,7 @@ namespace DMotion.Editor
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
-            return ports
+            return ports.ToList()
                 .Where((nap => nap.direction != startPort.direction &&
                                nap.node != startPort.node)).ToList();
         }
@@ -148,7 +148,7 @@ namespace DMotion.Editor
             transitionToEdgeView.Clear();
             
             graphViewChanged -= OnGraphViewChanged;
-            DeleteElements(graphElements);
+            DeleteElements(graphElements.ToList());
             graphViewChanged += OnGraphViewChanged;
 
             foreach (var s in model.StateMachineAsset.States)
@@ -213,11 +213,11 @@ namespace DMotion.Editor
             };
             switch (obj)
             {
-                case SingleClipStateNodeView:
+                case SingleClipStateNodeView _:
                     model.InspectorView.SetInspector<SingleStateInspector, AnimationStateInspectorModel>
                         (inspectorModel.StateAsset, inspectorModel);
                     break;
-                case LinearBlendStateNodeView:
+                case LinearBlendStateNodeView _:
                     model.InspectorView.SetInspector<LinearBlendStateInspector, AnimationStateInspectorModel>
                         (inspectorModel.StateAsset, inspectorModel);
                     break;

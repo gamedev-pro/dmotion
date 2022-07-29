@@ -12,16 +12,10 @@ namespace DMotion.Editor
     
     internal class TransitionGroupInspector : StateMachineInspector<TransitionGroupInspectorModel>
     {
-        private SerializedProperty outTransitionsProperty;
-
-        private void OnEnable()
-        {
-            outTransitionsProperty =
-                serializedObject.FindProperty(nameof(AnimationStateAsset.OutTransitions));
-        }
-
         public override void OnInspectorGUI()
         {
+            var outTransitionsProperty =
+                serializedObject.FindProperty(nameof(AnimationStateAsset.OutTransitions));
             var it = outTransitionsProperty.GetEnumerator();
             while (it.MoveNext())
             {

@@ -6,7 +6,8 @@
   "description": "DMotion is a high level Animation framework and State Machine for DOTS",
   "dependencies": {
     "com.latios.latiosframework": "0.5.3",
-    "com.unity.shadergraph": "10.8.1"
+    "com.unity.shadergraph": "10.8.1",
+    "com.unity.ui": "1.0.0-preview.18"
   },
   "unityRelease": "30f1",
   "keywords": [

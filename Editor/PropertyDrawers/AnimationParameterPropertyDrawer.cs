@@ -46,9 +46,9 @@ namespace DMotion.Editor
         {
             switch (parameterAsset)
             {
-                case BoolParameterAsset:
+                case BoolParameterAsset _:
                     return "Boolean";
-                case FloatParameterAsset:
+                case FloatParameterAsset _:
                     return "Float";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(parameterAsset));
