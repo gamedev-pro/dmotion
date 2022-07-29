@@ -38,12 +38,6 @@ namespace DMotion.Editor
             var wnd = GetWindow<AnimationStateMachineEditorWindow>();
             wnd.titleContent = new GUIContent("State Machine Editor");
             wnd.OnSelectionChange();
-            Undo.undoRedoPerformed += wnd.OnUndoRedo;
-        }
-
-        private void OnUndoRedo()
-        {
-            OnSelectionChange();
         }
 
         internal void CreateGUI()

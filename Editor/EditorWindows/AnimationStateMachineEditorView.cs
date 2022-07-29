@@ -114,7 +114,6 @@ namespace DMotion.Editor
 
         private void DeleteAllOutTransitions(AnimationStateAsset fromState, AnimationStateAsset toState)
         {
-            Undo.RecordObject(fromState, $"{fromState.name}: Delete all transitions to {toState.name}");
             fromState.OutTransitions.RemoveAll(t => t.ToState == toState);
             transitionToEdgeView.Remove(new TransitionPair(fromState, toState));
         }
@@ -128,7 +127,6 @@ namespace DMotion.Editor
 
         private void CreateOutTransition(AnimationStateAsset fromState, AnimationStateAsset toState)
         {
-            Undo.RecordObject(fromState, $"{fromState.name}: Create Transition to {toState.name}");
             var outTransition = new StateOutTransition(toState);
             fromState.OutTransitions.Add(outTransition);
             InstantiateTransitionEdge(fromState, fromState.OutTransitions.Count-1);

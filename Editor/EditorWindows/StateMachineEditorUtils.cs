@@ -4,6 +4,7 @@ using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Object = System.Object;
 
 namespace DMotion.Editor
 {
@@ -20,7 +21,6 @@ namespace DMotion.Editor
             //TODO: Enable this later. Create editor tool to change this as well
             // state.hideFlags = HideFlags.HideInHierarchy;
             
-            Undo.RecordObject(stateMachineAsset, $"{stateMachineAsset.name}: Create State");
             stateMachineAsset.States.Add(state);
 
             if (stateMachineAsset.DefaultState == null)
@@ -28,7 +28,6 @@ namespace DMotion.Editor
                 stateMachineAsset.SetDefaultState(state);
             }
             AssetDatabase.AddObjectToAsset(state, stateMachineAsset);
-            Undo.RegisterCreatedObjectUndo(state, $"{stateMachineAsset.name}: Create State");
             
             AssetDatabase.SaveAssets();
             return state;
@@ -49,7 +48,7 @@ namespace DMotion.Editor
                 }
             }
             stateMachineAsset.States.Remove(stateAsset);
-            Undo.DestroyObjectImmediate(stateAsset);
+            AssetDatabase.RemoveObjectFromAsset(stateAsset);
             AssetDatabase.SaveAssets();
         }
 
@@ -68,10 +67,8 @@ namespace DMotion.Editor
             //TODO: Enable this later. Create editor tool to change this as well
             // state.hideFlags = HideFlags.HideInHierarchy;
             
-            Undo.RecordObject(stateMachineAsset, $"{stateMachineAsset.name}: Create State");
             stateMachineAsset.Parameters.Add(parameter);
             AssetDatabase.AddObjectToAsset(parameter, stateMachineAsset);
-            Undo.RegisterCreatedObjectUndo(parameter, $"{stateMachineAsset.name}: Create State");
             
             AssetDatabase.SaveAssets();
             return parameter;
@@ -79,7 +76,6 @@ namespace DMotion.Editor
         
         public static void DeleteParameter(this StateMachineAsset stateMachineAsset, AnimationParameterAsset parameterAsset)
         {
-            Undo.RecordObject(stateMachineAsset, $"{stateMachineAsset.name}: Delete Parameter {parameterAsset.name}");
             //Remove all transitions that reference this state
             foreach (var state in stateMachineAsset.States)
             {
@@ -91,7 +87,7 @@ namespace DMotion.Editor
             }
 
             stateMachineAsset.Parameters.Remove(parameterAsset);
-            Undo.DestroyObjectImmediate(parameterAsset);
+            AssetDatabase.RemoveObjectFromAsset(parameterAsset);
             AssetDatabase.SaveAssets();
         }
 

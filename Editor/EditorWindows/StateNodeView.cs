@@ -142,7 +142,6 @@ namespace DMotion.Editor
         public override void SetPosition(Rect newPos)
         {
             base.SetPosition(newPos);
-            Undo.RecordObject(State, $"{name}: SetPosition");
             State.StateEditorData.GraphPosition = new Vector2(newPos.xMin, newPos.yMin);
             EditorUtility.SetDirty(State);
         }
