@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    public abstract class AnimationStateAsset : ScriptableObject
+    public abstract class StateMachineSubAsset : ScriptableObject{}
+    public abstract class AnimationStateAsset : StateMachineSubAsset
     {
         public bool Loop = true;
         public float Speed = 1;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    public abstract class AnimationParameterAsset : ScriptableObject
+    public abstract class AnimationParameterAsset : StateMachineSubAsset
     {
         public int Hash => name.GetHashCode();
     }

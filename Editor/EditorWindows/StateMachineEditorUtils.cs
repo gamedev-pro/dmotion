@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
 using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Object = System.Object;
 
 namespace DMotion.Editor
 {
