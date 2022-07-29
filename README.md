@@ -57,7 +57,7 @@ Add the following lines to your `Packages/manifest.json` file
 
 ```json
 "com.latios.latiosframework": "https://github.com/Dreaming381/Latios-Framework.git",
-"com.gamedevpro.dmotion": "https://github.com/gamedev-pro/dmotion-runtime.git",
+"com.gamedevpro.dmotion": "https://github.com/gamedev-pro/dmotion.git",
 ```
 
 ### Via Package Manager
@@ -65,13 +65,13 @@ Add the following lines to your `Packages/manifest.json` file
 - Window -> Package Manager -> Click the + button -> Add package from git url
 - Paste `https://github.com/Dreaming381/Latios-Framework.git`
 - Click again to add another git package
-- Paste `https://github.com/gamedev-pro/dmotion-runtime.git`
+- Paste `https://github.com/gamedev-pro/dmotion.git`
 
 ### Via git submodule
 
 - `cd` to your Packages folder
 - `git submodule add https://github.com/Dreaming381/Latios-Framework.git`
-- `git submodule add https://github.com/gamedev-pro/dmotion-runtime.git`
+- `git submodule add https://github.com/gamedev-pro/dmotion.git`
 
 ## Getting Started
 
