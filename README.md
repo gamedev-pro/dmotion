@@ -8,9 +8,10 @@ I've built this tool with usability and performance in mind. It's current ~30% f
 
 Overall, this system should feel similar to Unity's Mechanim system, however there is no intention to build a feature by feature clone of Mechanim, and I deliberately excluded features of Mechanim that I believe are not useful (more on that below), and added new use features that I've found are useful for games, which Mechanim does not support.
 
-### Current Features (v0.2.0)
+### Current Features (v0.3.0)
 
-- State Machine runtime and authoring framework
+- Fully bursted runtime
+- State Machine visual editor (and other custom editors)
 - Play single clip
 - 1D Blend Tree
 - Loop and speed control
@@ -57,7 +58,7 @@ Add the following lines to your `Packages/manifest.json` file
 
 ```json
 "com.latios.latiosframework": "https://github.com/Dreaming381/Latios-Framework.git",
-"com.gamedevpro.dmotion": "https://github.com/gamedev-pro/dmotion-runtime.git",
+"com.gamedevpro.dmotion": "https://github.com/gamedev-pro/dmotion.git",
 ```
 
 ### Via Package Manager
@@ -65,13 +66,13 @@ Add the following lines to your `Packages/manifest.json` file
 - Window -> Package Manager -> Click the + button -> Add package from git url
 - Paste `https://github.com/Dreaming381/Latios-Framework.git`
 - Click again to add another git package
-- Paste `https://github.com/gamedev-pro/dmotion-runtime.git`
+- Paste `https://github.com/gamedev-pro/dmotion.git`
 
 ### Via git submodule
 
 - `cd` to your Packages folder
 - `git submodule add https://github.com/Dreaming381/Latios-Framework.git`
-- `git submodule add https://github.com/gamedev-pro/dmotion-runtime.git`
+- `git submodule add https://github.com/gamedev-pro/dmotion.git`
 
 ## Getting Started
 

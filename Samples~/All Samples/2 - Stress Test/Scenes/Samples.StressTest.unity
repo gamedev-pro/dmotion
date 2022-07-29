@@ -261,8 +261,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79fea53e426d4b3c8c6ed10477e153fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SkeletonPrefab: {fileID: 5840822710490188225, guid: 9efb28e2f05a8974d90a32858984246c, type: 3}
-  SkeletonsCount: 1500
+  SkeletonPrefab: {fileID: 4121311047611608358, guid: 53294ae9beff2d14db14a191d7b19161, type: 3}
+  SkeletonsCount: 10000
   Spacing: 1
 --- !u!4 &760342493
 Transform:
@@ -381,7 +381,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0.9506539, z: -0.31025332, w: 0}
-  m_LocalPosition: {x: 0, y: 18.5, z: 30.4}
+  m_LocalPosition: {x: 0, y: 44.68, z: 77.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

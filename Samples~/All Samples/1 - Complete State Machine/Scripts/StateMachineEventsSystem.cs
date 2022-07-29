@@ -1,4 +1,5 @@
 using DMotion;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
@@ -57,7 +58,9 @@ namespace DMotion.Samples.CompleteStateMachine
                 {
                     if (raisedEvents[i].EventHash == exampleEvents.FootStepEventHash)
                     {
-                        Debug.Log("Footstep");
+                        var str = FixedString.Format("Footstep raised by clip: {0} (w: {1})",
+                            raisedEvents[i].ClipHandle.Clip.name, raisedEvents[i].ClipWeight);
+                        Debug.Log(str);
                     }
                 }
             }).ScheduleParallel();

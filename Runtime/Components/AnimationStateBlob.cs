@@ -14,6 +14,7 @@ namespace DMotion
         internal ushort StateIndex;
         internal bool Loop;
         internal float Speed;
+        internal BlobArray<StateOutTransitionGroup> Transitions;
     }
     
     internal struct SingleClipStateBlob

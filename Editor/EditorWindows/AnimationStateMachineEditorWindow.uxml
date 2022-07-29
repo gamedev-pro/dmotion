@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.gamedevpro.dmotion-editor/Editor/EditorWindows/AnimationStateMachineEditorWindow.uss?fileID=7433441132597879392&amp;guid=d629fb6c0d954b04991c58bd8856a89f&amp;type=3#AnimationStateMachineEditorWindow" />
+    <DMotion.Editor.SplitView fixed-pane-initial-dimension="300">
+        <ui:VisualElement name="left-panel">
+            <ui:VisualElement name="left-panel-content">
+                <DMotion.Editor.SplitView orientation="Vertical" fixed-pane-initial-dimension="125">
+                    <DMotion.Editor.StateMachineInspectorView name="parameters-inspector" class="inspector-container" />
+                    <DMotion.Editor.StateMachineInspectorView name="inspector" class="inspector-container" style="height: 142px;" />
+                </DMotion.Editor.SplitView>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="right-panel">
+            <ui:VisualElement name="right-panel-content">
+                <DMotion.Editor.AnimationStateMachineEditorView focusable="true" name="sm-graph-content" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </DMotion.Editor.SplitView>
+</ui:UXML>

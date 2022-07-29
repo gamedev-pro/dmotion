@@ -1296,6 +1296,27 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.CategoryData",
+    "m_ObjectId": "7b6b8154de5b48f8a75558b7ee0876ff",
+    "m_Name": "",
+    "m_ChildObjectList": [
+        {
+            "m_Id": "5e860e150bc54e76a97dc93721ccaaa9"
+        },
+        {
+            "m_Id": "563fa8feabb5466da6e446d94bf3a402"
+        },
+        {
+            "m_Id": "79650bb336814b7e82e07faa7a8bce13"
+        },
+        {
+            "m_Id": "96c050104de946039b3f86ed20a47dc4"
+        }
+    ]
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "7ced8dce3d0a44a19fc21a8787a774f1",
     "m_Id": 4,
@@ -1772,7 +1793,7 @@
 }
 
 {
-    "m_SGVersion": 0,
+    "m_SGVersion": 1,
     "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalTarget",
     "m_ObjectId": "c6a0de1f45734d06a05742e4b2b6b378",
     "m_ActiveSubTarget": {

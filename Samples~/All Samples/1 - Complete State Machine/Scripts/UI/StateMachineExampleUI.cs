@@ -10,7 +10,6 @@ namespace DMotion.Samples.CompleteStateMachine
         public Slider BlendSlider;
         public Button AtkButton;
         public Button AtkRmButton;
-        public Toggle IsJumpingToggle;
         public Toggle IsFallingToggle;
     }
 }

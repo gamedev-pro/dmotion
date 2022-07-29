@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    [CreateAssetMenu(menuName = StateMachineEditorConstants.StatesPath + "/Single Clip")]
     public class SingleClipStateAsset : AnimationStateAsset
     {
         public AnimationClipAsset Clip;

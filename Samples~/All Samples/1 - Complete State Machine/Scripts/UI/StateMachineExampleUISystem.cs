@@ -5,7 +5,6 @@ namespace DMotion.Samples.CompleteStateMachine
 {
     public partial class StateMachineExampleUISystem : SystemBase
     {
-        private static int IsJumpingHash => StateMachineParameterUtils.GetHashCode("IsJumping");
         private static int IsFallingHash => StateMachineParameterUtils.GetHashCode("IsFalling");
         private static int SpeedHash => StateMachineParameterUtils.GetHashCode("Speed");
 
@@ -48,7 +47,6 @@ namespace DMotion.Samples.CompleteStateMachine
                     ref DynamicBuffer<BoolParameter> boolParameters) =>
                 {
                     boolParameters.SetParameter(IsFallingHash, stateMachineUI.IsFallingToggle.isOn);
-                    boolParameters.SetParameter(IsJumpingHash, stateMachineUI.IsJumpingToggle.isOn);
                     blendParameters.SetParameter(SpeedHash, stateMachineUI.BlendSlider.value);
 
                     if (playSlash)
