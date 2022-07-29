@@ -1,6 +1,8 @@
 # DMotion - A High Level Animation Framework and State Machine for DOTS
 
-[![DMotion Sample Video](https://img.youtube.com/vi/7lEJGOGHp2Q/0.jpg)](https://www.youtube.com/watch?v=7lEJGOGHp2Q)
+![image](https://user-images.githubusercontent.com/15620434/181682232-5e1eec98-d521-4b24-88be-ce447283bb12.png)
+
+![image](https://user-images.githubusercontent.com/15620434/181682257-ddde45d2-cb9c-480b-a578-069ab81b4761.png)
 
 DMotion (DOTS Motion) is an opnionated general purpose Animation framework and State Machine for DOTS, built on top of [Kinemation](https://github.com/Dreaming381/Latios-Framework/tree/master/Kinemation).
 
