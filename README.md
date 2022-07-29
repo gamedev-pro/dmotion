@@ -8,9 +8,10 @@ I've built this tool with usability and performance in mind. It's current ~30% f
 
 Overall, this system should feel similar to Unity's Mechanim system, however there is no intention to build a feature by feature clone of Mechanim, and I deliberately excluded features of Mechanim that I believe are not useful (more on that below), and added new use features that I've found are useful for games, which Mechanim does not support.
 
-### Current Features (v0.2.0)
+### Current Features (v0.3.0)
 
-- State Machine runtime and authoring framework
+- Fully bursted runtime
+- State Machine visual editor (and other custom editors)
 - Play single clip
 - 1D Blend Tree
 - Loop and speed control
