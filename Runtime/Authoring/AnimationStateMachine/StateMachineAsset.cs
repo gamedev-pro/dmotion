@@ -10,8 +10,9 @@ namespace DMotion.Authoring
         public AnimationStateAsset DefaultState;
         public List<AnimationStateAsset> States = new List<AnimationStateAsset>();
         public List<AnimationParameterAsset> Parameters = new List<AnimationParameterAsset>();
+        public List<AnimationClipAsset> Clips = new List<AnimationClipAsset>();
+        public int ClipCount => Clips.Count;
 
-        public IEnumerable<AnimationClipAsset> Clips => States.SelectMany(s => s.Clips);
-        public int ClipCount => States.Sum(s => s.ClipCount);
+        public GameObject ClipPreviewGameObject;
     }
 }

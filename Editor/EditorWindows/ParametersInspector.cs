@@ -22,6 +22,23 @@ namespace DMotion.Editor
     {
         public override void OnInspectorGUI()
         {
+            EditorGUILayout.LabelField($"Editing:");
+            EditorGUILayout.LabelField($"    {serializedObject.FindProperty("m_Name").stringValue}");
+
+            if (target is StateMachineAsset stateMachineAsset)
+            {
+                EditorGUILayout.LabelField($"Preview Object:");
+                using (var c = new EditorGUI.ChangeCheckScope())
+                {
+                    stateMachineAsset.ClipPreviewGameObject =
+                        (GameObject)EditorGUILayout.ObjectField(stateMachineAsset.ClipPreviewGameObject,
+                            typeof(GameObject), true);
+                    if (c.changed)
+                        serializedObject.ApplyModifiedProperties();
+                }
+            }
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
             using (new EditorGUILayout.VerticalScope())
             {
                 using (new EditorGUILayout.HorizontalScope())

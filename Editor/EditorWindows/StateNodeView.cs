@@ -50,6 +50,8 @@ namespace DMotion.Editor
         internal Action<StateNodeView> StateSelectedEvent;
         public AnimationStateAsset State => model.StateAsset;
         public StateMachineAsset StateMachine => model.ParentView.StateMachine;
+
+        public AnimationStateMachineEditorView ParentView => model.ParentView;
         public Port input;
         public Port output;
 

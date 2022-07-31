@@ -36,7 +36,7 @@ namespace DMotion.Editor
         internal static void ShowExample()
         {
             var wnd = GetWindow<AnimationStateMachineEditorWindow>();
-            wnd.titleContent = new GUIContent("State Machine Editor");
+            wnd.titleContent = new GUIContent($"State Machine Editor");
             wnd.OnSelectionChange();
         }
 
@@ -51,7 +51,16 @@ namespace DMotion.Editor
                 parametersInspectorView = root.Q<StateMachineInspectorView>("parameters-inspector");
             }
         }
-        
+
+        private void OnDestroy()
+        {
+            if (stateMachineEditorView != null)
+            {
+                if (stateMachineEditorView.SingleClipPreview != null)
+                    stateMachineEditorView.SingleClipPreview.Dispose();
+            }
+        }
+
         [OnOpenAsset]
         internal static bool OnOpenBehaviourTree(int instanceId, int line)
         {

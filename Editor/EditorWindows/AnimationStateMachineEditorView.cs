@@ -47,6 +47,9 @@ namespace DMotion.Editor
         internal StateMachineAsset StateMachine => model.StateMachineAsset;
         internal VisualTreeAsset StateNodeXml => model.StateNodeXml;
 
+        public SingleClipPreview SingleClipPreview;
+        internal AnimationEventsPropertyDrawer _lastUsedDrawer;
+
         public AnimationStateMachineEditorView()
         {
             var gridBg = new GridBackground();
@@ -56,6 +59,11 @@ namespace DMotion.Editor
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
+
+            SingleClipPreview = new SingleClipPreview(null);
+            if (model.StateMachineAsset != null)
+                SingleClipPreview.GameObject = model.StateMachineAsset.ClipPreviewGameObject;
+            SingleClipPreview.Initialize();
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -207,11 +215,12 @@ namespace DMotion.Editor
         {
             var inspectorModel = new AnimationStateInspectorModel
             {
-                StateView = obj
+                StateView = obj,
             };
             switch (obj)
             {
                 case SingleClipStateNodeView _:
+                    inspectorModel.Preview = SingleClipPreview;
                     model.InspectorView.SetInspector<SingleStateInspector, AnimationStateInspectorModel>
                         (inspectorModel.StateAsset, inspectorModel);
                     break;

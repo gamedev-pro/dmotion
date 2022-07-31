@@ -8,6 +8,27 @@ namespace DMotion.Editor
 {
     internal static class StateMachineEditorUtils
     {
+        public static AnimationClipAsset CreateClipAsset(this StateMachineAsset stateMachineAsset, AnimationClip clipReference)
+        {
+            var clip = ScriptableObject.CreateInstance<AnimationClipAsset>();
+
+            clip.name = $"New Clip Asset {stateMachineAsset.States.Count + 1}";
+            clip.Clip = clipReference;
+            stateMachineAsset.Clips.Add(clip);
+            AssetDatabase.AddObjectToAsset(clip, stateMachineAsset);
+            
+            AssetDatabase.SaveAssets();
+            return clip;
+        }
+
+        public static void DeleteClipAsset(this StateMachineAsset stateMachineAsset, AnimationClipAsset clipAsset)
+        {
+            //Remove all transitions that reference this state
+            stateMachineAsset.Clips.Remove(clipAsset);
+            AssetDatabase.RemoveObjectFromAsset(clipAsset);
+            AssetDatabase.SaveAssets();
+        }
+        
         public static AnimationStateAsset CreateState(this StateMachineAsset stateMachineAsset, Type type)
         {
             Assert.IsTrue(typeof(AnimationStateAsset).IsAssignableFrom(type));
