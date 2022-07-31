@@ -59,10 +59,12 @@ namespace DMotion.Editor
                             {
                                 // Detatch the previous preview from the single preview pane so we can use the new
                                 // one.
-                                if (model.StateView.ParentView._lastUsedDrawer != null)
-                                    model.StateView.ParentView._lastUsedDrawer.SetPreview(null);
+                                if (model.StateView.ParentView.lastUsedDrawer != null)
+                                    model.StateView.ParentView.lastUsedDrawer.SetPreview(null);
                                 _eventsPropertyDrawer.SetPreview(singleClipPreview);
-                                model.StateView.ParentView._lastUsedDrawer = _eventsPropertyDrawer;
+                                model.StateView.ParentView.lastUsedDrawer = _eventsPropertyDrawer;
+                                model.Preview.Initialize();
+                                model.StateView.ParentView.ShouldDrawSingleClipPreview = true;
                             }
                         }
                     }

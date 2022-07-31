@@ -132,6 +132,8 @@ namespace DMotion.Editor
 
             using (var c = new EditorGUI.ChangeCheckScope())
             {
+                if (clipAsset == null || clipAsset.Events == null)
+                    return;
                 var cachedEvents = clipAsset.Events.ToList();
                 GUI.color = Color.white;
                 EditorGUILayout.PropertyField(property, GUIContent.none, true);
@@ -307,6 +309,8 @@ namespace DMotion.Editor
                 GUI.DrawTexture(timeMarker.VisualRect, WhiteTex);
             }
             {
+                if (clipAsset == null || clipAsset.Events == null)
+                    return;
                 eventMarkers.Clear();
                 for (var i = 0; i < clipAsset.Events.Length; i++)
                 {

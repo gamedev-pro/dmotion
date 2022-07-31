@@ -14,6 +14,7 @@ namespace DMotion.Editor
 
             clip.name = $"New Clip Asset {stateMachineAsset.States.Count + 1}";
             clip.Clip = clipReference;
+            clip.Events = Array.Empty<Authoring.AnimationClipEvent>();
             stateMachineAsset.Clips.Add(clip);
             AssetDatabase.AddObjectToAsset(clip, stateMachineAsset);
             

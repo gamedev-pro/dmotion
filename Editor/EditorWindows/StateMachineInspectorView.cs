@@ -44,5 +44,13 @@ namespace DMotion.Editor
             });
             Add(imgui);
         }
+    
+        public void ClearInspector()
+        {
+            if (editor != null)
+                Object.DestroyImmediate(editor);
+
+            Clear();
+        }
     }
 }

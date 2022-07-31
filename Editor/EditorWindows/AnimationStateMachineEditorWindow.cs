@@ -49,6 +49,16 @@ namespace DMotion.Editor
                 stateMachineEditorView = root.Q<AnimationStateMachineEditorView>();
                 inspectorView = root.Q<StateMachineInspectorView>("inspector");
                 parametersInspectorView = root.Q<StateMachineInspectorView>("parameters-inspector");
+
+                var previewElement = new VisualElement();
+                previewElement.Add(new IMGUIContainer(PreviewOnInspectorGUI));
+                previewElement.style.position = new StyleEnum<Position>(Position.Absolute);
+                previewElement.style.bottom = new StyleLength(new Length(EditorGUIUtility.standardVerticalSpacing, LengthUnit.Pixel));
+                previewElement.style.right =
+                    new StyleLength(new Length(EditorGUIUtility.standardVerticalSpacing, LengthUnit.Pixel));
+                previewElement.style.width = new StyleLength(new Length(300, LengthUnit.Pixel));
+                previewElement.style.height = new StyleLength(new Length(300, LengthUnit.Pixel));
+                root.Add(previewElement);
             }
         }
 
@@ -58,6 +68,16 @@ namespace DMotion.Editor
             {
                 if (stateMachineEditorView.SingleClipPreview != null)
                     stateMachineEditorView.SingleClipPreview.Dispose();
+            }
+        }
+
+        public void PreviewOnInspectorGUI()
+        {
+            if (stateMachineEditorView.ShouldDrawSingleClipPreview && stateMachineEditorView.SingleClipPreview != null)
+            {
+                var controlRect = EditorGUILayout.GetControlRect();
+                controlRect.height = controlRect.width;
+                stateMachineEditorView.SingleClipPreview.DrawPreview(controlRect, GUIStyle.none);
             }
         }
 

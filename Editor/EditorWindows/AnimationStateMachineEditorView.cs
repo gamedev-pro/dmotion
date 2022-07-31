@@ -48,7 +48,9 @@ namespace DMotion.Editor
         internal VisualTreeAsset StateNodeXml => model.StateNodeXml;
 
         public SingleClipPreview SingleClipPreview;
-        internal AnimationEventsPropertyDrawer _lastUsedDrawer;
+        public bool ShouldDrawSingleClipPreview;
+        internal AnimationEventsPropertyDrawer lastUsedDrawer;
+        private StateNodeView lastSelectedNode;
 
         public AnimationStateMachineEditorView()
         {
@@ -84,7 +86,19 @@ namespace DMotion.Editor
                 {
                     if (el is StateNodeView stateView)
                     {
+                        if (stateView.State.Clips != null && stateView.State.Clips.Any())
+                        {
+                            foreach (var animationClipAsset in stateView.State.Clips)
+                                DeleteClip(animationClipAsset);
+                        }
+                        
                         DeleteState(stateView.State);
+
+                        if (lastSelectedNode == el)
+                        {
+                            model.InspectorView.ClearInspector();
+                            lastSelectedNode = null;
+                        }
                     }
                     else if (el is TransitionEdge transition)
                     {
@@ -118,6 +132,11 @@ namespace DMotion.Editor
         private void DeleteState(AnimationStateAsset state)
         {
             model.StateMachineAsset.DeleteState(state);
+        }
+
+        private void DeleteClip(AnimationClipAsset clipAsset)
+        {
+            model.StateMachineAsset.DeleteClipAsset(clipAsset);
         }
 
         private void DeleteAllOutTransitions(AnimationStateAsset fromState, AnimationStateAsset toState)
@@ -209,6 +228,9 @@ namespace DMotion.Editor
             stateToView.Add(state, stateView);
 
             stateView.StateSelectedEvent += OnStateSelected;
+
+            // Select the newly created state
+            OnStateSelected(stateView);
         }
 
         private void OnStateSelected(StateNodeView obj)
@@ -217,6 +239,12 @@ namespace DMotion.Editor
             {
                 StateView = obj,
             };
+            if (obj != lastSelectedNode)
+            {
+                ShouldDrawSingleClipPreview = false;
+                lastSelectedNode = obj;
+            }
+
             switch (obj)
             {
                 case SingleClipStateNodeView _:
