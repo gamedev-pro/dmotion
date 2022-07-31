@@ -253,6 +253,9 @@ namespace DMotion.Editor
                         (inspectorModel.StateAsset, inspectorModel);
                     break;
                 case LinearBlendStateNodeView _:
+                    // In the future we could theoretically send along a preview of the whole state at once rather than
+                    // individual ones.
+                    inspectorModel.Preview = SingleClipPreview;
                     model.InspectorView.SetInspector<LinearBlendStateInspector, AnimationStateInspectorModel>
                         (inspectorModel.StateAsset, inspectorModel);
                     break;
