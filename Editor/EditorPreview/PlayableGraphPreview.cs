@@ -25,11 +25,22 @@ namespace DMotion.Editor
         protected abstract PlayableGraph BuildGraph();
         protected abstract IEnumerable<AnimationClip> Clips { get; }
         protected abstract float SampleTime { get; }
+        
+        protected abstract float PercentageDone { get; }
+        
+        protected abstract int FrameCount { get; }
+        
+        protected abstract string PreviewName { get; }
+
+        private GUIStyle TextStyle;
 
         public void Initialize()
         {
             AnimationMode.StartAnimationMode();
             RefreshPreviewObjects();
+            
+            TextStyle = new GUIStyle(EditorStyles.boldLabel);
+            TextStyle.alignment = TextAnchor.LowerCenter;
         }
         private void SetGameObjectPreview(GameObject newValue)
         {
@@ -195,6 +206,9 @@ namespace DMotion.Editor
 
                     var resultRender = previewRenderUtility.EndPreview();
                     GUI.DrawTexture(r, resultRender, ScaleMode.StretchToFill, false);
+
+                    var newRect = new Rect(r);
+                    GUI.Label(newRect, $"{PreviewName}\n{SampleTime:F2} ({PercentageDone:F2}%) Frame {FrameCount}", TextStyle);
                 }
             }
         }

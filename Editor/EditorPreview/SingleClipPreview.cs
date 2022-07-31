@@ -37,6 +37,12 @@ namespace DMotion.Editor
             set => sampleNormalizedTime = Mathf.Clamp01(value);
         }
         protected override float SampleTime => SampleNormalizedTime * Clip.length;
+
+        protected override float PercentageDone => SampleTime * 100f / Clip.length;
+        
+        protected override int FrameCount => Mathf.RoundToInt(Clip.frameRate * SampleTime);
+
+        protected override string PreviewName => Clip.name;
         
         public SingleClipPreview(AnimationClip clip)
         {
