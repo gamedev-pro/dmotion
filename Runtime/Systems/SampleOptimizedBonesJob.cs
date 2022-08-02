@@ -22,7 +22,7 @@ namespace DMotion
                 if (!mathex.iszero(sampler.Weight))
                 {
                     activeSamplerCount++;
-                    sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.NormalizedTime);
+                    sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.Time);
                 }
             }
             

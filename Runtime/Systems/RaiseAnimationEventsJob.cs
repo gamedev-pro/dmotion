@@ -21,8 +21,8 @@ namespace DMotion
                 }
                 
                 var clipIndex = sampler.ClipIndex;
-                var previousSamplerTime = sampler.PreviousNormalizedTime;
-                var currentSamplerTime = sampler.NormalizedTime;
+                var previousSamplerTime = sampler.PreviousTime;
+                var currentSamplerTime = sampler.Time;
                 ref var clipEvents = ref sampler.ClipEventsBlob.Value.ClipEvents[clipIndex].Events;
                 for (short i = 0; i < clipEvents.Length; i++)
                 {
@@ -32,13 +32,13 @@ namespace DMotion
                     if (previousSamplerTime > currentSamplerTime)
                     {
                         //this mean we looped the clip
-                        shouldRaiseEvent = e.NormalizedTime >= previousSamplerTime && e.NormalizedTime <= 1 ||
-                                           e.NormalizedTime >= 0 && e.NormalizedTime <= currentSamplerTime;
+                        shouldRaiseEvent = e.ClipTime >= previousSamplerTime && e.ClipTime <= 1 ||
+                                           e.ClipTime >= 0 && e.ClipTime <= currentSamplerTime;
                     }
                     else
                     {
-                        shouldRaiseEvent = e.NormalizedTime >= previousSamplerTime &&
-                                           e.NormalizedTime <= currentSamplerTime;
+                        shouldRaiseEvent = e.ClipTime >= previousSamplerTime &&
+                                           e.ClipTime <= currentSamplerTime;
                     }
 
                     if (shouldRaiseEvent)

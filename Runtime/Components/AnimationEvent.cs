@@ -15,7 +15,7 @@ namespace DMotion
     {
         internal short ClipIndex;
         internal int EventHash;
-        internal float NormalizedTime;
+        internal float ClipTime;
     }
 
     internal struct ClipEvents

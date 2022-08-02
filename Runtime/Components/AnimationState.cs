@@ -77,8 +77,8 @@ namespace DMotion
                     ClipIndex = clip.ClipIndex,
                     Clips = clips,
                     ClipEventsBlob = clipEvents,
-                    PreviousNormalizedTime = 0,
-                    NormalizedTime = 0,
+                    PreviousTime = 0,
+                    Time = 0,
                     Weight = 0
                 };
             }
@@ -95,8 +95,8 @@ namespace DMotion
                 ClipIndex = singleClip.ClipIndex,
                 Clips = clips,
                 ClipEventsBlob = clipEvents,
-                PreviousNormalizedTime = 0,
-                NormalizedTime = 0,
+                PreviousTime = 0,
+                Time = 0,
                 Weight = 0
             });
         }
@@ -127,8 +127,8 @@ namespace DMotion
             var sampler = samplers[samplerIndex];
             sampler.Weight = blendWeight;
 
-            sampler.PreviousNormalizedTime = sampler.NormalizedTime;
-            sampler.NormalizedTime += dt * Speed;
+            sampler.PreviousTime = sampler.Time;
+            sampler.Time += dt * Speed;
             if (Loop)
             {
                 sampler.LoopToClipTime();
@@ -207,8 +207,8 @@ namespace DMotion
                 {
                     var sampler = samplers[i];
                     var samplerSpeed = stateSpeed * sampler.Clip.duration * invLoopDuration;
-                    sampler.PreviousNormalizedTime = sampler.NormalizedTime;
-                    sampler.NormalizedTime += dt * samplerSpeed;
+                    sampler.PreviousTime = sampler.Time;
+                    sampler.Time += dt * samplerSpeed;
 
                     if (Loop)
                     {

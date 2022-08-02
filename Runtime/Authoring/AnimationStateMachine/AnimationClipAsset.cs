@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DMotion.Authoring
 {
@@ -7,8 +8,8 @@ namespace DMotion.Authoring
     public struct AnimationClipEvent
     {
         public AnimationEventName Name;
-        [Range(0,1)]
-        public float NormalizedTime;
+        [Min(0), FormerlySerializedAs("NormalizedTime")]
+        public float Time;
 
         public int Hash => Name.Hash;
     }

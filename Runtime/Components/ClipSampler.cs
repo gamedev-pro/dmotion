@@ -25,8 +25,8 @@ namespace DMotion
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
         internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal ushort ClipIndex;
-        internal float PreviousNormalizedTime;
-        internal float NormalizedTime;
+        internal float PreviousTime;
+        internal float Time;
         internal float Weight;
 
         internal ref SkeletonClip Clip => ref Clips.Value.clips[ClipIndex];
@@ -34,8 +34,8 @@ namespace DMotion
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void LoopToClipTime()
         {
-            NormalizedTime = Clip.LoopToClipTime(NormalizedTime);
-            PreviousNormalizedTime = Clip.LoopToClipTime(PreviousNormalizedTime);
+            Time = Clip.LoopToClipTime(Time);
+            PreviousTime = Clip.LoopToClipTime(PreviousTime);
         }
     }
 }

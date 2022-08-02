@@ -8,9 +8,9 @@ namespace DMotion
     [BurstCompile]
     internal static class ClipSamplingUtils
     {
-        public static BoneTransform SampleWeightedFirstIndex(int boneIndex, ref SkeletonClip clip, float normalizedTime, float weight)
+        public static BoneTransform SampleWeightedFirstIndex(int boneIndex, ref SkeletonClip clip, float time, float weight)
         {
-            var bone = clip.SampleBone(boneIndex, normalizedTime);
+            var bone = clip.SampleBone(boneIndex, time);
             bone.translation *= weight;
             var rot = bone.rotation;
             rot.value *= weight;
@@ -19,9 +19,9 @@ namespace DMotion
             return bone;
         }
 
-        public static void SampleWeightedNIndex(ref BoneTransform bone, int boneIndex, ref SkeletonClip clip, float normalizedTime, float weight)
+        public static void SampleWeightedNIndex(ref BoneTransform bone, int boneIndex, ref SkeletonClip clip, float time, float weight)
         {
-            var otherBone = clip.SampleBone(boneIndex, normalizedTime);
+            var otherBone = clip.SampleBone(boneIndex, time);
             bone.translation += otherBone.translation * weight;
 
             //blends rotation. Negates opposing quaternions to be sure to choose the shortest path

@@ -57,7 +57,7 @@ namespace DMotion
                 {
                     //initialize
                     oneShotState = new OneShotState(clipSamplers.Length,
-                        playOneShot.NormalizedTransitionDuration,
+                        playOneShot.TransitionDuration,
                         playOneShot.EndTime,
                         playOneShot.Speed);
                     
@@ -66,8 +66,8 @@ namespace DMotion
                         ClipIndex = (byte)playOneShot.ClipIndex,
                         Clips = playOneShot.Clips,
                         ClipEventsBlob = playOneShot.ClipEvents,
-                        NormalizedTime = 0,
-                        PreviousNormalizedTime = 0,
+                        Time = 0,
+                        PreviousTime = 0,
                         Weight = 1
                     });
 
@@ -104,17 +104,17 @@ namespace DMotion
                 if (oneShotState.IsValid)
                 {
                     var sampler = clipSamplers[oneShotState.SamplerIndex];
-                    sampler.PreviousNormalizedTime = sampler.NormalizedTime;
-                    sampler.NormalizedTime += DeltaTime * oneShotState.Speed;
+                    sampler.PreviousTime = sampler.Time;
+                    sampler.Time += DeltaTime * oneShotState.Speed;
 
                     float oneShotWeight;
                     //blend out
-                    if (sampler.NormalizedTime > oneShotState.EndTime)
+                    if (sampler.Time > oneShotState.EndTime)
                     {
                         var blendOutTime = 1 - oneShotState.EndTime;
                         if (!mathex.iszero(blendOutTime))
                         {
-                            oneShotWeight = math.clamp((1 - sampler.NormalizedTime) /
+                            oneShotWeight = math.clamp((1 - sampler.Time) /
                                                    blendOutTime, 0, 1);
                         }
                         else
@@ -125,8 +125,8 @@ namespace DMotion
                     //blend in
                     else
                     {
-                        oneShotWeight = math.clamp(sampler.NormalizedTime /
-                                               oneShotState.NormalizedTransitionDuration, 0, 1);
+                        oneShotWeight = math.clamp(sampler.Time /
+                                               oneShotState.TransitionDuration, 0, 1);
                     }
 
                     sampler.Weight = oneShotWeight;
@@ -135,7 +135,7 @@ namespace DMotion
                     clipSamplers[oneShotState.SamplerIndex] = sampler;
                     
                     //if blend out finished
-                    if (sampler.NormalizedTime >= 1)
+                    if (sampler.Time >= 1)
                     {
                         stateMachine.Weight = 1;
                         clipSamplers.RemoveAt(oneShotState.SamplerIndex);

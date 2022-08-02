@@ -36,7 +36,7 @@ namespace DMotion.Authoring
                     {
                         ClipIndex = (short) clipIndex,
                         EventHash = clipAssetEvent.Hash,
-                        NormalizedTime = clipAssetEvent.NormalizedTime
+                        ClipTime = clipAssetEvent.Time
                     };
                 }
 

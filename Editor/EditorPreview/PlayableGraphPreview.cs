@@ -24,7 +24,7 @@ namespace DMotion.Editor
         
         protected abstract PlayableGraph BuildGraph();
         protected abstract IEnumerable<AnimationClip> Clips { get; }
-        protected abstract float SampleTime { get; }
+        public abstract float SampleTime { get; set; }
 
         public void Initialize()
         {

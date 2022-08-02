@@ -7,7 +7,7 @@ namespace DMotion.Editor
 {
     public class SingleClipPreview : PlayableGraphPreview
     {
-        private float sampleNormalizedTime;
+        private float sampleTime;
         
         private AnimationClip clip;
 
@@ -31,17 +31,17 @@ namespace DMotion.Editor
                 yield return Clip;
             }
         }
-        public float SampleNormalizedTime
+
+        public override float SampleTime
         {
-            get => sampleNormalizedTime;
-            set => sampleNormalizedTime = Mathf.Clamp01(value);
+            get => sampleTime;
+            set => sampleTime = Mathf.Clamp(value, 0, Clip.length);
         }
-        protected override float SampleTime => SampleNormalizedTime * Clip.length;
         
         public SingleClipPreview(AnimationClip clip)
         {
             Clip = clip;
-            SampleNormalizedTime = 0;
+            sampleTime = 0;
         }
 
         protected override PlayableGraph BuildGraph()

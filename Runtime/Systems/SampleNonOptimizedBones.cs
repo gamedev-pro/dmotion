@@ -27,7 +27,7 @@ namespace DMotion
                 var firstSampler = samplers[firstSamplerIndex];
                 var bone = ClipSamplingUtils.SampleWeightedFirstIndex(
                     boneIndex.index, ref firstSampler.Clip,
-                    firstSampler.NormalizedTime,
+                    firstSampler.Time,
                     firstSampler.Weight);
                 
                 for (var i = firstSamplerIndex + 1; i < samplers.Length; i++)
@@ -37,7 +37,7 @@ namespace DMotion
                     {
                         ClipSamplingUtils.SampleWeightedNIndex(
                             ref bone, boneIndex.index, ref sampler.Clip,
-                            sampler.NormalizedTime, sampler.Weight);
+                            sampler.Time, sampler.Weight);
                     }
                 }
                 
