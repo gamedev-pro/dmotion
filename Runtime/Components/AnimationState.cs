@@ -11,7 +11,7 @@ namespace DMotion
     {
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal short StateIndex;
-        internal float NormalizedTime;
+        internal float Time;
         internal byte StartSamplerIndex;
         
         internal bool IsValid => StateIndex >= 0;
@@ -104,7 +104,7 @@ namespace DMotion
         internal void UpdateSamplers(float dt, float blendWeight, in DynamicBuffer<BlendParameter> blendParameters,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            NormalizedTime += dt * Speed;
+            Time += dt * Speed;
             switch (Type)
             {
                 case StateType.Single:

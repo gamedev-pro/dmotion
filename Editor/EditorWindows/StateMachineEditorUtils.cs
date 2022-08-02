@@ -108,7 +108,7 @@ namespace DMotion.Editor
                 EditorGUILayout.LabelField($"{fromState.name}", GUILayout.Width(labelWidth));
                 EditorGUILayout.LabelField("--->", GUILayout.Width(40f));
                 EditorGUILayout.LabelField($"{toState.name}", GUILayout.Width(labelWidth));
-                EditorGUILayout.LabelField($"({transitionTime}%)", GUILayout.Width(50f));
+                EditorGUILayout.LabelField($"({transitionTime}s)", GUILayout.Width(50f));
             }
         }
     }

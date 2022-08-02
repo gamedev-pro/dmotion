@@ -5,7 +5,7 @@ namespace DMotion
     internal struct StateOutTransitionGroup
     {
         internal short ToStateIndex;
-        internal float NormalizedTransitionDuration;
+        internal float TransitionDuration;
         internal float TransitionEndTime;
         internal BlobArray<BoolTransition> BoolTransitions;
         internal bool HasEndTime => TransitionEndTime > 0;

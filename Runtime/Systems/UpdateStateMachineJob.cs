@@ -38,7 +38,7 @@ namespace DMotion
             {
                 if (stateMachine.NextState.IsValid)
                 {
-                    if (stateMachine.NextState.NormalizedTime > stateMachine.CurrentTransitionNormalizedTime)
+                    if (stateMachine.NextState.Time > stateMachine.CurrentTransitionDuration)
                     {
                         var removeCount = stateMachine.CurrentState.ClipCount;
                         clipSamplers.RemoveRange(stateMachine.CurrentState.StartSamplerIndex, removeCount);
@@ -88,7 +88,7 @@ namespace DMotion
                     if (shouldStartTransition)
                     {
                         ref var transition = ref stateToEvaluate.StateBlob.Transitions[transitionIndex];
-                        stateMachine.CurrentTransitionNormalizedTime = transition.NormalizedTransitionDuration;
+                        stateMachine.CurrentTransitionDuration = transition.TransitionDuration;
                         stateMachine.NextState = CreateState(
                             transition.ToStateIndex,
                             stateMachine.StateMachineBlob,
@@ -156,8 +156,8 @@ namespace DMotion
             {
                 if (stateMachine.NextState.IsValid)
                 {
-                    var nextStateBlend = math.clamp(stateMachine.NextState.NormalizedTime /
-                                       stateMachine.CurrentTransitionNormalizedTime, 0, 1);
+                    var nextStateBlend = math.clamp(stateMachine.NextState.Time /
+                                       stateMachine.CurrentTransitionDuration, 0, 1);
                     stateMachine.CurrentState.UpdateSamplers(
                         DeltaTime, (1 - nextStateBlend)*stateMachine.Weight,
                         blendParameters, ref clipSamplers);
@@ -199,7 +199,7 @@ namespace DMotion
             {
                 StateMachineBlob = stateMachineBlob,
                 StateIndex = stateIndex,
-                NormalizedTime = 0,
+                Time = 0,
             };
             state.Initialize(clipsBlob, clipEventsBlob, ref samplers);
             return state;
@@ -227,7 +227,7 @@ namespace DMotion
         private bool EvaluateTransitionGroup(in AnimationState state, ref StateOutTransitionGroup transitionGroup,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            if (transitionGroup.HasEndTime && state.NormalizedTime < transitionGroup.TransitionEndTime)
+            if (transitionGroup.HasEndTime && state.Time < transitionGroup.TransitionEndTime)
             {
                 return false;
             }

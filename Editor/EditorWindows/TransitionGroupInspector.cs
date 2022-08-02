@@ -29,8 +29,8 @@ namespace DMotion.Editor
                     var endTimeProperty =
                         outTransitionProperty.FindPropertyRelative(nameof(StateOutTransition.EndTime));
                     
-                    var normalizedTimeProperty =
-                        outTransitionProperty.FindPropertyRelative(nameof(StateOutTransition.NormalizedTransitionDuration));
+                    var transitionDurationProperty =
+                        outTransitionProperty.FindPropertyRelative(nameof(StateOutTransition.TransitionDuration));
 
                     var conditionsProperty =
                         outTransitionProperty.FindPropertyRelative(nameof(StateOutTransition.Conditions));
@@ -38,14 +38,14 @@ namespace DMotion.Editor
                     StateMachineEditorUtils.DrawTransitionSummary(
                         model.FromState,
                         toStateProperty.objectReferenceValue as AnimationStateAsset,
-                        normalizedTimeProperty.floatValue);
+                        transitionDurationProperty.floatValue);
 
                     EditorGUILayout.PropertyField(hasEndTimeProperty);
                     if (hasEndTimeProperty.boolValue)
                     {
                         EditorGUILayout.PropertyField(endTimeProperty);
                     }
-                    EditorGUILayout.PropertyField(normalizedTimeProperty, new GUIContent("Duration (%)"));
+                    EditorGUILayout.PropertyField(transitionDurationProperty, new GUIContent("Duration (s)"));
                     EditorGUILayout.PropertyField(conditionsProperty);
                 }
             }
