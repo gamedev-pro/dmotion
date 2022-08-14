@@ -45,8 +45,6 @@ namespace DMotion
 
                     if (shouldRaiseEvent)
                     {
-                        var str = FixedString.Format("Raising even for clip {0}\np: {1}, c: {2} ({3})", sampler.Clip.name, sampler.PreviousTime, sampler.Time, e.ClipTime);
-                        Debug.Log(str);
                         raisedAnimationEvents.Add(new RaisedAnimationEvent()
                         {
                             EventHash = e.EventHash,
