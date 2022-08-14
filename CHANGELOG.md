@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] – 2022-8-13
+
+Netcode sample + bug fixes
+
+### Changed
+
+- Netcode supported example
+- Fix End time Transitions not working for clips greater than 1 sec
+- Fix conceptual errors between Time and Normalized Time
+- Make sure events are called when clip loops
+- Fix build compilation error for Blend Parameters
+
 ## [0.3.0] – 2022-7-28
 
 First version with a complete State Machine Visual Editor, some small BlobAsset changes

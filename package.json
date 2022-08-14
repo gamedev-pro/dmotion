@@ -1,11 +1,11 @@
 {
   "name": "com.gamedevpro.dmotion",
   "displayName": "DMotion",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "unity": "2020.3",
   "description": "DMotion is a high level Animation framework and State Machine for DOTS",
   "dependencies": {
-    "com.latios.latiosframework": "0.5.3",
+    "com.latios.latiosframework": "0.5.4",
     "com.unity.shadergraph": "10.8.1",
     "com.unity.ui": "1.0.0-preview.18"
   },

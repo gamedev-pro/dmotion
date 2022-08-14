@@ -29,7 +29,6 @@ Overall, this system should feel similar to Unity's Mechanim system, however the
 
 ### Coming soon
 
-- Editor tool for authoring State Machines
 - 2D Blend Tree (cartesian/freeform)
 - State Machine Override (a.k.a Animator Override Controller)
 
