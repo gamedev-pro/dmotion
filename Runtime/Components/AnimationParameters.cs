@@ -10,6 +10,14 @@ namespace DMotion
         #endif
         public int Hash;
         public bool Value;
+        public BoolParameter(FixedString64Bytes name, int hash)
+        {
+#if UNITY_EDITOR || DEBUG
+            Name = name;
+#endif
+            Hash = hash;
+            Value = false;
+        }
     }
     
     public struct BlendParameter : IBufferElementData
@@ -19,5 +27,14 @@ namespace DMotion
         #endif
         public int Hash;
         public float Value;
+        
+        public BlendParameter(FixedString64Bytes name, int hash)
+        {
+#if UNITY_EDITOR || DEBUG
+            Name = name;
+#endif
+            Hash = hash;
+            Value = 0;
+        }
     }
 }
