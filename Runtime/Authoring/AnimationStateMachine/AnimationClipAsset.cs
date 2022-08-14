@@ -8,8 +8,7 @@ namespace DMotion.Authoring
     public struct AnimationClipEvent
     {
         public AnimationEventName Name;
-        [Min(0), FormerlySerializedAs("NormalizedTime")]
-        public float Time;
+        public float NormalizedTime;
 
         public int Hash => Name.Hash;
     }

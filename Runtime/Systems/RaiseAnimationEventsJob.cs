@@ -1,5 +1,7 @@
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 
 namespace DMotion
 {
@@ -32,17 +34,19 @@ namespace DMotion
                     if (previousSamplerTime > currentSamplerTime)
                     {
                         //this mean we looped the clip
-                        shouldRaiseEvent = e.ClipTime >= previousSamplerTime && e.ClipTime <= 1 ||
-                                           e.ClipTime >= 0 && e.ClipTime <= currentSamplerTime;
+                        shouldRaiseEvent = (e.ClipTime > previousSamplerTime && e.ClipTime <= sampler.Clip.duration) ||
+                                           (e.ClipTime > 0 && e.ClipTime <= currentSamplerTime);
                     }
                     else
                     {
-                        shouldRaiseEvent = e.ClipTime >= previousSamplerTime &&
+                        shouldRaiseEvent = e.ClipTime > previousSamplerTime &&
                                            e.ClipTime <= currentSamplerTime;
                     }
 
                     if (shouldRaiseEvent)
                     {
+                        var str = FixedString.Format("Raising even for clip {0}\np: {1}, c: {2} ({3})", sampler.Clip.name, sampler.PreviousTime, sampler.Time, e.ClipTime);
+                        Debug.Log(str);
                         raisedAnimationEvents.Add(new RaisedAnimationEvent()
                         {
                             EventHash = e.EventHash,
