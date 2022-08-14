@@ -99,7 +99,7 @@ namespace DMotion.Editor
             this.clipAsset = clipAsset;
             this.preview = preview;
             this.property = property;
-            timeMarkerTime = preview.SampleNormalizedTime;
+            timeMarkerTime = preview.SampleTime;
         }
 
 
@@ -140,7 +140,7 @@ namespace DMotion.Editor
                             if (!Mathf.Approximately(cachedEvent.NormalizedTime, currentEvent.NormalizedTime))
                             {
                                 eventMarkerDragIndex = i;
-                                preview.SampleNormalizedTime = currentEvent.NormalizedTime;
+                                preview.NormalizedSampleTime = currentEvent.NormalizedTime;
                                 break;
                             }
                         }
@@ -239,9 +239,8 @@ namespace DMotion.Editor
 
             if (current.clickCount == 2 && dragArea.Contains(current.mousePosition))
             {
-                //this gotta be between [0,1]
-                var normalizedTime = (current.mousePosition.x - dragArea.x) / dragArea.width;
-                AddEvent(normalizedTime);
+                var time = clipAsset.Clip.length * (current.mousePosition.x - dragArea.x) / dragArea.width;
+                AddEvent(time);
                 current.Use();
                 return;
             }
@@ -253,16 +252,16 @@ namespace DMotion.Editor
             {
                 var time = PixelsToNormalizedTime(currentEvent.mousePosition.x, timeMarker.VisualRect, dragArea);
                 timeMarkerTime = time;
-                preview.SampleNormalizedTime = time;
+                preview.NormalizedSampleTime = time;
                 currentEvent.Use();
             }
             else if (eventMarkerDragIndex >= 0)
             {
                 var eventMarker = eventMarkers[eventMarkerDragIndex];
-                var time = PixelsToNormalizedTime(currentEvent.mousePosition.x, eventMarker.VisualRect, dragArea);
-                preview.SampleNormalizedTime = time;
+                var normalizedTime = PixelsToNormalizedTime(currentEvent.mousePosition.x, eventMarker.VisualRect, dragArea);
+                preview.NormalizedSampleTime = normalizedTime;
 
-                clipAsset.Events[eventMarkerDragIndex].NormalizedTime = time;
+                clipAsset.Events[eventMarkerDragIndex].NormalizedTime = normalizedTime;
 
                 property.serializedObject.ApplyModifiedProperties();
                 property.serializedObject.Update();
@@ -311,7 +310,8 @@ namespace DMotion.Editor
 
         private float NormalizedTimeToPixels(float time, in Rect rect, in Rect parentRect)
         {
-            return parentRect.xMin + (parentRect.width - rect.width)* time;
+            var normalizedTime = Mathf.Clamp01(time);
+            return parentRect.xMin + (parentRect.width - rect.width) * normalizedTime;
         }
 
         private float PixelsToNormalizedTime(float x, in Rect rect, in Rect parentRect)

@@ -23,12 +23,12 @@ namespace DMotion
                 var firstSampler = samplers[startIndex];
                 var root = ClipSamplingUtils.SampleWeightedFirstIndex(
                     0, ref firstSampler.Clip,
-                    firstSampler.NormalizedTime,
+                    firstSampler.Time,
                     firstSampler.Weight);
                 
                 var previousRoot = ClipSamplingUtils.SampleWeightedFirstIndex(
                     0, ref firstSampler.Clip,
-                    firstSampler.PreviousNormalizedTime,
+                    firstSampler.PreviousTime,
                     firstSampler.Weight);
 
                 for (var i = startIndex + 1; i < samplers.Length; i++)
@@ -38,11 +38,11 @@ namespace DMotion
                     {
                         ClipSamplingUtils.SampleWeightedNIndex(
                             ref root, 0, ref sampler.Clip,
-                            sampler.NormalizedTime, sampler.Weight);
+                            sampler.Time, sampler.Weight);
                         
                         ClipSamplingUtils.SampleWeightedNIndex(
                             ref previousRoot, 0, ref sampler.Clip,
-                            sampler.PreviousNormalizedTime, sampler.Weight);
+                            sampler.PreviousTime, sampler.Weight);
                     }
                 }
                     
@@ -55,7 +55,7 @@ namespace DMotion
         private static bool ShouldIncludeSampler(in ClipSampler sampler)
         {
             //Since we're calculating deltas, we need to avoid the loop point (the character would teleport back to the initial root position)
-            return !mathex.iszero(sampler.Weight) && sampler.NormalizedTime - sampler.PreviousNormalizedTime > 0;
+            return !mathex.iszero(sampler.Weight) && sampler.Time - sampler.PreviousTime > 0;
         }
 
         private static bool TryGetFirstSamplerIndex(in DynamicBuffer<ClipSampler> samplers, out byte startIndex)

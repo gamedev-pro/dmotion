@@ -1192,8 +1192,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 779924504}
-  - component: {fileID: 779924502}
   - component: {fileID: 779924505}
+  - component: {fileID: 779924502}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1210,10 +1210,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 779924501}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea7d7495833204790ba1d3a8755397f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 0df588d7d71e4d21bdae375f24c30b3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ConversionMode: 0
 --- !u!4 &779924504
 Transform:
   m_ObjectHideFlags: 0
@@ -1711,10 +1710,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1404455323}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea7d7495833204790ba1d3a8755397f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 0df588d7d71e4d21bdae375f24c30b3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ConversionMode: 0
 --- !u!1 &1487498089
 GameObject:
   m_ObjectHideFlags: 0

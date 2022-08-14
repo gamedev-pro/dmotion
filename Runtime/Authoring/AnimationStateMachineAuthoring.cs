@@ -58,19 +58,11 @@ namespace DMotion.Authoring
                 {
                     case BoolParameterAsset _:
                         var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
-                        boolParameters.Add(new BoolParameter()
-                        {
-                            Name = p.name,
-                            Hash = p.Hash,
-                        });
+                        boolParameters.Add(new BoolParameter(p.name, p.Hash));
                         break;
                     case FloatParameterAsset _:
                         var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
-                        floatParameters.Add(new BlendParameter()
-                        {
-                            Name = p.name,
-                            Hash = p.Hash,
-                        });
+                        floatParameters.Add(new BlendParameter(p.name, p.Hash));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(p));

@@ -20,6 +20,7 @@ namespace DMotion.Samples
         }
     }
 
+    #if !NETCODE_PROJECT
     [UnityEngine.Scripting.Preserve]
     public class LatiosBootstrap : ICustomBootstrap
     {
@@ -42,5 +43,6 @@ namespace DMotion.Samples
             return true;
         }
     }
+    #endif
 }
 

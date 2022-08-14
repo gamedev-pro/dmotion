@@ -23,6 +23,7 @@ namespace DMotion.Authoring
             converter.ClipEvents.Resize(input.Clips.Length);
             for (var clipIndex = 0; clipIndex < converter.ClipEvents.Length; clipIndex++)
             {
+                var clip = input.Clips[clipIndex];
                 var clipAssetEvents = input.Clips[clipIndex].Events;
                 var clipEvents = new ClipEventsConversionData
                 {
@@ -36,7 +37,7 @@ namespace DMotion.Authoring
                     {
                         ClipIndex = (short) clipIndex,
                         EventHash = clipAssetEvent.Hash,
-                        NormalizedTime = clipAssetEvent.NormalizedTime
+                        ClipTime = Mathf.Clamp01(clipAssetEvent.NormalizedTime) * clip.Clip.length
                     };
                 }
 

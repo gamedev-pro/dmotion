@@ -105,7 +105,7 @@ namespace DMotion.Editor
             EditorGUILayout.LabelField(outTransitionsProperty.displayName);
             foreach (var transition in model.StateAsset.OutTransitions)
             {
-                StateMachineEditorUtils.DrawTransitionSummary(model.StateAsset, transition.ToState, transition.NormalizedTransitionDuration);
+                StateMachineEditorUtils.DrawTransitionSummary(model.StateAsset, transition.ToState, transition.TransitionDuration);
             }
         }
     }

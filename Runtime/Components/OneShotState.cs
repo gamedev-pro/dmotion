@@ -8,7 +8,7 @@ namespace DMotion
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
         internal BlobAssetReference<ClipEventsBlob> ClipEvents;
         internal short ClipIndex;
-        internal float NormalizedTransitionDuration;
+        internal float TransitionDuration;
         internal float EndTime;
         internal float Speed;
 
@@ -18,14 +18,14 @@ namespace DMotion
 
         public PlayOneShotRequest(BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents, int clipIndex,
-            float normalizedTransitionDuration = 0.15f,
+            float transitionDuration = 0.15f,
             float endTime = 0.8f,
             float speed = 1)
         {
             Clips = clips;
             ClipEvents = clipEvents;
             ClipIndex = (short) clipIndex;
-            NormalizedTransitionDuration = normalizedTransitionDuration;
+            TransitionDuration = transitionDuration;
             EndTime = endTime;
             Speed = speed;
         }
@@ -33,18 +33,18 @@ namespace DMotion
     internal struct OneShotState : IComponentData
     {
         internal short SamplerIndex;
-        internal float NormalizedTransitionDuration;
+        internal float TransitionDuration;
         internal float EndTime;
         internal float Speed;
 
         internal bool IsValid => SamplerIndex >= 0;
         internal static OneShotState Null => new OneShotState() { SamplerIndex = -1 };
 
-        internal OneShotState(int samplerIndex, float normalizedTransitionDuration,
+        internal OneShotState(int samplerIndex, float transitionDuration,
             float endTime, float speed)
         {
             SamplerIndex = (short) samplerIndex;
-            NormalizedTransitionDuration = normalizedTransitionDuration;
+            TransitionDuration = transitionDuration;
             EndTime = endTime;
             Speed = speed;
         }

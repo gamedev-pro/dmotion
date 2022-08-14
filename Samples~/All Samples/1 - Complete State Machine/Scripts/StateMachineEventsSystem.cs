@@ -41,7 +41,7 @@ namespace DMotion.Samples.CompleteStateMachine
                             cfeAtckWindow[animatorEntity.Owner] = atkWindow;
                             Debug.Log("Opening attack window");
                         }
-                        else if (raisedEvents[i].EventHash == exampleEvents.EndAttackEventHash)
+                        if (raisedEvents[i].EventHash == exampleEvents.EndAttackEventHash)
                         {
                             var atkWindow = cfeAtckWindow[animatorEntity.Owner];
                             atkWindow.IsOpen = false;

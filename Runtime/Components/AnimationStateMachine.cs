@@ -11,6 +11,6 @@ namespace DMotion
         internal AnimationState CurrentState;
         internal AnimationState NextState;
         internal float Weight;
-        internal float CurrentTransitionNormalizedTime;
+        internal float CurrentTransitionDuration;
     }
 }
