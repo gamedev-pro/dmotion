@@ -11,6 +11,7 @@ namespace DMotion.Tests
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
         private AnimationStateMachineAuthoring stateMachinePrefab;
+
         private Entity stateMachineEntityPrefab;
 
         [Test]

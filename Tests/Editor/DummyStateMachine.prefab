@@ -79,6 +79,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Owner: {fileID: 1078854872274936974}
   Animator: {fileID: 2859399204928778690}
-  StateMachineAsset: {fileID: 11400000, guid: c599333da15166d4590d9caed6045044, type: 2}
+  StateMachineAsset: {fileID: 11400000, guid: 8ebc108947fc6364ca525c7bc51ff4f3, type: 2}
   RootMotionMode: 0
-  EnableEvents: 0
+  EnableEvents: 1
