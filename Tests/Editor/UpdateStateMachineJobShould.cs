@@ -6,36 +6,16 @@ using UnityEngine;
 
 namespace DMotion.Tests
 {
-    public class UpdateStateMachineJobShould : ECSTestsFixture
+    public static class StateMachineTestUtils
     {
-        [SerializeField] private AnimationStateMachineAuthoring stateMachinePrefab;
-        private Entity stateMachineEntityPrefab;
-
-        [SetUp]
-        public override void Setup()
+        public static Entity InstantiateStateMachineEntity(this EntityManager manager, Entity prefab)
         {
-            base.Setup();
-            Assert.IsNotNull(stateMachinePrefab, "Missing prefab");
-            Assert.IsNotNull(stateMachinePrefab.StateMachineAsset, "Missing StateMachineAsset");
-            var convertToEntitySystem = world.GetOrCreateSystem<ConvertToEntitySystem>();
-            stateMachineEntityPrefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(
-                stateMachinePrefab.gameObject,
-                new GameObjectConversionSettings(world, GameObjectConversionUtility.ConversionFlags.AssignName,
-                    convertToEntitySystem.BlobAssetStore));
-
-            Assert.IsTrue(manager.HasComponent<Prefab>(stateMachineEntityPrefab));
-
-            world.CreateSystem<AnimationStateMachineSystem>();
-        }
-
-        private Entity InstantiateStateMachineEntity()
-        {
-            var newEntity = manager.Instantiate(stateMachineEntityPrefab);
+            var newEntity = manager.Instantiate(prefab);
             Assert.IsTrue(manager.HasComponent<AnimationStateMachine>(newEntity));
             return newEntity;
         }
 
-        private void SetBoolParameter(Entity entity, int index, bool newValue)
+        public static void SetBoolParameter(this EntityManager manager, Entity entity, int index, bool newValue)
         {
             Assert.IsTrue(manager.HasComponent<BoolParameter>(entity));
             var boolParameters = manager.GetBuffer<BoolParameter>(entity);
@@ -44,11 +24,19 @@ namespace DMotion.Tests
             parameter.Value = newValue;
             boolParameters[index] = parameter;
         }
+    }
+    
+    [CreateSystemsForTest(typeof(AnimationStateMachineSystem))]
+    public class UpdateStateMachineJobShould : ECSTestsFixture
+    {
+        [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
+        private AnimationStateMachineAuthoring stateMachinePrefab;
+        private Entity stateMachineEntityPrefab;
 
         [Test]
         public void Initialize_When_Necessary()
         {
-            var newEntity = InstantiateStateMachineEntity();
+            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.AreEqual(stateMachine.CurrentState, AnimationState.Null);
 
@@ -61,7 +49,7 @@ namespace DMotion.Tests
         [Test]
         public void UpdateActiveSamplers()
         {
-            var newEntity = InstantiateStateMachineEntity();
+            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
             Assert.IsTrue(manager.HasComponent<ClipSampler>(newEntity));
             UpdateWorld();
 
@@ -81,13 +69,13 @@ namespace DMotion.Tests
         [Test]
         public void StartTransition_From_BoolParameter()
         {
-            var newEntity = InstantiateStateMachineEntity();
+            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
             UpdateWorld();
 
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.AreEqual(stateMachine.NextState, AnimationState.Null);
 
-            SetBoolParameter(newEntity, 0, true);
+            manager.SetBoolParameter(newEntity, 0, true);
 
             UpdateWorld();
 
@@ -99,17 +87,17 @@ namespace DMotion.Tests
         [Test]
         public void CompleteTransition_After_TransitionDuration()
         {
-            var newEntity = InstantiateStateMachineEntity();
-            SetBoolParameter(newEntity, 0, true);
+            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            manager.SetBoolParameter(newEntity, 0, true);
             UpdateWorld();
 
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             var cachedNextState = stateMachine.NextState;
             Assert.AreNotEqual(cachedNextState, AnimationState.Null);
 
-            UpdateWorld(stateMachine.CurrentTransitionDuration*1.5f);
+            UpdateWorld(stateMachine.CurrentTransitionDuration * 1.5f);
             UpdateWorld();
-            
+
             stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.AreEqual(stateMachine.NextState, AnimationState.Null);
             Assert.AreEqual(stateMachine.CurrentState.StateIndex, cachedNextState.StateIndex);
