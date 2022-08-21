@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2859399204928778690}
   - component: {fileID: 5386392977363492812}
   - component: {fileID: 3933796299544104853}
+  - component: {fileID: -3329057801400380962}
   m_Layer: 0
   m_Name: DummyStateMachine
   m_TagString: Untagged
@@ -82,3 +83,17 @@ MonoBehaviour:
   StateMachineAsset: {fileID: 11400000, guid: 8ebc108947fc6364ca525c7bc51ff4f3, type: 2}
   RootMotionMode: 0
   EnableEvents: 1
+--- !u!114 &-3329057801400380962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1078854872274936974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91c72fd56d65478ab27bbf983f26775a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Animator: {fileID: 2859399204928778690}
+  OneShotClip: {fileID: 11400000, guid: 411918f1c0037bd4da6262a82555471d, type: 2}

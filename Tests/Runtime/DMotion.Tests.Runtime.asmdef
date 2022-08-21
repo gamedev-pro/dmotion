@@ -1,5 +1,5 @@
 {
-    "name": "DMotion.Tests.Editor",
+    "name": "DMotion.Tests.Runtime",
     "rootNamespace": "",
     "references": [
         "GUID:2665a8d13d1b3f18800f46e256720795",
@@ -17,13 +17,29 @@
         "GUID:8819f35a0fc84499b990e90a4ca1911f",
         "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:c0dd0d10738d4ad4a9de57c559d0ca1b",
-        "GUID:46fe9b4ef94d76744bc0b97bc2f73d94",
-        "GUID:2646bf6eabddbf5458e058c7b5924bc9"
+        "GUID:46fe9b4ef94d76744bc0b97bc2f73d94"
     ],
     "includePlatforms": [
-        "Editor"
+        "Android",
+        "CloudRendering",
+        "Editor",
+        "GameCoreScarlett",
+        "GameCoreXboxOne",
+        "iOS",
+        "LinuxStandalone64",
+        "Lumin",
+        "macOSStandalone",
+        "PS4",
+        "PS5",
+        "Stadia",
+        "Switch",
+        "tvOS",
+        "WSA",
+        "WebGL",
+        "WindowsStandalone32",
+        "WindowsStandalone64",
+        "XboxOne"
     ],
-    "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": true,
     "precompiledReferences": [
