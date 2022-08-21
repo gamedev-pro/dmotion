@@ -4,7 +4,7 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - stateMachinePrefab: {fileID: 8307121162986993383, guid: 53294ae9beff2d14db14a191d7b19161, type: 3}
+  - stateMachinePrefab: {fileID: 3933796299544104853, guid: af9d020e6d232fc499c6cc7e3a34de8f, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
