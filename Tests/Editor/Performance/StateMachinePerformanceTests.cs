@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace DMotion.PerformanceTests
 {
-    public class AnimationStateMachineStressTest : PerformanceTestsFixture
+    public class StateMachinePerformanceTests : PerformanceTestsFixture
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(noSkeletonPrefabEntity))]
         private GameObject noSkeletonPrefab;
