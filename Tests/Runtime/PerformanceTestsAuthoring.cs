@@ -3,6 +3,7 @@ using Latios.Authoring;
 using Latios.Kinemation;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Profiling;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
@@ -23,12 +24,15 @@ namespace DMotion.PerformanceTests
     [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     public partial class UpdateStateMachines : SystemBase
     {
+        public static readonly ProfilerMarker Marker =
+            ProfilingUtils.CreateAnimationMarker<UpdateStateMachines>(nameof(OnUpdate));
         protected override void OnUpdate()
         {
             var dt = Time.DeltaTime;
             var integerPart = (uint)Time.ElapsedTime + 1;
             var decimalPart = (float) (Time.ElapsedTime + 1) - integerPart;
             var shouldSwitchStates = decimalPart < dt && integerPart % 2 == 0;
+            var marker = Marker;
             
             Entities.ForEach((
                 Entity e,
@@ -38,6 +42,7 @@ namespace DMotion.PerformanceTests
                 ref DynamicBuffer<BoolParameter> boolParameters,
                 in StressTestOneShotClip oneShotClip) =>
             {
+                using var scope = marker.Auto();
                 blendParameters[0] = new BlendParameter
                 {
                     Hash = blendParameters[0].Hash,

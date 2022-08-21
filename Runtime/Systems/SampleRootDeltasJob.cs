@@ -3,6 +3,7 @@ using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Profiling;
 
 namespace DMotion
 {
@@ -10,12 +11,14 @@ namespace DMotion
     [WithAll(typeof(SkeletonRootTag))]
     internal partial struct SampleRootDeltasJob : IJobEntity
     {
+        internal ProfilerMarker Marker;
         internal void Execute(
             ref RootDeltaTranslation rootDeltaTranslation,
             ref RootDeltaRotation rootDeltaRotation,
             in DynamicBuffer<ClipSampler> samplers
         )
         {
+            using var scope = Marker.Auto();
             rootDeltaTranslation.Value = 0;
             rootDeltaRotation.Value = quaternion.identity;
             if (samplers.Length > 0 && TryGetFirstSamplerIndex(samplers, out var startIndex))

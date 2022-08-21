@@ -3,6 +3,7 @@ using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Profiling;
 
 namespace DMotion
 {
@@ -10,6 +11,7 @@ namespace DMotion
     internal partial struct UpdateStateMachineJob : IJobEntity
     {
         internal float DeltaTime;
+        internal ProfilerMarker Marker;
         internal void Execute(
             ref AnimationStateMachine stateMachine,
             ref DynamicBuffer<ClipSampler> clipSamplers,
@@ -19,6 +21,8 @@ namespace DMotion
             in DynamicBuffer<BoolParameter> boolParameters
             )
         {
+            using var scope = Marker.Auto();
+            
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
 
             //Initialize if necessary

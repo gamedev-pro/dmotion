@@ -3,6 +3,7 @@ using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Profiling;
 using Unity.Transforms;
 
 namespace DMotion
@@ -11,6 +12,7 @@ namespace DMotion
     [WithAll(typeof(SkeletonRootTag), typeof(ApplyRootMotionToEntity))]
     internal partial struct ApplyRootMotionToEntityJob : IJobEntity
     {
+        internal ProfilerMarker Marker;
         internal void Execute(
             ref Translation translation,
             ref Rotation rotation,
@@ -18,6 +20,7 @@ namespace DMotion
             in RootDeltaRotation rootDeltaRotation
         )
         {
+            using var scope = Marker.Auto();
             translation.Value += rootDeltaTranslation.Value;
             rotation.Value = math.mul(rootDeltaRotation.Value, rotation.Value);
         }
