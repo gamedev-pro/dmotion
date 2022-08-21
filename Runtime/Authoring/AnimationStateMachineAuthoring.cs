@@ -12,6 +12,7 @@ namespace DMotion.Authoring
     {
         public const string DMotionPath = "DMotion";
     }
+    
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;

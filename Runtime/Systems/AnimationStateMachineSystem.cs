@@ -14,29 +14,29 @@ namespace DMotion
     {
         protected override void OnUpdate()
         {
-            var updateFmsHandle = new UpdateStateMachineJob()
+            var updateFmsHandle = new UpdateStateMachineJob
             {
                 DeltaTime = Time.DeltaTime,
             }.ScheduleParallel();
             
             //Sample bones (those only depend on updateFmsHandle)
-            var sampleOptimizedHandle = new SampleOptimizedBonesJob()
+            var sampleOptimizedHandle = new SampleOptimizedBonesJob
             {
             }.ScheduleParallel(updateFmsHandle);
-            var sampleNonOptimizedHandle = new SampleNonOptimizedBones()
+            var sampleNonOptimizedHandle = new SampleNonOptimizedBones
             {
                 BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
             }.ScheduleParallel(updateFmsHandle);
             
-            var sampleRootDeltasHandle = new SampleRootDeltasJob()
+            var sampleRootDeltasHandle = new SampleRootDeltasJob
             {
             }.ScheduleParallel(updateFmsHandle);
             
-            var applyRootMotionHandle = new ApplyRootMotionToEntityJob()
+            var applyRootMotionHandle = new ApplyRootMotionToEntityJob
             {
             }.ScheduleParallel(sampleRootDeltasHandle);
             
-            var transferRootMotionHandle = new TransferRootMotionJob()
+            var transferRootMotionHandle = new TransferRootMotionJob
             {
                 CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
                 CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
