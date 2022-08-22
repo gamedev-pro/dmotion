@@ -111,7 +111,7 @@ namespace DMotion.Authoring
         {
             ValidateStateMachine();
             clipsBlobHandle = conversionSystem.RequestClipsBlob(Animator, StateMachineAsset.Clips);
-            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject, new StateMachineBlobBakeData()
+            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject, new StateMachineBlobBakeData
             {
                 StateMachineAsset = StateMachineAsset
             });

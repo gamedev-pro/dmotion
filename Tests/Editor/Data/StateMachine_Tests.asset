@@ -47,7 +47,9 @@ MonoBehaviour:
   Speed: 1
   OutTransitions:
   - ToState: {fileID: 5953759798062009019}
-    NormalizedTransitionDuration: 0.15
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
     Conditions:
     - Parameter: {fileID: 9102714923962245846}
       ComparisonValue: 1
@@ -79,7 +81,9 @@ MonoBehaviour:
   Speed: 1
   OutTransitions:
   - ToState: {fileID: 335224122487346526}
-    NormalizedTransitionDuration: 0.15
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
     Conditions:
     - Parameter: {fileID: 9102714923962245846}
       ComparisonValue: 0
