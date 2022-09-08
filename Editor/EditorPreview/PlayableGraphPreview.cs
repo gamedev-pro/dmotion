@@ -11,7 +11,7 @@ namespace DMotion.Editor
     public abstract class PlayableGraphPreview : IDisposable
     {
         private PreviewRenderUtility previewRenderUtility;
-        private GameObject gameObject;
+        private static GameObject gameObject;
         protected Animator animator;
         private SkinnedMeshRenderer skinnedMeshRenderer;
         private Mesh previewMesh;
