@@ -239,7 +239,7 @@ namespace DMotion.Editor
 
             if (current.clickCount == 2 && dragArea.Contains(current.mousePosition))
             {
-                var time = clipAsset.Clip.length * (current.mousePosition.x - dragArea.x) / dragArea.width;
+                var time = PixelsToNormalizedTime(current.mousePosition.x, new Rect(), dragArea);
                 AddEvent(time);
                 current.Use();
                 return;
