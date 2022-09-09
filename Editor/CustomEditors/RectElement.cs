@@ -4,31 +4,31 @@ namespace DMotion.Editor
 {
     internal struct RectElement
     {
-        public Rect Rect;
+        public Vector2 Position;
+        public float Height;
         public float ControlWidth;
         public float VisualWidth;
 
-        public RectElement(Rect rect, float controlWidth, float visualWidth)
+        public RectElement(Vector2 position, float height, float controlWidth, float visualWidth)
         {
-            Rect = rect;
+            Position = position;
+            Height = height;
             ControlWidth = controlWidth;
             VisualWidth = visualWidth;
         }
-        
+
         public Rect VisualRect
         {
             get
             {
-                Rect.width = VisualWidth;
-                return Rect;
+                return new Rect(Position.x - VisualWidth/2, Position.y, VisualWidth, Height);
             }
         }
         public Rect ControlRect
         {
             get
             {
-                Rect.width = ControlWidth;
-                return Rect;
+                return new Rect(Position.x - ControlWidth/2, Position.y, ControlWidth, Height);
             }
         }
     }
