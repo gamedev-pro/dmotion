@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StateMachinePerformanceTests_AvgUpdateTime
   m_EditorClassIdentifier: 
   MachineBenchmarks:
-  - MachineName: 
+  - MachineName: AZUS-STRIX-15
     Benchmarks:
     - Count: 100000
       Median:

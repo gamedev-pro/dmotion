@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DMotion.Tests;
 using NUnit.Framework;
 using Unity.Entities;
@@ -49,8 +50,14 @@ namespace DMotion.PerformanceTests
                 return false;
             }
 
-            //TODO: chose for machine
-            var group = groups[0];
+            var machineName = SystemInfo.deviceName;
+            var groupIndex = Array.FindIndex(groups, g => g.MachineName.Equals(machineName));
+            if (groupIndex < 0)
+            {
+                return false;
+            }
+
+            var group = groups[groupIndex];
             
             Assert.IsNotNull(group.Benchmarks);
             var index = Array.FindIndex(group.Benchmarks, b => b.Count == count);
