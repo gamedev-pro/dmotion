@@ -6,6 +6,7 @@ MonoImporter:
   defaultReferences:
   - noSkeletonPrefab: {fileID: 1078854872274936974, guid: af9d020e6d232fc499c6cc7e3a34de8f, type: 3}
   - skeletonPrefab: {fileID: 4121311047611608358, guid: 3399854f097d33a4e99102d7fe038eb7, type: 3}
+  - avgUpdateTimeBenchmarks: {fileID: 11400000, guid: 94a5310bde4b71248a59108092ec2c2b, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
