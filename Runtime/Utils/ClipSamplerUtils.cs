@@ -8,6 +8,9 @@ namespace DMotion
     [BurstCompile]
     internal static class ClipSamplerUtils
     {
+        internal const int MaxReserveCount = 30;
+        internal const int MaxSamplersCount = byte.MaxValue / 2;
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static byte AddWithId(this DynamicBuffer<ClipSampler> samplers, ClipSampler newSampler)
         {
@@ -23,11 +26,10 @@ namespace DMotion
         {
             //we assume the list is always sorted (should be true if Id always increments  from 0 to 128 and loops back)
             //on the loop back case, we add after the first element for which we can ensure reserveCount
-            const byte maxValue = byte.MaxValue / 2;
+            Assert.IsTrue(samplers.Length + reserveCount < MaxSamplersCount, "No support for more than 128 clips");
             
             //sanity check
-            const byte maxReserveCount = 20;
-            Assert.IsTrue(reserveCount <= maxReserveCount, "Reserve count too high. Why are you trying to allocate so many contiguous clips?");
+            Assert.IsTrue(reserveCount <= MaxReserveCount, "Reserve count too high. Why are you trying to allocate so many contiguous clips?");
 
             if (samplers.Length == 0)
             {
@@ -38,7 +40,7 @@ namespace DMotion
 
             var last = samplers[^1];
             int idWithReserveCount = last.Id + reserveCount;
-            if (idWithReserveCount <= maxValue)
+            if (idWithReserveCount < MaxSamplersCount)
             {
                 //impossible to overflow
                 id = (byte) (last.Id + 1);
@@ -47,12 +49,11 @@ namespace DMotion
             }
             
             //possible loopback case
-            
             //our last samplers had the max id, but there is no one else in the list. Give id 0
             if (samplers.Length == 1)
             {
                 id = 0;
-                insertIndex = 0;
+                insertIndex = samplers.Length;
                 return true;
             }
             
@@ -62,7 +63,7 @@ namespace DMotion
                 var current = samplers[i];
                 var next = samplers[i + 1];
 
-                if (next.Id - current.Id < reserveCount)
+                if (next.Id - current.Id > reserveCount)
                 {
                     id = (byte) (current.Id + 1);
                     insertIndex = i + 1;
@@ -110,32 +111,6 @@ namespace DMotion
                 }
             }
             return -1;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool TryGetById(this DynamicBuffer<ClipSampler> samplers, byte id, out ClipSampler sampler)
-        {
-            var index = samplers.IdToIndex(id);
-            if (index >= 0)
-            {
-                sampler = samplers[index];
-                return true;
-            }
-            sampler = default;
-            return false;
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool TrySet(this DynamicBuffer<ClipSampler> samplers, in ClipSampler sampler)
-        {
-            var index = samplers.IdToIndex(sampler.Id);
-            if (index >= 0)
-            {
-                samplers[index] = sampler;
-                return true;
-            }
-            return false;
         }
     }
 }
