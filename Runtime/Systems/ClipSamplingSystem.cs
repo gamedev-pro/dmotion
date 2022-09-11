@@ -16,9 +16,6 @@ namespace DMotion
         internal static readonly ProfilerMarker Marker_SampleNonOptimizedBonesJob =
             ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(Marker_SampleNonOptimizedBonesJob));
         
-        internal static readonly ProfilerMarker Marker_NormalizeWeights =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(UpdateStateMachineJob));
-        
         internal static readonly ProfilerMarker Marker_SampleRootDeltasJob =
             ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(SampleRootDeltasJob));
         
@@ -30,27 +27,22 @@ namespace DMotion
         
         protected override void OnUpdate()
         {
-            var normalizeWeightsHandle = new NormalizedSamplersWeights
-            {
-                Marker = Marker_NormalizeWeights
-            }.ScheduleParallel();
-            
             //Sample bones (those only depend on updateFmsHandle)
             var sampleOptimizedHandle = new SampleOptimizedBonesJob
             {
                 Marker = Marker_SampleOptimizedBonesJob
-            }.ScheduleParallel(normalizeWeightsHandle);
+            }.ScheduleParallel();
             
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones
             {
                 BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
-            }.ScheduleParallel(normalizeWeightsHandle);
+            }.ScheduleParallel();
             
             var sampleRootDeltasHandle = new SampleRootDeltasJob
             {
                 Marker = Marker_SampleRootDeltasJob
-            }.ScheduleParallel(normalizeWeightsHandle);
+            }.ScheduleParallel();
             
             var applyRootMotionHandle = new ApplyRootMotionToEntityJob
             {
