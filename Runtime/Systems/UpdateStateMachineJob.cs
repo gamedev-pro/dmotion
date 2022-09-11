@@ -55,7 +55,7 @@ namespace DMotion
                 if (playOneShot.IsValid)
                 {
                     //initialize
-                    var newSamplerId = clipSamplers.AddWithId(new ClipSampler
+                    var clipSampler = new ClipSampler
                     {
                         ClipIndex = (byte)playOneShot.ClipIndex,
                         Clips = playOneShot.Clips,
@@ -63,11 +63,12 @@ namespace DMotion
                         Time = 0,
                         PreviousTime = 0,
                         Weight = 1
-                    });
+                    };
+                    var newSamplerId = clipSamplers.AddWithId(clipSampler);
                     
                     oneShotState = new OneShotState(newSamplerId,
                         playOneShot.TransitionDuration,
-                        playOneShot.EndTime,
+                        playOneShot.EndTime * clipSampler.Clip.duration,
                         playOneShot.Speed);
 
                     playOneShot = PlayOneShotRequest.Null;
@@ -169,7 +170,7 @@ namespace DMotion
                 {
                     sumWeights += clipSamplers[i].Weight;
                 }
-
+            
                 var inverseSumWeights = 1.0f / sumWeights;
                 for (var i = 0; i < clipSamplers.Length; i++)
                 {
