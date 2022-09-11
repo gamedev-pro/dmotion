@@ -79,7 +79,7 @@ namespace DMotion
                     var index = i + insertIndex;
                     samplers[index] = new ClipSampler
                     {
-                        Id = (byte) (StartSamplerId + i),
+                        Id = (byte)(StartSamplerId + i),
                         ClipIndex = clip.ClipIndex,
                         Clips = clips,
                         ClipEventsBlob = clipEvents,
@@ -147,11 +147,6 @@ namespace DMotion
             in DynamicBuffer<BlendParameter> blendParameters,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            if (mathex.iszero(blendWeight))
-            {
-                return;
-            }
-
             ref var linearBlendState = ref AsLinearBlend;
             ref var sortedClips = ref linearBlendState.ClipSortedByThreshold;
             var startIndex = samplers.IdToIndex(StartSamplerId);
@@ -160,8 +155,7 @@ namespace DMotion
             var blendRatio = blendParameters[linearBlendState.BlendParameterIndex].Value;
 
             //we assume thresholds are sorted here
-            blendRatio = math.clamp(blendRatio, sortedClips[0].Threshold,
-                sortedClips[sortedClips.Length - 1].Threshold);
+            blendRatio = math.clamp(blendRatio, sortedClips[0].Threshold, sortedClips[^1].Threshold);
 
             //find clip tuple to be blended
             var firstClipIndex = -1;
@@ -208,21 +202,25 @@ namespace DMotion
                 var loopDuration = firstSampler.Clip.duration * firstSampler.Weight +
                                    secondSampler.Clip.duration * secondSampler.Weight;
 
-                var invLoopDuration = 1.0f / loopDuration;
-                var stateSpeed = Speed;
-                for (var i = startIndex; i <= endIndex; i++)
+                //We don't want to divide by zero if our weight is zero
+                if (loopDuration > 0)
                 {
-                    var sampler = samplers[i];
-                    var samplerSpeed = stateSpeed * sampler.Clip.duration * invLoopDuration;
-                    sampler.PreviousTime = sampler.Time;
-                    sampler.Time += dt * samplerSpeed;
-
-                    if (Loop)
+                    var invLoopDuration = 1.0f / loopDuration;
+                    var stateSpeed = Speed;
+                    for (var i = startIndex; i <= endIndex; i++)
                     {
-                        sampler.LoopToClipTime();
-                    }
+                        var sampler = samplers[i];
+                        var samplerSpeed = stateSpeed * sampler.Clip.duration * invLoopDuration;
+                        sampler.PreviousTime = sampler.Time;
+                        sampler.Time += dt * samplerSpeed;
 
-                    samplers[i] = sampler;
+                        if (Loop)
+                        {
+                            sampler.LoopToClipTime();
+                        }
+
+                        samplers[i] = sampler;
+                    }
                 }
             }
         }

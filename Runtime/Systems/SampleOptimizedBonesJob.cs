@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Profiling;
 using Unity.Profiling.LowLevel;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace DMotion
     internal partial struct SampleOptimizedBonesJob : IJobEntity
     {
         internal ProfilerMarker Marker;
-        
+
         internal void Execute(
             ref DynamicBuffer<OptimizedBoneToRoot> boneToRootBuffer,
             in DynamicBuffer<ClipSampler> samplers,
@@ -20,22 +21,23 @@ namespace DMotion
         {
             using var scope = Marker.Auto();
             var blender = new BufferPoseBlender(boneToRootBuffer);
-            var activeSamplerCount = 0;
+            // var activeSamplerCount = 0;
 
             for (byte i = 0; i < samplers.Length; i++)
             {
                 var sampler = samplers[i];
                 if (!mathex.iszero(sampler.Weight))
                 {
-                    activeSamplerCount++;
+                    // activeSamplerCount++;
                     sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.Time);
                 }
             }
-            
-            if (activeSamplerCount > 1)
-            {
-                blender.NormalizeRotations();
-            }
+
+            //Skip normalizing rotations for now. Magnitudes are already ~1 
+            // if (activeSamplerCount > 1)
+            // {
+            //     blender.NormalizeRotations();
+            // }
 
             blender.ApplyBoneHierarchyAndFinish(hierarchyRef.blob);
         }

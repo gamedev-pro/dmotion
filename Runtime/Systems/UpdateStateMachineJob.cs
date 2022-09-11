@@ -90,23 +90,6 @@ namespace DMotion
                         ref clipSamplers);
                 }
             }
-
-            //Normalized weights if needed
-            {
-                var sumWeights = 0.0f;
-                for (var i = 0; i < clipSamplers.Length; i++)
-                {
-                    sumWeights += clipSamplers[i].Weight;
-                }
-
-                var inverseSumWeights = 1.0f / sumWeights;
-                for (var i = 0; i < clipSamplers.Length; i++)
-                {
-                    var sampler = clipSamplers[i];
-                    sampler.Weight *= inverseSumWeights;
-                    clipSamplers[i] = sampler;
-                }
-            }
         }
 
         private AnimationState CreateState(short stateIndex,
