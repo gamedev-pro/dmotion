@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs.LowLevel.Unsafe;
+using UnityEngine.TestTools;
 
 namespace DMotion.PerformanceTests
 {
@@ -13,6 +14,7 @@ namespace DMotion.PerformanceTests
         private bool prevForceEnableSafetyChecks;
         private bool prevCompileSynchronously;
         private NativeLeakDetectionMode prevLeakDetectionMode;
+        private bool coverageWasEnabled;
         
         [SetUp]
         public override void Setup()
@@ -29,10 +31,13 @@ namespace DMotion.PerformanceTests
             prevForceEnableSafetyChecks = BurstCompiler.Options.ForceEnableBurstSafetyChecks;
             prevCompileSynchronously = BurstCompiler.Options.EnableBurstCompileSynchronously;
 
+            coverageWasEnabled = Coverage.enabled;
+
             BurstCompiler.Options.EnableBurstCompilation = true;
             BurstCompiler.Options.EnableBurstSafetyChecks = false;
             BurstCompiler.Options.ForceEnableBurstSafetyChecks = false;
             BurstCompiler.Options.EnableBurstCompileSynchronously = true;
+            Coverage.enabled = false;
         }
 
         [TearDown]
@@ -46,6 +51,7 @@ namespace DMotion.PerformanceTests
             BurstCompiler.Options.EnableBurstSafetyChecks = prevEnableSafetyChecks;
             BurstCompiler.Options.ForceEnableBurstSafetyChecks = prevForceEnableSafetyChecks;
             BurstCompiler.Options.EnableBurstCompileSynchronously = prevCompileSynchronously;
+            Coverage.enabled = coverageWasEnabled;
         }
     }
 }

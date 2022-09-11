@@ -13,7 +13,7 @@ namespace DMotion.Tests
     {
         [Tooltip("Expected value")] public double Value;
 
-        [UnityEngine.Range(1, 7), Tooltip("Acceptable tolerance +/-")]
+        [UnityEngine.Range(1, 20), Tooltip("Acceptable tolerance +/-")]
         public int Tolerance;
 
         public static TestBenchmarkValue DefaultTolerance => new TestBenchmarkValue() { Tolerance = 10 };
