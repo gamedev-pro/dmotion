@@ -8,7 +8,10 @@ using UnityEngine;
 
 namespace DMotion.PerformanceTests
 {
-    [CreateSystemsForTest(typeof(AnimationStateMachineSystem), typeof(UpdateStateMachines))]
+    [CreateSystemsForTest(
+        typeof(AnimationStateMachineSystem),
+        typeof(UpdateStateMachines),
+        typeof(ClipSamplingSystem))]
     public class StateMachinePerformanceTests : PerformanceTestsFixture
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(noSkeletonPrefabEntity))]
