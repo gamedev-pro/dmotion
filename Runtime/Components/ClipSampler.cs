@@ -22,6 +22,7 @@ namespace DMotion
     
     internal struct ClipSampler : IBufferElementData
     {
+        internal byte Id;
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
         internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal ushort ClipIndex;

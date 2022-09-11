@@ -32,18 +32,18 @@ namespace DMotion
     }
     internal struct OneShotState : IComponentData
     {
-        internal short SamplerIndex;
+        internal short SamplerId;
         internal float TransitionDuration;
         internal float EndTime;
         internal float Speed;
 
-        internal bool IsValid => SamplerIndex >= 0;
-        internal static OneShotState Null => new OneShotState() { SamplerIndex = -1 };
+        internal bool IsValid => SamplerId >= 0;
+        internal static OneShotState Null => new OneShotState() { SamplerId = -1 };
 
-        internal OneShotState(int samplerIndex, float transitionDuration,
+        internal OneShotState(byte samplerId, float transitionDuration,
             float endTime, float speed)
         {
-            SamplerIndex = (short) samplerIndex;
+            SamplerId = samplerId;
             TransitionDuration = transitionDuration;
             EndTime = endTime;
             Speed = speed;

@@ -1,8 +1,11 @@
-﻿using Unity.Collections;
+﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
+using UnityEditor;
 
 namespace DMotion
 {
+    [BurstCompile]
     public static class StateMachineParameterUtils
     {
         public static int HashToIndex(this DynamicBuffer<BoolParameter> parameters, int hash)

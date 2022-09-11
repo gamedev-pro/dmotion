@@ -12,8 +12,8 @@ namespace DMotion
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal short StateIndex;
         internal float Time;
-        internal byte StartSamplerIndex;
-        
+        internal byte StartSamplerId;
+
         internal bool IsValid => StateIndex >= 0;
         internal static AnimationState Null => new AnimationState() { StateIndex = -1 };
         internal readonly ref AnimationStateBlob StateBlob => ref StateMachineBlob.Value.States[StateIndex];
@@ -48,7 +48,6 @@ namespace DMotion
             BlobAssetReference<ClipEventsBlob> clipEvents,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            StartSamplerIndex = (byte)samplers.Length;
             switch (Type)
             {
                 case StateType.Single:
@@ -68,19 +67,27 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var linearBlendState = ref AsLinearBlend;
-            samplers.Length += linearBlendState.ClipSortedByThreshold.Length;
-            for (var i = 0; i < linearBlendState.ClipSortedByThreshold.Length; i++)
+            if (samplers.TryFindIdAndInsertIndex((byte)linearBlendState.ClipSortedByThreshold.Length, out var id,
+                    out var insertIndex))
             {
-                var clip = linearBlendState.ClipSortedByThreshold[i];
-                samplers[StartSamplerIndex + i] = new ClipSampler()
+                samplers.Length += linearBlendState.ClipSortedByThreshold.Length;
+                StartSamplerId = id;
+                for (var i = 0; i < linearBlendState.ClipSortedByThreshold.Length; i++)
                 {
-                    ClipIndex = clip.ClipIndex,
-                    Clips = clips,
-                    ClipEventsBlob = clipEvents,
-                    PreviousTime = 0,
-                    Time = 0,
-                    Weight = 0
-                };
+                    var clip = linearBlendState.ClipSortedByThreshold[i];
+
+                    var index = i + insertIndex;
+                    samplers[index] = new ClipSampler
+                    {
+                        Id = (byte) (StartSamplerId + i),
+                        ClipIndex = clip.ClipIndex,
+                        Clips = clips,
+                        ClipEventsBlob = clipEvents,
+                        PreviousTime = 0,
+                        Time = 0,
+                        Weight = 0
+                    };
+                }
             }
         }
 
@@ -90,7 +97,7 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var singleClip = ref AsSingleClip;
-            samplers.Add(new ClipSampler()
+            StartSamplerId = samplers.AddWithId(new ClipSampler
             {
                 ClipIndex = singleClip.ClipIndex,
                 Clips = clips,
@@ -121,9 +128,7 @@ namespace DMotion
         private readonly void UpdateSamplers_Single(float dt, float blendWeight,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            ref var singleClip = ref AsSingleClip;
-            var samplerIndex = StartSamplerIndex;
-
+            var samplerIndex = samplers.IdToIndex(StartSamplerId);
             var sampler = samplers[samplerIndex];
             sampler.Weight = blendWeight;
 
@@ -146,16 +151,18 @@ namespace DMotion
             {
                 return;
             }
+
             ref var linearBlendState = ref AsLinearBlend;
             ref var sortedClips = ref linearBlendState.ClipSortedByThreshold;
-            var startIndex = StartSamplerIndex;
-            var endIndex = StartSamplerIndex + sortedClips.Length - 1;
+            var startIndex = samplers.IdToIndex(StartSamplerId);
+            var endIndex = startIndex + sortedClips.Length - 1;
 
             var blendRatio = blendParameters[linearBlendState.BlendParameterIndex].Value;
 
             //we assume thresholds are sorted here
-            blendRatio = math.clamp(blendRatio, sortedClips[0].Threshold, sortedClips[sortedClips.Length - 1].Threshold);
-            
+            blendRatio = math.clamp(blendRatio, sortedClips[0].Threshold,
+                sortedClips[sortedClips.Length - 1].Threshold);
+
             //find clip tuple to be blended
             var firstClipIndex = -1;
             var secondClipIndex = -1;
@@ -179,7 +186,7 @@ namespace DMotion
 
             var firstSampler = samplers[firstSamplerIndex];
             var secondSampler = samplers[secondSamplerIndex];
-            
+
             //Update clip weights
             {
                 for (var i = startIndex; i <= endIndex; i++)
@@ -190,12 +197,12 @@ namespace DMotion
                 }
 
                 var t = (blendRatio - firstClip.Threshold) / (secondClip.Threshold - firstClip.Threshold);
-                firstSampler.Weight = (1 - t)*blendWeight;
-                secondSampler.Weight = t*blendWeight;
+                firstSampler.Weight = (1 - t) * blendWeight;
+                secondSampler.Weight = t * blendWeight;
                 samplers[firstSamplerIndex] = firstSampler;
                 samplers[secondSamplerIndex] = secondSampler;
             }
-            
+
             //Update clip times
             {
                 var loopDuration = firstSampler.Clip.duration * firstSampler.Weight +
@@ -214,6 +221,7 @@ namespace DMotion
                     {
                         sampler.LoopToClipTime();
                     }
+
                     samplers[i] = sampler;
                 }
             }

@@ -1,8 +1,10 @@
 ﻿using Latios.Kinemation;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Profiling;
 using Unity.Profiling.LowLevel;
+using UnityEngine;
 
 namespace DMotion
 {
@@ -27,6 +29,8 @@ namespace DMotion
                 {
                     activeSamplerCount++;
                     sampler.Clip.SamplePose(ref blender, sampler.Weight, sampler.Time);
+                    
+                    Debug.Log(FixedString.Format("Sampler: {0}, Index {1}, Clip {2}", sampler.Id, i, sampler.Clip.name));
                 }
             }
             
@@ -34,6 +38,8 @@ namespace DMotion
             {
                 blender.NormalizeRotations();
             }
+
+            Debug.Log(FixedString.Format("Active Sampler Count: {0}. Total {1}", activeSamplerCount, samplers.Length));
 
             blender.ApplyBoneHierarchyAndFinish(hierarchyRef.blob);
         }

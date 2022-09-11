@@ -22,14 +22,12 @@ namespace DMotion
             )
         {
             using var scope = Marker.Auto();
-            
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
 
             //Initialize if necessary
             {
                 if (!stateMachine.CurrentState.IsValid)
                 {
-                    clipSamplers.Clear();
                     stateMachine.CurrentState = CreateState(
                         stateMachineBlob.DefaultStateIndex,
                         stateMachine.StateMachineBlob,
@@ -45,10 +43,7 @@ namespace DMotion
                     if (stateMachine.NextState.Time > stateMachine.CurrentTransitionDuration)
                     {
                         var removeCount = stateMachine.CurrentState.ClipCount;
-                        clipSamplers.RemoveRange(stateMachine.CurrentState.StartSamplerIndex, removeCount);
-                        stateMachine.NextState.StartSamplerIndex -= removeCount;
-                        oneShotState.SamplerIndex -= removeCount;
-                        
+                        clipSamplers.RemoveRangeWithId(stateMachine.CurrentState.StartSamplerId, removeCount);
                         stateMachine.CurrentState = stateMachine.NextState;
                         stateMachine.NextState = AnimationState.Null;
                     }
@@ -60,12 +55,7 @@ namespace DMotion
                 if (playOneShot.IsValid)
                 {
                     //initialize
-                    oneShotState = new OneShotState(clipSamplers.Length,
-                        playOneShot.TransitionDuration,
-                        playOneShot.EndTime,
-                        playOneShot.Speed);
-                    
-                    clipSamplers.Add(new ClipSampler()
+                    var newSamplerId = clipSamplers.AddWithId(new ClipSampler
                     {
                         ClipIndex = (byte)playOneShot.ClipIndex,
                         Clips = playOneShot.Clips,
@@ -74,6 +64,11 @@ namespace DMotion
                         PreviousTime = 0,
                         Weight = 1
                     });
+                    
+                    oneShotState = new OneShotState(newSamplerId,
+                        playOneShot.TransitionDuration,
+                        playOneShot.EndTime,
+                        playOneShot.Speed);
 
                     playOneShot = PlayOneShotRequest.Null;
                 }
@@ -107,7 +102,8 @@ namespace DMotion
             {
                 if (oneShotState.IsValid)
                 {
-                    var sampler = clipSamplers[oneShotState.SamplerIndex];
+                    var samplerIndex = clipSamplers.IdToIndex((byte)oneShotState.SamplerId);
+                    var sampler = clipSamplers[samplerIndex];
                     sampler.PreviousTime = sampler.Time;
                     sampler.Time += DeltaTime * oneShotState.Speed;
 
@@ -136,22 +132,13 @@ namespace DMotion
                     sampler.Weight = oneShotWeight;
                     stateMachine.Weight = 1 - oneShotWeight;
                     
-                    clipSamplers[oneShotState.SamplerIndex] = sampler;
+                    clipSamplers[samplerIndex] = sampler;
                     
                     //if blend out finished
                     if (sampler.Time >= sampler.Clip.duration)
                     {
                         stateMachine.Weight = 1;
-                        clipSamplers.RemoveAt(oneShotState.SamplerIndex);
-                        if (oneShotState.SamplerIndex < stateMachine.CurrentState.StartSamplerIndex)
-                        {
-                            stateMachine.CurrentState.StartSamplerIndex -= 1;
-                        }
-                        if (stateMachine.NextState.IsValid && oneShotState.SamplerIndex < stateMachine.NextState.StartSamplerIndex)
-                        {
-                            stateMachine.NextState.StartSamplerIndex -= 1;
-                        }
-                        
+                        clipSamplers.RemoveAt(samplerIndex);
                         oneShotState = OneShotState.Null;
                     }
                 }
@@ -199,7 +186,7 @@ namespace DMotion
             BlobAssetReference<ClipEventsBlob> clipEventsBlob,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var state = new AnimationState()
+            var state = new AnimationState
             {
                 StateMachineBlob = stateMachineBlob,
                 StateIndex = stateIndex,
