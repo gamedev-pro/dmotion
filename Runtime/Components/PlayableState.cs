@@ -15,10 +15,17 @@ namespace DMotion
         internal sbyte PlayableId;
         internal float TransitionDuration;
         internal float TransitionStartTime;
+        internal readonly float TransitionEndTime => TransitionStartTime + TransitionDuration;
         internal bool IsValid => PlayableId >= 0;
         internal static PlayableTransition Null => new PlayableTransition() { PlayableId = -1 };
+
+        internal readonly bool HasEnded(in PlayableState playableState)
+        {
+            Assert.AreEqual(playableState.Id, PlayableId);
+            return playableState.Time > TransitionEndTime;
+        }
     }
-    
+
     internal struct PlayableTransitionRequest : IComponentData
     {
         internal sbyte PlayableId;
@@ -27,7 +34,7 @@ namespace DMotion
 
         internal static PlayableTransitionRequest Null => new PlayableTransitionRequest() { PlayableId = -1 };
     }
-    
+
     [BurstCompile]
     internal struct PlayableState : IBufferElementData, IElementWithId
     {
@@ -66,12 +73,14 @@ namespace DMotion
                 {
                     var sampler = newSamplers[i];
                     sampler.Id = (byte)(playable.StartSamplerId + i);
-                    
+
                     var samplerIndex = i + insertIndex;
                     samplers[samplerIndex] = sampler;
                 }
+
                 playableStates[playableIndex] = playable;
             }
+
             return playableIndex;
         }
     }

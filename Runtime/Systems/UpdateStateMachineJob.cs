@@ -2,8 +2,10 @@
 using System.Runtime.CompilerServices;
 using Latios.Kinemation;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Profiling;
+using UnityEngine.Assertions;
 
 namespace DMotion
 {
@@ -19,11 +21,21 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<PlayableState> playableStates,
             ref PlayableTransitionRequest transitionRequest,
+            in PlayableTransition playableTransition,
             in DynamicBuffer<BoolParameter> boolParameters
         )
         {
             using var scope = Marker.Auto();
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
+
+            //TODO: || request transition to state machine
+            var shouldStateMachineBeActive = !playableTransition.IsValid ||
+                                             playableTransition.PlayableId == stateMachine.CurrentState.PlayableId;
+            
+            if (!shouldStateMachineBeActive)
+            {
+                return;
+            }
 
             //Initialize if necessary
             {
@@ -39,7 +51,7 @@ namespace DMotion
                         ref playableStates,
                         ref clipSamplers);
 
-                    transitionRequest = new PlayableTransitionRequest()
+                    transitionRequest = new PlayableTransitionRequest
                     {
                         PlayableId = stateMachine.CurrentState.PlayableId,
                         TransitionDuration = 0
@@ -49,7 +61,8 @@ namespace DMotion
 
             //Evaluate transitions
             {
-                var shouldStartTransition = EvaluateTransitions(stateMachine.CurrentState, playableStates, boolParameters,
+                var shouldStartTransition = EvaluateTransitions(stateMachine.CurrentState, playableStates,
+                    boolParameters,
                     out var transitionIndex);
 
                 if (shouldStartTransition)

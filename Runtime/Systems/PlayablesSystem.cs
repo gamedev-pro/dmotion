@@ -109,7 +109,7 @@ namespace DMotion
                 ref DynamicBuffer<PlayableState> playableStates,
                 ref DynamicBuffer<ClipSampler> samplers)
             {
-                //After all transitions are handled, clean up playable states with state zero
+                //After all transitions are handled, clean up playable states with zero Weights
                 var toPlayableIndex = playableStates.IdToIndex((byte)transition.PlayableId);
                 for (var i = playableStates.Length - 1; i >= 0; i--)
                 {
@@ -118,7 +118,7 @@ namespace DMotion
                         var playable = playableStates[i];
                         if (mathex.iszero(playable.Weight))
                         {
-                            //TODO (perf): This could be improved
+                            //TODO (perf): Could we improve performance by batching all removes? (we may need to pay for sorting at the end)
                             var removeCount = playable.ClipCount;
                             Assert.IsTrue(removeCount > 0, "Playable doesn't declare clip count to remove. This will lead to sampler leak");
                             samplers.RemoveRangeWithId(playable.StartSamplerId, removeCount);
@@ -131,7 +131,7 @@ namespace DMotion
 
         protected override void OnUpdate()
         {
-            new UpdatePlayablesJob()
+            new UpdatePlayablesJob
             {
                 DeltaTime = Time.DeltaTime
             }.ScheduleParallel();

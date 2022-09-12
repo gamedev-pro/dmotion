@@ -8,14 +8,7 @@ namespace DMotion
     [BurstCompile]
     internal struct SingleClipStateMachineState : IBufferElementData
     {
-        internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
-        internal short StateIndex;
         internal byte PlayableId;
-        internal readonly ref SingleClipStateBlob AsSingleClip =>
-            ref StateMachineBlob.Value.SingleClipStates[StateBlob.StateIndex];
-
-        internal readonly ref AnimationStateBlob StateBlob => ref StateMachineBlob.Value.States[StateIndex];
-        internal readonly StateType Type => StateBlob.Type;
 
         public static SingleClipStateMachineState New(
             short stateIndex,
@@ -26,25 +19,40 @@ namespace DMotion
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var singleClipState = new SingleClipStateMachineState
-            {
-                StateMachineBlob = stateMachineBlob,
-                StateIndex = stateIndex
-            };
+            ref var state = ref stateMachineBlob.Value.States[stateIndex];
+            var singleClipState = stateMachineBlob.Value.SingleClipStates[state.StateIndex];
+            return New(singleClipState.ClipIndex, state.Speed, state.Loop,
+                clips,
+                clipEvents,
+                ref singleClips,
+                ref playableStates,
+                ref samplers);
+        }
+
+        public static SingleClipStateMachineState New(
+            ushort clipIndex,
+            float speed,
+            bool loop,
+            BlobAssetReference<SkeletonClipSetBlob> clips,
+            BlobAssetReference<ClipEventsBlob> clipEvents,
+            ref DynamicBuffer<SingleClipStateMachineState> singleClips,
+            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<ClipSampler> samplers)
+        {
+            var singleClipState = new SingleClipStateMachineState();
 
             var newSamplers = new NativeArray<ClipSampler>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             newSamplers[0] = new ClipSampler
             {
-                ClipIndex = singleClipState.AsSingleClip.ClipIndex,
+                ClipIndex = clipIndex,
                 Clips = clips,
                 ClipEventsBlob = clipEvents,
                 PreviousTime = 0,
                 Time = 0,
                 Weight = 0
             };
-            
-            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers, singleClipState.StateBlob.Speed,
-                singleClipState.StateBlob.Loop);
+
+            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers, speed, loop);
             singleClipState.PlayableId = playableStates[playableIndex].Id;
             singleClips.Add(singleClipState);
             return singleClipState;
