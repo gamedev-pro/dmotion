@@ -1,4 +1,6 @@
-﻿using Unity.Burst;
+﻿using System.Diagnostics.CodeAnalysis;
+using Unity.Burst;
+using Unity.Burst.CompilerServices;
 using Unity.Entities;
 using Unity.Transforms;
 

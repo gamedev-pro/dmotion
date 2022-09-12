@@ -3,6 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace DMotion
 {
@@ -52,7 +53,8 @@ namespace DMotion
                 };
             }
 
-            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers, linearBlendState.StateBlob.Speed,
+            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers,
+                linearBlendState.StateBlob.Speed,
                 linearBlendState.StateBlob.Loop);
 
             linearBlendState.PlayableId = playableStates[playableIndex].Id;
@@ -123,7 +125,7 @@ namespace DMotion
                                    secondSampler.Clip.duration * secondSampler.Weight;
 
                 //We don't want to divide by zero if our weight is zero
-                if (loopDuration > 0)
+                if (!mathex.iszero(loopDuration))
                 {
                     var invLoopDuration = 1.0f / loopDuration;
                     var stateSpeed = playable.Speed;
@@ -131,6 +133,7 @@ namespace DMotion
                     {
                         var sampler = samplers[i];
                         var samplerSpeed = stateSpeed * sampler.Clip.duration * invLoopDuration;
+                        
                         sampler.PreviousTime = sampler.Time;
                         sampler.Time += dt * samplerSpeed;
 

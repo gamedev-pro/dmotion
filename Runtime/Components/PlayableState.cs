@@ -97,6 +97,9 @@ namespace DMotion
                 {
                     var sampler = newSamplers[i];
                     sampler.Id = (byte)(playable.StartSamplerId + i);
+                    sampler.PreviousTime = 0;
+                    sampler.Time = 0;
+                    sampler.Weight = 0;
 
                     var samplerIndex = i + insertIndex;
                     samplers[samplerIndex] = sampler;

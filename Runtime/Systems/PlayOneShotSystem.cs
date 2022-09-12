@@ -43,7 +43,7 @@ namespace DMotion
                         var playOneShotClip = clipSamplers.GetWithId(playableState.StartSamplerId);
 
                         var endTime = playOneShot.EndTime * playOneShotClip.Clip.duration;
-                        var blendOutDuration = playOneShotClip.Clip.duration - endTime;
+                        var blendOutDuration = playOneShot.TransitionDuration;
                         oneShotState = OneShotState.New(singleClipPlayable.PlayableId,endTime, blendOutDuration);
 
                         playOneShot = PlayOneShotRequest.Null;
