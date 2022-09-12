@@ -1,5 +1,7 @@
 ﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
+using UnityEngine.Assertions;
 
 namespace DMotion
 {
@@ -37,15 +39,40 @@ namespace DMotion
         internal byte StartSamplerId;
         internal byte ClipCount;
 
-        internal static int New(ref DynamicBuffer<PlayableState> playableStates, byte clipCount, float speed, bool loop)
+        internal static int New(
+            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<ClipSampler> samplers,
+            NativeArray<ClipSampler> newSamplers,
+            float speed, bool loop)
         {
+            Assert.IsTrue(newSamplers.IsCreated);
+            Assert.IsTrue(newSamplers.Length > 0);
+
+            var clipCount = (byte)newSamplers.Length;
             playableStates.AddWithId(new PlayableState
             {
                 Speed = speed,
                 Loop = loop,
-                ClipCount = clipCount,
-            }, out _, out var index);
-            return index;
+                ClipCount = clipCount
+            }, out _, out var playableIndex);
+
+            var playable = playableStates[playableIndex];
+            if (samplers.TryFindIdAndInsertIndex(clipCount, out var id,
+                    out var insertIndex))
+            {
+                samplers.Length += clipCount;
+                playable.StartSamplerId = id;
+                for (var i = 0; i < clipCount; i++)
+                {
+                    var sampler = newSamplers[i];
+                    sampler.Id = (byte)(playable.StartSamplerId + i);
+                    
+                    var samplerIndex = i + insertIndex;
+                    samplers[samplerIndex] = sampler;
+                }
+                playableStates[playableIndex] = playable;
+            }
+            return playableIndex;
         }
     }
 }

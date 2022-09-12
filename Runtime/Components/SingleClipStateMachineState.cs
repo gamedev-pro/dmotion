@@ -1,5 +1,6 @@
 ﻿using Latios.Kinemation;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace DMotion
@@ -31,13 +32,8 @@ namespace DMotion
                 StateIndex = stateIndex
             };
 
-            var playableIndex = PlayableState.New(ref playableStates, 1, singleClipState.StateBlob.Speed,
-                singleClipState.StateBlob.Loop);
-
-            var playableState = playableStates[playableIndex];
-            singleClipState.PlayableId = playableState.Id;
-
-            playableState.StartSamplerId = samplers.AddWithId(new ClipSampler
+            var newSamplers = new NativeArray<ClipSampler>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            newSamplers[0] = new ClipSampler
             {
                 ClipIndex = singleClipState.AsSingleClip.ClipIndex,
                 Clips = clips,
@@ -45,10 +41,11 @@ namespace DMotion
                 PreviousTime = 0,
                 Time = 0,
                 Weight = 0
-            });
-
-            playableStates[playableIndex] = playableState;
-
+            };
+            
+            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers, singleClipState.StateBlob.Speed,
+                singleClipState.StateBlob.Loop);
+            singleClipState.PlayableId = playableStates[playableIndex].Id;
             singleClips.Add(singleClipState);
             return singleClipState;
         }

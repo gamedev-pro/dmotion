@@ -1,5 +1,6 @@
 ﻿using Latios.Kinemation;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -13,6 +14,7 @@ namespace DMotion
         internal byte PlayableId;
         internal readonly ref AnimationStateBlob StateBlob => ref StateMachineBlob.Value.States[StateIndex];
         internal readonly StateType Type => StateBlob.Type;
+
         internal readonly ref LinearBlendStateBlob AsLinearBlend =>
             ref StateMachineBlob.Value.LinearBlendStates[StateBlob.StateIndex];
 
@@ -32,40 +34,30 @@ namespace DMotion
             };
 
             ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
-            var clipCount = (byte) linearBlendBlob.ClipSortedByThreshold.Length;
-            
-            var playableIndex = PlayableState.New(ref playableStates, clipCount, linearBlendState.StateBlob.Speed,
-                linearBlendState.StateBlob.Loop);
+            var clipCount = (byte)linearBlendBlob.ClipSortedByThreshold.Length;
 
-            var playableState = playableStates[playableIndex];
-            linearBlendState.PlayableId = playableState.Id;
-
-            if (samplers.TryFindIdAndInsertIndex(clipCount, out var id,
-                    out var insertIndex))
+            var newSamplers =
+                new NativeArray<ClipSampler>(clipCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            for (var i = 0; i < clipCount; i++)
             {
-                samplers.Length += clipCount;
-                playableState.StartSamplerId = id;
-                for (var i = 0; i < clipCount; i++)
+                var clip = linearBlendBlob.ClipSortedByThreshold[i];
+                newSamplers[i] = new ClipSampler
                 {
-                    var clip = linearBlendBlob.ClipSortedByThreshold[i];
-
-                    var index = i + insertIndex;
-                    samplers[index] = new ClipSampler
-                    {
-                        Id = (byte)(playableState.StartSamplerId + i),
-                        ClipIndex = clip.ClipIndex,
-                        Clips = clips,
-                        ClipEventsBlob = clipEvents,
-                        PreviousTime = 0,
-                        Time = 0,
-                        Weight = 0
-                    };
-                }
+                    ClipIndex = clip.ClipIndex,
+                    Clips = clips,
+                    ClipEventsBlob = clipEvents,
+                    PreviousTime = 0,
+                    Time = 0,
+                    Weight = 0
+                };
             }
 
-            playableStates[playableIndex] = playableState;
+            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers, linearBlendState.StateBlob.Speed,
+                linearBlendState.StateBlob.Loop);
+
+            linearBlendState.PlayableId = playableStates[playableIndex].Id;
             linearBlendStates.Add(linearBlendState);
-            
+
             return linearBlendState;
         }
 
