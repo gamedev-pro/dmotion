@@ -37,8 +37,7 @@ namespace DMotion.Authoring
                 StateMachineBlob = stateMachineBlob,
                 ClipsBlob = clipsBlob,
                 ClipEventsBlob = clipEventsBlob,
-                CurrentState = StateMachineStateRef.Null,
-                Weight = 1
+                CurrentState = StateMachineStateRef.Null
             };
 
             dstManager.AddComponentData(entity, stateMachine);

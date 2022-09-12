@@ -61,13 +61,15 @@ namespace DMotion
 
             //Evaluate transitions
             {
-                var shouldStartTransition = EvaluateTransitions(stateMachine.CurrentState, playableStates,
+                var shouldStartTransition = EvaluateTransitions((byte)stateMachine.CurrentState.PlayableId,
+                    ref stateMachine.CurrentStateBlob,
+                    playableStates,
                     boolParameters,
                     out var transitionIndex);
 
                 if (shouldStartTransition)
                 {
-                    ref var transition = ref stateMachine.CurrentState.StateBlob.Transitions[transitionIndex];
+                    ref var transition = ref stateMachine.CurrentStateBlob.Transitions[transitionIndex];
                     stateMachine.CurrentState = CreateState(
                         transition.ToStateIndex,
                         stateMachine.StateMachineBlob,
@@ -99,7 +101,6 @@ namespace DMotion
             ref var state = ref stateMachineBlob.Value.States[stateIndex];
             var stateRef = new StateMachineStateRef
             {
-                StateMachineBlob = stateMachineBlob,
                 StateIndex = (ushort)stateIndex
             };
 
@@ -137,13 +138,13 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(in StateMachineStateRef state,
+        private bool EvaluateTransitions(byte playableId, ref AnimationStateBlob state,
             in DynamicBuffer<PlayableState> playableStates,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
-            for (short i = 0; i < state.StateBlob.Transitions.Length; i++)
+            for (short i = 0; i < state.Transitions.Length; i++)
             {
-                if (EvaluateTransitionGroup(state, ref state.StateBlob.Transitions[i], playableStates, boolParameters))
+                if (EvaluateTransitionGroup(playableId, ref state.Transitions[i], playableStates, boolParameters))
                 {
                     transitionIndex = i;
                     return true;
@@ -156,11 +157,11 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(in StateMachineStateRef state, ref StateOutTransitionGroup transitionGroup,
+        private bool EvaluateTransitionGroup(byte playableId, ref StateOutTransitionGroup transitionGroup,
             in DynamicBuffer<PlayableState> playableStates,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            var playable = playableStates[state.IdToIndex(playableStates)];
+            var playable = playableStates[playableStates.IdToIndex(playableId)];
             if (transitionGroup.HasEndTime && playable.Time < transitionGroup.TransitionEndTime)
             {
                 return false;

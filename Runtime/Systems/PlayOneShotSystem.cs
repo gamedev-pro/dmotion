@@ -80,14 +80,14 @@ namespace DMotion
                         }
 
                         sampler.Weight = oneShotWeight;
-                        stateMachine.Weight = 1 - oneShotWeight;
+                        // stateMachine.Weight = 1 - oneShotWeight;
 
                         clipSamplers[samplerIndex] = sampler;
 
                         //if blend out finished
                         if (sampler.Time >= sampler.Clip.duration)
                         {
-                            stateMachine.Weight = 1;
+                            // stateMachine.Weight = 1;
                             clipSamplers.RemoveAt(samplerIndex);
                             oneShotState = OneShotState.Null;
                         }
