@@ -17,6 +17,7 @@ namespace DMotion
 
             internal void Execute(
                 ref PlayableTransition playableTransition,
+                ref PlayableCurrentState playableCurrentState,
                 ref PlayableTransitionRequest transitionRequest,
                 ref DynamicBuffer<PlayableState> playableStates
             )
@@ -49,10 +50,10 @@ namespace DMotion
                     //Check if the current transition has ended
                     if (toPlayableIndex >= 0)
                     {
-                        var endTime = playableTransition.TransitionStartTime + playableTransition.TransitionDuration;
-                        if (playableStates[toPlayableIndex].Time > endTime)
+                        if (playableTransition.HasEnded(playableStates[toPlayableIndex]))
                         {
-                            playableTransition = PlayableTransition.Null;
+                             playableCurrentState = PlayableCurrentState.New(playableTransition.PlayableId);
+                             playableTransition = PlayableTransition.Null;                           
                         }
                     }
                 }

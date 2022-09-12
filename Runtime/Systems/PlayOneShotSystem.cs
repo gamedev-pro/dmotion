@@ -1,7 +1,5 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
-using Unity.Profiling;
 using Unity.Transforms;
 
 namespace DMotion
@@ -13,99 +11,65 @@ namespace DMotion
         [BurstCompile]
         internal partial struct PlayOneShotJob : IJobEntity
         {
-            internal float DeltaTime;
-            internal ProfilerMarker Marker;
-
             internal void Execute(
-                ref AnimationStateMachine stateMachine,
-                ref DynamicBuffer<ClipSampler> clipSamplers,
+                ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
+                ref PlayableTransitionRequest playableTransitionRequest,
                 ref PlayOneShotRequest playOneShot,
-                ref OneShotState oneShotState
+                ref OneShotState oneShotState,
+                ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+                ref DynamicBuffer<PlayableState> playableStates,
+                ref DynamicBuffer<ClipSampler> clipSamplers,
+                in PlayableCurrentState playableTransition
             )
             {
-                using var scope = Marker.Auto();
                 //Evaluate requested one shot
                 {
                     if (playOneShot.IsValid)
                     {
-                        var clipSampler = new ClipSampler
-                        {
-                            ClipIndex = (byte)playOneShot.ClipIndex,
-                            Clips = playOneShot.Clips,
-                            ClipEventsBlob = playOneShot.ClipEvents,
-                            Time = 0,
-                            PreviousTime = 0,
-                            Weight = 1
-                        };
-                        var newSamplerId = clipSamplers.AddWithId(clipSampler);
+                        var singleClipPlayable = SingleClipStateMachineState.New(
+                            (ushort)playOneShot.ClipIndex,
+                            playOneShot.Speed,
+                            false,
+                            playOneShot.Clips,
+                            playOneShot.ClipEvents,
+                            ref singleClipStates,
+                            ref playableStates,
+                            ref clipSamplers);
 
-                        oneShotState = new OneShotState(newSamplerId,
-                            playOneShot.TransitionDuration,
-                            playOneShot.EndTime * clipSampler.Clip.duration,
-                            playOneShot.Speed);
+                        playableTransitionRequest = PlayableTransitionRequest.New(singleClipPlayable.PlayableId,
+                            playOneShot.TransitionDuration);
+
+                        var playableState = playableStates.GetWithId(singleClipPlayable.PlayableId);
+                        var playOneShotClip = clipSamplers.GetWithId(playableState.StartSamplerId);
+
+                        var endTime = playOneShot.EndTime * playOneShotClip.Clip.duration;
+                        var blendOutDuration = playOneShotClip.Clip.duration - endTime;
+                        oneShotState = OneShotState.New(singleClipPlayable.PlayableId,endTime, blendOutDuration);
 
                         playOneShot = PlayOneShotRequest.Null;
                     }
                 }
 
-                //Update One shot
+                //Evaluate one shot end
                 {
-                    if (oneShotState.IsValid)
+                    if (oneShotState.IsValid && oneShotState.PlayableId == playableTransition.PlayableId)
                     {
-                        var samplerIndex = clipSamplers.IdToIndex((byte)oneShotState.SamplerId);
-                        var sampler = clipSamplers[samplerIndex];
-                        sampler.PreviousTime = sampler.Time;
-                        sampler.Time += DeltaTime * oneShotState.Speed;
+                        var oneShotPlayableState = playableStates.GetWithId((byte)oneShotState.PlayableId);
 
-                        float oneShotWeight;
-                        //blend out
-                        if (sampler.Time > oneShotState.EndTime)
+                        //request transition back to state machine if we're done
+                        if (oneShotPlayableState.Time >= oneShotState.EndTime)
                         {
-                            var blendOutTime = sampler.Clip.duration - oneShotState.EndTime;
-                            if (!mathex.iszero(blendOutTime))
-                            {
-                                oneShotWeight = math.clamp((sampler.Clip.duration - sampler.Time) /
-                                                           blendOutTime, 0, 1);
-                            }
-                            else
-                            {
-                                oneShotWeight = 0;
-                            }
-                        }
-                        //blend in
-                        else
-                        {
-                            oneShotWeight = math.clamp(sampler.Time /
-                                                       oneShotState.TransitionDuration, 0, 1);
-                        }
-
-                        sampler.Weight = oneShotWeight;
-                        // stateMachine.Weight = 1 - oneShotWeight;
-
-                        clipSamplers[samplerIndex] = sampler;
-
-                        //if blend out finished
-                        if (sampler.Time >= sampler.Clip.duration)
-                        {
-                            // stateMachine.Weight = 1;
-                            clipSamplers.RemoveAt(samplerIndex);
+                            stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.New(oneShotState.BlendOutDuration);
                             oneShotState = OneShotState.Null;
                         }
                     }
                 }
             }
         }
-        
-        internal static readonly ProfilerMarker Marker_PlayOneShot =
-            ProfilingUtils.CreateAnimationMarker<PlayOneShotSystem>(nameof(PlayOneShotJob));
 
         protected override void OnUpdate()
         {
-            // new PlayOneShotJob
-            // {
-            //     DeltaTime = Time.DeltaTime,
-            //     Marker = Marker_PlayOneShot
-            // }.ScheduleParallel();
+            new PlayOneShotJob().ScheduleParallel();
         }
     }
 }

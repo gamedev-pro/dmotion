@@ -10,7 +10,7 @@ namespace DMotion
     {
         internal byte PlayableId;
 
-        public static SingleClipStateMachineState New(
+        public static SingleClipStateMachineState NewForStateMachine(
             short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clips,

@@ -2,10 +2,8 @@
 using System.Runtime.CompilerServices;
 using Latios.Kinemation;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Profiling;
-using UnityEngine.Assertions;
 
 namespace DMotion
 {
@@ -16,22 +14,23 @@ namespace DMotion
 
         internal void Execute(
             ref AnimationStateMachine stateMachine,
+            ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
+            ref PlayableTransitionRequest playableTransitionRequest,
             ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
             ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<PlayableState> playableStates,
-            ref PlayableTransitionRequest transitionRequest,
-            in PlayableTransition playableTransition,
+            in PlayableCurrentState playableCurrentState,
             in DynamicBuffer<BoolParameter> boolParameters
         )
         {
             using var scope = Marker.Auto();
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
 
-            //TODO: || request transition to state machine
-            var shouldStateMachineBeActive = !playableTransition.IsValid ||
-                                             playableTransition.PlayableId == stateMachine.CurrentState.PlayableId;
-            
+            var shouldStateMachineBeActive = !playableCurrentState.IsValid ||
+                                             stateMachineTransitionRequest.IsRequested ||
+                                             playableCurrentState.PlayableId == stateMachine.CurrentState.PlayableId;
+
             if (!shouldStateMachineBeActive)
             {
                 return;
@@ -51,19 +50,62 @@ namespace DMotion
                         ref playableStates,
                         ref clipSamplers);
 
-                    transitionRequest = new PlayableTransitionRequest
+                    playableTransitionRequest = new PlayableTransitionRequest
                     {
                         PlayableId = stateMachine.CurrentState.PlayableId,
                         TransitionDuration = 0
                     };
+
+                    //We already started a transition to a new state 
+                    stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
+                }
+            }
+
+            //Evaluate if we should transition into the state machine
+            {
+                if (stateMachineTransitionRequest.IsRequested)
+                {
+                    var isCurrentStateActive = playableCurrentState.PlayableId == stateMachine.CurrentState.PlayableId;
+                    // we're already playing our current state
+                    if (!isCurrentStateActive)
+                    {
+                        var isCurrentStatePlayableAlive =
+                            playableStates.ExistsWithId((byte)stateMachine.CurrentState.PlayableId);
+                        
+                        if (!isCurrentStatePlayableAlive)
+                        {
+                            //create a new playable state for us to transition to
+                            stateMachine.CurrentState = CreateState(
+                                (short)stateMachine.CurrentState.StateIndex,
+                                stateMachine.StateMachineBlob,
+                                stateMachine.ClipsBlob,
+                                stateMachine.ClipEventsBlob,
+                                ref singleClipStates,
+                                ref linearBlendStates,
+                                ref playableStates,
+                                ref clipSamplers);
+                        }
+
+                        playableTransitionRequest = new PlayableTransitionRequest
+                        {
+                            PlayableId = stateMachine.CurrentState.PlayableId,
+                            TransitionDuration = stateMachineTransitionRequest.TransitionDuration
+                        };
+                    }
+                    
+                    stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
                 }
             }
 
             //Evaluate transitions
             {
-                var shouldStartTransition = EvaluateTransitions((byte)stateMachine.CurrentState.PlayableId,
+                //we really expect this guy to exist
+                var currentStatePlayable = 
+                    playableStates.GetWithId((byte) stateMachine.CurrentState.PlayableId);
+                
+                var shouldStartTransition = EvaluateTransitions(
+                    currentStatePlayable,
                     ref stateMachine.CurrentStateBlob,
-                    playableStates,
                     boolParameters,
                     out var transitionIndex);
 
@@ -80,7 +122,7 @@ namespace DMotion
                         ref playableStates,
                         ref clipSamplers);
 
-                    transitionRequest = new PlayableTransitionRequest
+                    playableTransitionRequest = new PlayableTransitionRequest
                     {
                         PlayableId = stateMachine.CurrentState.PlayableId,
                         TransitionDuration = transition.TransitionDuration,
@@ -108,7 +150,7 @@ namespace DMotion
             switch (state.Type)
             {
                 case StateType.Single:
-                    var singleClipState = SingleClipStateMachineState.New(
+                    var singleClipState = SingleClipStateMachineState.NewForStateMachine(
                         (byte)state.StateIndex,
                         stateMachineBlob,
                         clipsBlob,
@@ -138,13 +180,12 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(byte playableId, ref AnimationStateBlob state,
-            in DynamicBuffer<PlayableState> playableStates,
+        private bool EvaluateTransitions(in PlayableState playable, ref AnimationStateBlob state,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
             for (short i = 0; i < state.Transitions.Length; i++)
             {
-                if (EvaluateTransitionGroup(playableId, ref state.Transitions[i], playableStates, boolParameters))
+                if (EvaluateTransitionGroup(playable, ref state.Transitions[i], boolParameters))
                 {
                     transitionIndex = i;
                     return true;
@@ -157,11 +198,9 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(byte playableId, ref StateOutTransitionGroup transitionGroup,
-            in DynamicBuffer<PlayableState> playableStates,
+        private bool EvaluateTransitionGroup(in PlayableState playable, ref StateOutTransitionGroup transitionGroup,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            var playable = playableStates[playableStates.IdToIndex(playableId)];
             if (transitionGroup.HasEndTime && playable.Time < transitionGroup.TransitionEndTime)
             {
                 return false;

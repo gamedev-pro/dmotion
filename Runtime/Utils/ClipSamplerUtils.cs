@@ -120,6 +120,12 @@ namespace DMotion
             }
             return -1;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool ExistsWithId<T>(this DynamicBuffer<T> samplers, byte id) where T : struct, IElementWithId
+        {
+            return samplers.IdToIndex(id) >= 0;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool TryGetWithId<T>(this DynamicBuffer<T> samplers, byte id, out T element) where T : struct, IElementWithId
@@ -133,6 +139,14 @@ namespace DMotion
 
             element = default;
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static T GetWithId<T>(this DynamicBuffer<T> elements, byte id) where T : struct, IElementWithId
+        {
+            var success= elements.TryGetWithId(id, out var e);
+            Assert.IsTrue(success);
+            return e;
         }
     }
 }

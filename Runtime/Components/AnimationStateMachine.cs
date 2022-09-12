@@ -16,6 +16,29 @@ namespace DMotion
     }
 
     [BurstCompile]
+    internal struct AnimationStateMachineTransitionRequest : IComponentData
+    {
+        internal bool IsRequested;
+        internal float TransitionDuration;
+
+        internal static AnimationStateMachineTransitionRequest Null
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => new AnimationStateMachineTransitionRequest { IsRequested = false };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static AnimationStateMachineTransitionRequest New(float transitionDuration)
+        {
+            return new AnimationStateMachineTransitionRequest()
+            {
+                IsRequested = true,
+                TransitionDuration = transitionDuration
+            };
+        }
+    }
+
+    [BurstCompile]
     internal struct AnimationStateMachine : IComponentData
     {
         internal BlobAssetReference<SkeletonClipSetBlob> ClipsBlob;

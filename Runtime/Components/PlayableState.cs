@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine.Assertions;
@@ -10,14 +11,27 @@ namespace DMotion
         byte Id { get; set; }
     }
 
+    internal struct PlayableCurrentState : IComponentData
+    {
+        internal sbyte PlayableId;
+        internal bool IsValid => PlayableId >= 0;
+        internal static PlayableCurrentState Null => new () { PlayableId = -1 };
+        internal static PlayableCurrentState New(sbyte playableId)
+        {
+            return new PlayableCurrentState
+            {
+                PlayableId = playableId
+            };
+        }
+    }
+    
     internal struct PlayableTransition : IComponentData
     {
         internal sbyte PlayableId;
         internal float TransitionDuration;
         internal float TransitionStartTime;
         internal readonly float TransitionEndTime => TransitionStartTime + TransitionDuration;
-        internal bool IsValid => PlayableId >= 0;
-        internal static PlayableTransition Null => new PlayableTransition() { PlayableId = -1 };
+        internal static PlayableTransition Null => new () { PlayableId = -1 };
 
         internal readonly bool HasEnded(in PlayableState playableState)
         {
@@ -33,6 +47,16 @@ namespace DMotion
         internal bool IsValid => PlayableId >= 0;
 
         internal static PlayableTransitionRequest Null => new PlayableTransitionRequest() { PlayableId = -1 };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static PlayableTransitionRequest New(byte playableId, float transitionDuration)
+        {
+            return new PlayableTransitionRequest
+            {
+                PlayableId = (sbyte)playableId,
+                TransitionDuration = transitionDuration
+            };
+        }
     }
 
     [BurstCompile]
