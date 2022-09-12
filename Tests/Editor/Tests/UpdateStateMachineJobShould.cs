@@ -15,16 +15,24 @@ namespace DMotion.Tests
         private Entity stateMachineEntityPrefab;
 
         [Test]
+        public void Run_With_Valid_Queries()
+        {
+            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            UpdateWorld();
+            ECSTestUtils.AssertSystemQueries<AnimationStateMachineSystem>(world);
+        }
+        
+        [Test]
         public void Initialize_When_Necessary()
         {
             var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.AreEqual(stateMachine.CurrentState, AnimationState.Null);
+            Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
 
             UpdateWorld();
 
             stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.AreNotEqual(stateMachine.CurrentState, AnimationState.Null);
+            Assert.AreNotEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
         }
 
         [Test]
@@ -54,7 +62,7 @@ namespace DMotion.Tests
             UpdateWorld();
 
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.AreEqual(stateMachine.NextState, AnimationState.Null);
+            Assert.AreEqual(stateMachine.NextState, StateMachineStateRef.Null);
 
             manager.SetBoolParameter(newEntity, 0, true);
 
@@ -62,7 +70,7 @@ namespace DMotion.Tests
 
             stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
 
-            Assert.AreNotEqual(stateMachine.NextState, AnimationState.Null);
+            Assert.AreNotEqual(stateMachine.NextState, StateMachineStateRef.Null);
         }
 
         [Test]
@@ -74,13 +82,13 @@ namespace DMotion.Tests
 
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             var cachedNextState = stateMachine.NextState;
-            Assert.AreNotEqual(cachedNextState, AnimationState.Null);
+            Assert.AreNotEqual(cachedNextState, StateMachineStateRef.Null);
 
             UpdateWorld(stateMachine.CurrentTransitionDuration * 1.5f);
             UpdateWorld();
 
             stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.AreEqual(stateMachine.NextState, AnimationState.Null);
+            Assert.AreEqual(stateMachine.NextState, StateMachineStateRef.Null);
             Assert.AreEqual(stateMachine.CurrentState.StateIndex, cachedNextState.StateIndex);
             Assert.AreEqual(stateMachine.CurrentState.Type, cachedNextState.Type);
         }

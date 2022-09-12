@@ -20,9 +20,9 @@ namespace DMotion
         }
     }
     
-    internal struct ClipSampler : IBufferElementData
+    internal struct ClipSampler : IBufferElementData, IElementWithId
     {
-        internal byte Id;
+        public byte Id { get; set; }
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
         internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal ushort ClipIndex;

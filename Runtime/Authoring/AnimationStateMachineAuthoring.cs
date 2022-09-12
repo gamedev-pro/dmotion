@@ -37,12 +37,17 @@ namespace DMotion.Authoring
                 StateMachineBlob = stateMachineBlob,
                 ClipsBlob = clipsBlob,
                 ClipEventsBlob = clipEventsBlob,
-                CurrentState = AnimationState.Null,
-                NextState = AnimationState.Null,
+                CurrentState = StateMachineStateRef.Null,
+                NextState = StateMachineStateRef.Null,
                 Weight = 1
             };
 
             dstManager.AddComponentData(entity, stateMachine);
+
+            dstManager.AddBuffer<SingleClipStateMachineState>(entity);
+            dstManager.AddBuffer<LinearBlendAnimationStateMachineState>(entity);
+            
+            dstManager.AddBuffer<PlayableState>(entity);
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
 

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
@@ -8,15 +9,63 @@ using Unity.Profiling;
 namespace DMotion
 {
     [BurstCompile]
-    internal partial struct UpdateStateMachineJob : IJobEntity
+    internal partial struct UpdateSingleClipStateMachineStatesJob : IJobEntity
     {
         internal float DeltaTime;
         internal ProfilerMarker Marker;
 
         internal void Execute(
-            ref AnimationStateMachine stateMachine,
+            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<ClipSampler> clipSamplers
+        )
+        {
+            for (var i = 0; i < singleClipStates.Length; i++)
+            {
+                if (playableStates.TryGetWithId(singleClipStates[i].PlayableId, out var playable))
+                {
+                    singleClipStates[i]
+                        .UpdateSamplers(DeltaTime, playable.Weight, ref playableStates, ref clipSamplers);
+                }
+            }
+        }
+    }
+
+    [BurstCompile]
+    internal partial struct UpdateLinearBlendStateMachineStatesJob : IJobEntity
+    {
+        internal float DeltaTime;
+        internal ProfilerMarker Marker;
+
+        internal void Execute(
+            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> clipSamplers,
-            in DynamicBuffer<BlendParameter> blendParameters,
+            in DynamicBuffer<BlendParameter> blendParameters
+        )
+        {
+            for (var i = 0; i < linearBlendStates.Length; i++)
+            {
+                if (playableStates.TryGetWithId(linearBlendStates[i].PlayableId, out var playable))
+                {
+                    linearBlendStates[i].UpdateSamplers(DeltaTime, playable.Weight, blendParameters, ref playableStates,
+                        ref clipSamplers);
+                }
+            }
+        }
+    }
+
+    [BurstCompile]
+    internal partial struct UpdateStateMachineJob : IJobEntity
+    {
+        internal ProfilerMarker Marker;
+
+        internal void Execute(
+            ref AnimationStateMachine stateMachine,
+            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<ClipSampler> clipSamplers,
+            ref DynamicBuffer<PlayableState> playableStates,
             in DynamicBuffer<BoolParameter> boolParameters
         )
         {
@@ -32,19 +81,25 @@ namespace DMotion
                         stateMachine.StateMachineBlob,
                         stateMachine.ClipsBlob,
                         stateMachine.ClipEventsBlob,
+                        ref singleClipStates,
+                        ref linearBlendStates,
+                        ref playableStates,
                         ref clipSamplers);
                 }
             }
+
             //Evaluate if current transition ended
             {
                 if (stateMachine.NextState.IsValid)
                 {
-                    if (stateMachine.NextState.Time > stateMachine.CurrentTransitionDuration)
+                    var nextStatePlayableIndex = stateMachine.NextState.IdToIndex(playableStates);
+                    if (playableStates[nextStatePlayableIndex].Time > stateMachine.CurrentTransitionDuration)
                     {
-                        var removeCount = stateMachine.CurrentState.ClipCount;
-                        clipSamplers.RemoveRangeWithId(stateMachine.CurrentState.StartSamplerId, removeCount);
+                        DestroyState(stateMachine.CurrentState,
+                            ref singleClipStates, ref linearBlendStates,
+                            ref playableStates, ref clipSamplers);
                         stateMachine.CurrentState = stateMachine.NextState;
-                        stateMachine.NextState = AnimationState.Null;
+                        stateMachine.NextState = StateMachineStateRef.Null;
                     }
                 }
             }
@@ -55,7 +110,7 @@ namespace DMotion
                     ? stateMachine.NextState
                     : stateMachine.CurrentState;
 
-                var shouldStartTransition = EvaluateTransitions(stateToEvaluate, boolParameters,
+                var shouldStartTransition = EvaluateTransitions(stateToEvaluate, playableStates, boolParameters,
                     out var transitionIndex);
 
                 if (shouldStartTransition)
@@ -67,6 +122,9 @@ namespace DMotion
                         stateMachine.StateMachineBlob,
                         stateMachine.ClipsBlob,
                         stateMachine.ClipEventsBlob,
+                        ref singleClipStates,
+                        ref linearBlendStates,
+                        ref playableStates,
                         ref clipSamplers);
                 }
             }
@@ -75,47 +133,125 @@ namespace DMotion
             {
                 if (stateMachine.NextState.IsValid)
                 {
-                    var nextStateBlend = math.clamp(stateMachine.NextState.Time /
+                    var currentStatePlayableIndex = stateMachine.CurrentState.IdToIndex(playableStates);
+                    var nextStatePlayableIndex = stateMachine.NextState.IdToIndex(playableStates);
+
+                    var currentPlayableState = playableStates[currentStatePlayableIndex];
+                    var nextPlayableState = playableStates[nextStatePlayableIndex];
+
+                    var nextStateBlend = math.clamp(nextPlayableState.Time /
                                                     stateMachine.CurrentTransitionDuration, 0, 1);
-                    stateMachine.CurrentState.UpdateSamplers(
-                        DeltaTime, (1 - nextStateBlend) * stateMachine.Weight,
-                        blendParameters, ref clipSamplers);
-                    stateMachine.NextState.UpdateSamplers(
-                        DeltaTime, nextStateBlend * stateMachine.Weight,
-                        blendParameters, ref clipSamplers);
+
+                    currentPlayableState.Weight = (1 - nextStateBlend) * stateMachine.Weight;
+                    nextPlayableState.Weight = nextStateBlend * stateMachine.Weight;
+
+                    playableStates[currentStatePlayableIndex] = currentPlayableState;
+                    playableStates[nextStatePlayableIndex] = nextPlayableState;
                 }
                 else
                 {
-                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, stateMachine.Weight, blendParameters,
-                        ref clipSamplers);
+                    var currentStatePlayableIndex = stateMachine.CurrentState.IdToIndex(playableStates);
+                    var currentPlayableState = playableStates[currentStatePlayableIndex];
+                    currentPlayableState.Weight = stateMachine.Weight;
+                    playableStates[currentStatePlayableIndex] = currentPlayableState;
                 }
             }
         }
 
-        private AnimationState CreateState(short stateIndex,
+        private StateMachineStateRef CreateState(short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
             BlobAssetReference<ClipEventsBlob> clipEventsBlob,
+            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var state = new AnimationState
+            ref var state = ref stateMachineBlob.Value.States[stateIndex];
+            var stateRef = new StateMachineStateRef
             {
                 StateMachineBlob = stateMachineBlob,
-                StateIndex = stateIndex,
-                Time = 0,
+                StateIndex = (ushort)stateIndex
             };
-            state.Initialize(clipsBlob, clipEventsBlob, ref samplers);
-            return state;
+
+            byte playableId;
+            switch (state.Type)
+            {
+                case StateType.Single:
+                    var singleClipState = SingleClipStateMachineState.New(
+                        (byte)state.StateIndex,
+                        stateMachineBlob,
+                        clipsBlob,
+                        clipEventsBlob,
+                        ref singleClipStates,
+                        ref playableStates, ref samplers);
+                    playableId = singleClipState.PlayableId;
+                    break;
+                case StateType.LinearBlend:
+                    var linearClipState = LinearBlendAnimationStateMachineState.New(
+                        (byte)state.StateIndex,
+                        stateMachineBlob,
+                        clipsBlob,
+                        clipEventsBlob,
+                        ref linearBlendStates,
+                        ref playableStates, ref samplers);
+
+                    playableId = linearClipState.PlayableId;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            stateRef.PlayableId = (sbyte)playableId;
+            return stateRef;
+        }
+
+
+        private void DestroyState(StateMachineStateRef stateRef,
+            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<ClipSampler> clipSamplers)
+        {
+            PlayableState.DestroyStateWithId(ref playableStates, ref clipSamplers, (byte) stateRef.PlayableId);
+            switch (stateRef.Type)
+            {
+                case StateType.Single:
+                    for (int i = 0; i < singleClipStates.Length; i++)
+                    {
+                        if (singleClipStates[i].PlayableId == stateRef.PlayableId)
+                        {
+                            singleClipStates.RemoveAtSwapBack(i);
+                            break;
+                        }
+                    }
+
+                    break;
+                case StateType.LinearBlend:
+                    for (int i = 0; i < linearBlendStates.Length; i++)
+                    {
+                        if (linearBlendStates[i].PlayableId == stateRef.PlayableId)
+                        {
+                            linearBlendStates.RemoveAtSwapBack(i);
+                            break;
+                        }
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(in AnimationState state,
+        private bool EvaluateTransitions(in StateMachineStateRef state,
+            in DynamicBuffer<PlayableState> playableStates,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
             for (short i = 0; i < state.StateBlob.Transitions.Length; i++)
             {
-                if (EvaluateTransitionGroup(state, ref state.StateBlob.Transitions[i], boolParameters))
+                if (EvaluateTransitionGroup(state, ref state.StateBlob.Transitions[i], playableStates, boolParameters))
                 {
                     transitionIndex = i;
                     return true;
@@ -128,10 +264,12 @@ namespace DMotion
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(in AnimationState state, ref StateOutTransitionGroup transitionGroup,
+        private bool EvaluateTransitionGroup(in StateMachineStateRef state, ref StateOutTransitionGroup transitionGroup,
+            in DynamicBuffer<PlayableState> playableStates,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            if (transitionGroup.HasEndTime && state.Time < transitionGroup.TransitionEndTime)
+            var playable = playableStates[state.IdToIndex(playableStates)];
+            if (transitionGroup.HasEndTime && playable.Time < transitionGroup.TransitionEndTime)
             {
                 return false;
             }
