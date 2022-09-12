@@ -3,58 +3,10 @@ using System.Runtime.CompilerServices;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Profiling;
 
 namespace DMotion
 {
-    [BurstCompile]
-    internal partial struct UpdateSingleClipStateMachineStatesJob : IJobEntity
-    {
-        internal float DeltaTime;
-        internal ProfilerMarker Marker;
-
-        internal void Execute(
-            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
-            ref DynamicBuffer<PlayableState> playableStates,
-            ref DynamicBuffer<ClipSampler> clipSamplers
-        )
-        {
-            for (var i = 0; i < singleClipStates.Length; i++)
-            {
-                if (playableStates.TryGetWithId(singleClipStates[i].PlayableId, out var playable))
-                {
-                    singleClipStates[i]
-                        .UpdateSamplers(DeltaTime, playable.Weight, ref playableStates, ref clipSamplers);
-                }
-            }
-        }
-    }
-
-    [BurstCompile]
-    internal partial struct UpdateLinearBlendStateMachineStatesJob : IJobEntity
-    {
-        internal float DeltaTime;
-        internal ProfilerMarker Marker;
-
-        internal void Execute(
-            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
-            ref DynamicBuffer<PlayableState> playableStates,
-            ref DynamicBuffer<ClipSampler> clipSamplers,
-            in DynamicBuffer<BlendParameter> blendParameters
-        )
-        {
-            for (var i = 0; i < linearBlendStates.Length; i++)
-            {
-                if (playableStates.TryGetWithId(linearBlendStates[i].PlayableId, out var playable))
-                {
-                    linearBlendStates[i].UpdateSamplers(DeltaTime, playable.Weight, blendParameters, ref playableStates,
-                        ref clipSamplers);
-                }
-            }
-        }
-    }
-
     [BurstCompile]
     internal partial struct UpdateStateMachineJob : IJobEntity
     {
@@ -66,6 +18,7 @@ namespace DMotion
             ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<PlayableState> playableStates,
+            ref PlayableTransitionRequest transitionRequest,
             in DynamicBuffer<BoolParameter> boolParameters
         )
         {
@@ -85,39 +38,24 @@ namespace DMotion
                         ref linearBlendStates,
                         ref playableStates,
                         ref clipSamplers);
-                }
-            }
 
-            //Evaluate if current transition ended
-            {
-                if (stateMachine.NextState.IsValid)
-                {
-                    var nextStatePlayableIndex = stateMachine.NextState.IdToIndex(playableStates);
-                    if (playableStates[nextStatePlayableIndex].Time > stateMachine.CurrentTransitionDuration)
+                    transitionRequest = new PlayableTransitionRequest()
                     {
-                        DestroyState(stateMachine.CurrentState,
-                            ref singleClipStates, ref linearBlendStates,
-                            ref playableStates, ref clipSamplers);
-                        stateMachine.CurrentState = stateMachine.NextState;
-                        stateMachine.NextState = StateMachineStateRef.Null;
-                    }
+                        PlayableId = stateMachine.CurrentState.PlayableId,
+                        TransitionDuration = 0
+                    };
                 }
             }
 
             //Evaluate transitions
             {
-                var stateToEvaluate = stateMachine.NextState.IsValid
-                    ? stateMachine.NextState
-                    : stateMachine.CurrentState;
-
-                var shouldStartTransition = EvaluateTransitions(stateToEvaluate, playableStates, boolParameters,
+                var shouldStartTransition = EvaluateTransitions(stateMachine.CurrentState, playableStates, boolParameters,
                     out var transitionIndex);
 
                 if (shouldStartTransition)
                 {
-                    ref var transition = ref stateToEvaluate.StateBlob.Transitions[transitionIndex];
-                    stateMachine.CurrentTransitionDuration = transition.TransitionDuration;
-                    stateMachine.NextState = CreateState(
+                    ref var transition = ref stateMachine.CurrentState.StateBlob.Transitions[transitionIndex];
+                    stateMachine.CurrentState = CreateState(
                         transition.ToStateIndex,
                         stateMachine.StateMachineBlob,
                         stateMachine.ClipsBlob,
@@ -126,34 +64,12 @@ namespace DMotion
                         ref linearBlendStates,
                         ref playableStates,
                         ref clipSamplers);
-                }
-            }
 
-            //Update samplers
-            {
-                if (stateMachine.NextState.IsValid)
-                {
-                    var currentStatePlayableIndex = stateMachine.CurrentState.IdToIndex(playableStates);
-                    var nextStatePlayableIndex = stateMachine.NextState.IdToIndex(playableStates);
-
-                    var currentPlayableState = playableStates[currentStatePlayableIndex];
-                    var nextPlayableState = playableStates[nextStatePlayableIndex];
-
-                    var nextStateBlend = math.clamp(nextPlayableState.Time /
-                                                    stateMachine.CurrentTransitionDuration, 0, 1);
-
-                    currentPlayableState.Weight = (1 - nextStateBlend) * stateMachine.Weight;
-                    nextPlayableState.Weight = nextStateBlend * stateMachine.Weight;
-
-                    playableStates[currentStatePlayableIndex] = currentPlayableState;
-                    playableStates[nextStatePlayableIndex] = nextPlayableState;
-                }
-                else
-                {
-                    var currentStatePlayableIndex = stateMachine.CurrentState.IdToIndex(playableStates);
-                    var currentPlayableState = playableStates[currentStatePlayableIndex];
-                    currentPlayableState.Weight = stateMachine.Weight;
-                    playableStates[currentStatePlayableIndex] = currentPlayableState;
+                    transitionRequest = new PlayableTransitionRequest
+                    {
+                        PlayableId = stateMachine.CurrentState.PlayableId,
+                        TransitionDuration = transition.TransitionDuration,
+                    };
                 }
             }
         }
@@ -204,43 +120,6 @@ namespace DMotion
 
             stateRef.PlayableId = (sbyte)playableId;
             return stateRef;
-        }
-
-
-        private void DestroyState(StateMachineStateRef stateRef,
-            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
-            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
-            ref DynamicBuffer<PlayableState> playableStates,
-            ref DynamicBuffer<ClipSampler> clipSamplers)
-        {
-            PlayableState.DestroyStateWithId(ref playableStates, ref clipSamplers, (byte) stateRef.PlayableId);
-            switch (stateRef.Type)
-            {
-                case StateType.Single:
-                    for (int i = 0; i < singleClipStates.Length; i++)
-                    {
-                        if (singleClipStates[i].PlayableId == stateRef.PlayableId)
-                        {
-                            singleClipStates.RemoveAtSwapBack(i);
-                            break;
-                        }
-                    }
-
-                    break;
-                case StateType.LinearBlend:
-                    for (int i = 0; i < linearBlendStates.Length; i++)
-                    {
-                        if (linearBlendStates[i].PlayableId == stateRef.PlayableId)
-                        {
-                            linearBlendStates.RemoveAtSwapBack(i);
-                            break;
-                        }
-                    }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
 
         [BurstCompile]

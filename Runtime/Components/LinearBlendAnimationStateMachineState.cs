@@ -31,14 +31,15 @@ namespace DMotion
                 StateIndex = stateIndex
             };
 
-            var playableIndex = PlayableState.New(ref playableStates, linearBlendState.StateBlob.Speed,
+            ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
+            var clipCount = (byte) linearBlendBlob.ClipSortedByThreshold.Length;
+            
+            var playableIndex = PlayableState.New(ref playableStates, clipCount, linearBlendState.StateBlob.Speed,
                 linearBlendState.StateBlob.Loop);
 
             var playableState = playableStates[playableIndex];
             linearBlendState.PlayableId = playableState.Id;
 
-            ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
-            var clipCount = (byte) linearBlendBlob.ClipSortedByThreshold.Length;
             if (samplers.TryFindIdAndInsertIndex(clipCount, out var id,
                     out var insertIndex))
             {
@@ -69,15 +70,11 @@ namespace DMotion
         }
 
         internal void UpdateSamplers(
-            float dt, float blendWeight,
+            float dt,
+            in PlayableState playable,
             in DynamicBuffer<BlendParameter> blendParameters,
-            ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var playableIndex = playableStates.IdToIndex(PlayableId);
-            var playable = playableStates[playableIndex];
-            playable.UpdateTime(dt);
-            
             ref var linearBlendState = ref AsLinearBlend;
             ref var sortedClips = ref linearBlendState.ClipSortedByThreshold;
             var startIndex = samplers.IdToIndex(playable.StartSamplerId);
@@ -122,8 +119,8 @@ namespace DMotion
                 }
 
                 var t = (blendRatio - firstClip.Threshold) / (secondClip.Threshold - firstClip.Threshold);
-                firstSampler.Weight = (1 - t) * blendWeight;
-                secondSampler.Weight = t * blendWeight;
+                firstSampler.Weight = (1 - t) * playable.Weight;
+                secondSampler.Weight = t * playable.Weight;
                 samplers[firstSamplerIndex] = firstSampler;
                 samplers[secondSamplerIndex] = secondSampler;
             }
@@ -154,8 +151,6 @@ namespace DMotion
                     }
                 }
             }
-
-            playableStates[playableIndex] = playable;
         }
     }
 }

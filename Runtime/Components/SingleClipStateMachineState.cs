@@ -31,7 +31,7 @@ namespace DMotion
                 StateIndex = stateIndex
             };
 
-            var playableIndex = PlayableState.New(ref playableStates, singleClipState.StateBlob.Speed,
+            var playableIndex = PlayableState.New(ref playableStates, 1, singleClipState.StateBlob.Speed,
                 singleClipState.StateBlob.Loop);
 
             var playableState = playableStates[playableIndex];
@@ -53,27 +53,21 @@ namespace DMotion
             return singleClipState;
         }
 
-        public void UpdateSamplers(float dt, float blendWeight,
-            ref DynamicBuffer<PlayableState> playableStates,
+        public void UpdateSamplers(float dt,
+            in PlayableState playable,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var playableIndex = playableStates.IdToIndex(PlayableId);
-            var playable = playableStates[playableIndex];
-            playable.UpdateTime(dt);
-
             var samplerIndex = samplers.IdToIndex(playable.StartSamplerId);
             var sampler = samplers[samplerIndex];
-            sampler.Weight = blendWeight;
+            sampler.Weight = playable.Weight;
 
             sampler.PreviousTime = sampler.Time;
-            sampler.Time += dt * playableStates[playableIndex].Speed;
-            if (playableStates[playableIndex].Loop)
+            sampler.Time += dt * playable.Speed;
+            if (playable.Loop)
             {
                 sampler.LoopToClipTime();
             }
-
             samplers[samplerIndex] = sampler;
-            playableStates[playableIndex] = playable;
         }
     }
 }

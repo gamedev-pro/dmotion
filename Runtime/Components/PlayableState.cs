@@ -8,6 +8,24 @@ namespace DMotion
         byte Id { get; set; }
     }
 
+    internal struct PlayableTransition : IComponentData
+    {
+        internal sbyte PlayableId;
+        internal float TransitionDuration;
+        internal float TransitionStartTime;
+        internal bool IsValid => PlayableId >= 0;
+        internal static PlayableTransition Null => new PlayableTransition() { PlayableId = -1 };
+    }
+    
+    internal struct PlayableTransitionRequest : IComponentData
+    {
+        internal sbyte PlayableId;
+        internal float TransitionDuration;
+        internal bool IsValid => PlayableId >= 0;
+
+        internal static PlayableTransitionRequest Null => new PlayableTransitionRequest() { PlayableId = -1 };
+    }
+    
     [BurstCompile]
     internal struct PlayableState : IBufferElementData, IElementWithId
     {
@@ -19,35 +37,15 @@ namespace DMotion
         internal byte StartSamplerId;
         internal byte ClipCount;
 
-        internal static int New(ref DynamicBuffer<PlayableState> playableStates, float speed,
-            bool loop)
+        internal static int New(ref DynamicBuffer<PlayableState> playableStates, byte clipCount, float speed, bool loop)
         {
             playableStates.AddWithId(new PlayableState
             {
                 Speed = speed,
-                Loop = loop
+                Loop = loop,
+                ClipCount = clipCount,
             }, out _, out var index);
             return index;
-        }
-
-        internal static void DestroyStateWithId(ref DynamicBuffer<PlayableState> playableStates,
-            ref DynamicBuffer<ClipSampler> clipSamplers, byte playableId)
-        {
-            var playableIndex = playableStates.IdToIndex(playableId);
-            DestroyState(ref playableStates, ref clipSamplers, playableIndex);
-        }
-        
-        internal static void DestroyState(ref DynamicBuffer<PlayableState> playableStates, ref DynamicBuffer<ClipSampler> clipSamplers, int playableIndex)
-        {
-            var playable = playableStates[playableIndex];
-            var removeCount = playable.ClipCount;
-            clipSamplers.RemoveRangeWithId(playable.StartSamplerId, removeCount);
-            playableStates.RemoveAt(playableIndex);
-        }
-
-        internal void UpdateTime(float dt)
-        {
-            Time += dt * Speed;
         }
     }
 }

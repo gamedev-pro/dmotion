@@ -33,8 +33,6 @@ namespace DMotion
         internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal StateMachineStateRef CurrentState;
-        internal StateMachineStateRef NextState;
         internal float Weight;
-        internal float CurrentTransitionDuration;
     }
 }

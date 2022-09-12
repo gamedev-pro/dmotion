@@ -25,11 +25,5 @@ namespace DMotion
         {
             return a < math.EPSILON;
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool aproximately(in float a, in float b)
-        {
-            return (a - b)*(a-b) < math.EPSILON*math.EPSILON;
-        }
     }
 }

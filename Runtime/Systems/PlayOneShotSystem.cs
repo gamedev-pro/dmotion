@@ -101,11 +101,11 @@ namespace DMotion
 
         protected override void OnUpdate()
         {
-            new PlayOneShotJob
-            {
-                DeltaTime = Time.DeltaTime,
-                Marker = Marker_PlayOneShot
-            }.ScheduleParallel();
+            // new PlayOneShotJob
+            // {
+            //     DeltaTime = Time.DeltaTime,
+            //     Marker = Marker_PlayOneShot
+            // }.ScheduleParallel();
         }
     }
 }
