@@ -1,6 +1,5 @@
 using DMotion.Authoring;
 using NUnit.Framework;
-using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -17,9 +16,29 @@ namespace DMotion.Tests
         [Test]
         public void Run_With_Valid_Queries()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
             UpdateWorld();
             ECSTestUtils.AssertSystemQueries<AnimationStateMachineSystem>(world);
+        }
+        
+        [Test]
+        public void NotInitialize_If_NotPlaying()
+        {
+            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
+            Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
+            
+            //Set a random current playable that is not us
+            manager.SetComponentData(newEntity, new PlayableCurrentState
+            {
+                PlayableId = 1
+            });
+
+            UpdateWorld();
+
+            //We shouldn't have initialized
+            stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
+            Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
         }
         
         [Test]
@@ -60,20 +79,15 @@ namespace DMotion.Tests
         public void StartTransition_From_BoolParameter()
         {
             var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            PlayableTestUtils.AssertNoOnGoingTransition(manager, newEntity);
+            manager.SetBoolParameter(newEntity, 0, true);
             UpdateWorld();
 
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            var cachedCurrentState = stateMachine.CurrentState;
-
-            manager.SetBoolParameter(newEntity, 0, true);
-
-            UpdateWorld();
-
-            stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            
-            Assert.AreNotEqual(stateMachine.CurrentState, cachedCurrentState);
+            Assert.IsTrue(stateMachine.CurrentState.IsValid);
+            PlayableTestUtils.AssertTransitionRequested(manager, newEntity, (byte)stateMachine.CurrentState.PlayableId);
         }
-
+        
         // [Test]
         // public void CompleteTransition_After_TransitionDuration()
         // {

@@ -34,11 +34,12 @@ namespace DMotion
                 if (transitionRequest.IsValid)
                 {
                     toPlayableIndex = playableStates.IdToIndex((byte)transitionRequest.PlayableId);
+                    //if we don't have a valid state, just transition instantly
+                    var transitionDuration = playableCurrentState.IsValid ? transitionRequest.TransitionDuration : 0;
                     if (toPlayableIndex >= 0)
                     {
                         playableTransition.PlayableId = transitionRequest.PlayableId;
-                        playableTransition.TransitionDuration = transitionRequest.TransitionDuration;
-                        playableTransition.TransitionStartTime = playableStates[toPlayableIndex].Time;
+                        playableTransition.TransitionDuration = transitionDuration;
                     }
 
                     transitionRequest = PlayableTransitionRequest.Null;
@@ -52,8 +53,8 @@ namespace DMotion
                     {
                         if (playableTransition.HasEnded(playableStates[toPlayableIndex]))
                         {
-                             playableCurrentState = PlayableCurrentState.New(playableTransition.PlayableId);
-                             playableTransition = PlayableTransition.Null;                           
+                            playableCurrentState = PlayableCurrentState.New(playableTransition.PlayableId);
+                            playableTransition = PlayableTransition.Null;
                         }
                     }
                 }
@@ -69,31 +70,37 @@ namespace DMotion
                     }
                     else
                     {
-                        toPlayable.Weight = math.clamp((toPlayable.Time - playableTransition.TransitionStartTime) /
+                        toPlayable.Weight = math.clamp(toPlayable.Time /
                                                        playableTransition.TransitionDuration, 0, 1);
                     }
 
                     playableStates[toPlayableIndex] = toPlayable;
 
-                    //normalize weights
-                    var sumWeights = 0.0f;
-                    for (var i = 0; i < playableStates.Length; i++)
+                    //We only blend if we have more than one state
+                    if (playableStates.Length > 1)
                     {
-                        if (i != toPlayableIndex)
+                        //normalize weights
+                        var sumWeights = 0.0f;
+                        for (var i = 0; i < playableStates.Length; i++)
                         {
-                            sumWeights += playableStates[i].Weight;
+                            if (i != toPlayableIndex)
+                            {
+                                sumWeights += playableStates[i].Weight;
+                            }
                         }
-                    }
 
-                    var targetWeight = 1 - toPlayable.Weight;
-                    var inverseSumWeights = targetWeight / sumWeights;
-                    for (var i = 0; i < playableStates.Length; i++)
-                    {
-                        if (i != toPlayableIndex)
+                        Assert.IsFalse(mathex.iszero(sumWeights), "Remaining weights are zero. Did Playables not get cleaned up?");
+
+                        var targetWeight = 1 - toPlayable.Weight;
+                        var inverseSumWeights = targetWeight / sumWeights;
+                        for (var i = 0; i < playableStates.Length; i++)
                         {
-                            var playable = playableStates[i];
-                            playable.Weight *= inverseSumWeights;
-                            playableStates[i] = playable;
+                            if (i != toPlayableIndex)
+                            {
+                                var playable = playableStates[i];
+                                playable.Weight *= inverseSumWeights;
+                                playableStates[i] = playable;
+                            }
                         }
                     }
                 }
@@ -121,7 +128,8 @@ namespace DMotion
                         {
                             //TODO (perf): Could we improve performance by batching all removes? (we may need to pay for sorting at the end)
                             var removeCount = playable.ClipCount;
-                            Assert.IsTrue(removeCount > 0, "Playable doesn't declare clip count to remove. This will lead to sampler leak");
+                            Assert.IsTrue(removeCount > 0,
+                                "Playable doesn't declare clip count to remove. This will lead to sampler leak");
                             samplers.RemoveRangeWithId(playable.StartSamplerId, removeCount);
                             playableStates.RemoveAt(i);
                         }

@@ -41,8 +41,7 @@ namespace DMotion
         {
             var singleClipState = new SingleClipStateMachineState();
 
-            var newSamplers = new NativeArray<ClipSampler>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            newSamplers[0] = new ClipSampler
+            var newSampler = new ClipSampler
             {
                 ClipIndex = clipIndex,
                 Clips = clips,
@@ -52,7 +51,7 @@ namespace DMotion
                 Weight = 0
             };
 
-            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers, speed, loop);
+            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSampler, speed, loop);
             singleClipState.PlayableId = playableStates[playableIndex].Id;
             singleClips.Add(singleClipState);
             return singleClipState;

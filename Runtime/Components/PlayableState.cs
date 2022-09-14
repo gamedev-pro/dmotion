@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using UnityEditor.Experimental.Rendering;
 using UnityEngine.Assertions;
 
 namespace DMotion
@@ -29,14 +30,13 @@ namespace DMotion
     {
         internal sbyte PlayableId;
         internal float TransitionDuration;
-        internal float TransitionStartTime;
-        internal readonly float TransitionEndTime => TransitionStartTime + TransitionDuration;
         internal static PlayableTransition Null => new () { PlayableId = -1 };
+        internal bool IsValid => PlayableId >= 0;
 
         internal readonly bool HasEnded(in PlayableState playableState)
         {
             Assert.AreEqual(playableState.Id, PlayableId);
-            return playableState.Time > TransitionEndTime;
+            return playableState.Time > TransitionDuration;
         }
     }
 
@@ -70,14 +70,26 @@ namespace DMotion
         internal byte StartSamplerId;
         internal byte ClipCount;
 
+
+        internal static int New(
+            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<ClipSampler> samplers,
+            ClipSampler singleClipSampler,
+            float speed, bool loop)
+        {
+            var newSamplers = new NativeArray<ClipSampler>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            newSamplers[0] = singleClipSampler;
+            return PlayableState.New(ref playableStates, ref samplers, newSamplers, speed, loop);
+        }
+
         internal static int New(
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers,
             NativeArray<ClipSampler> newSamplers,
             float speed, bool loop)
         {
-            Assert.IsTrue(newSamplers.IsCreated);
-            Assert.IsTrue(newSamplers.Length > 0);
+            Assert.IsTrue(newSamplers.IsCreated, "Trying to create playable with Null sampler array");
+            Assert.IsTrue(newSamplers.Length > 0, "Trying to create playable with no samplers");
 
             var clipCount = (byte)newSamplers.Length;
             playableStates.AddWithId(new PlayableState
