@@ -16,7 +16,7 @@ namespace DMotion
             ref AnimationStateMachine stateMachine,
             ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
             ref PlayableTransitionRequest playableTransitionRequest,
-            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+            ref DynamicBuffer<SingleClipState> singleClipStates,
             ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<PlayableState> playableStates,
@@ -135,7 +135,7 @@ namespace DMotion
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
             BlobAssetReference<ClipEventsBlob> clipEventsBlob,
-            ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+            ref DynamicBuffer<SingleClipState> singleClipStates,
             ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
@@ -150,7 +150,7 @@ namespace DMotion
             switch (state.Type)
             {
                 case StateType.Single:
-                    var singleClipState = SingleClipStateMachineState.NewForStateMachine(
+                    var singleClipState = SingleClipState.NewForStateMachine(
                         (byte)state.StateIndex,
                         stateMachineBlob,
                         clipsBlob,

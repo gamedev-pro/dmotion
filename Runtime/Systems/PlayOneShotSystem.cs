@@ -16,7 +16,7 @@ namespace DMotion
                 ref PlayableTransitionRequest playableTransitionRequest,
                 ref PlayOneShotRequest playOneShot,
                 ref OneShotState oneShotState,
-                ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+                ref DynamicBuffer<SingleClipState> singleClipStates,
                 ref DynamicBuffer<PlayableState> playableStates,
                 ref DynamicBuffer<ClipSampler> clipSamplers,
                 in PlayableCurrentState playableTransition
@@ -26,7 +26,7 @@ namespace DMotion
                 {
                     if (playOneShot.IsValid)
                     {
-                        var singleClipPlayable = SingleClipStateMachineState.New(
+                        var singleClipPlayable = SingleClipState.New(
                             (ushort)playOneShot.ClipIndex,
                             playOneShot.Speed,
                             false,

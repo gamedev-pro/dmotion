@@ -6,16 +6,16 @@ using Unity.Entities;
 namespace DMotion
 {
     [BurstCompile]
-    internal struct SingleClipStateMachineState : IBufferElementData
+    internal struct SingleClipState : IBufferElementData
     {
         internal byte PlayableId;
 
-        public static SingleClipStateMachineState NewForStateMachine(
+        public static SingleClipState NewForStateMachine(
             short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents,
-            ref DynamicBuffer<SingleClipStateMachineState> singleClips,
+            ref DynamicBuffer<SingleClipState> singleClips,
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
@@ -29,17 +29,17 @@ namespace DMotion
                 ref samplers);
         }
 
-        public static SingleClipStateMachineState New(
+        public static SingleClipState New(
             ushort clipIndex,
             float speed,
             bool loop,
             BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents,
-            ref DynamicBuffer<SingleClipStateMachineState> singleClips,
+            ref DynamicBuffer<SingleClipState> singleClips,
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var singleClipState = new SingleClipStateMachineState();
+            var singleClipState = new SingleClipState();
 
             var newSampler = new ClipSampler
             {

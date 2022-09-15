@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Unity.Burst;
-using Unity.Burst.CompilerServices;
+﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
 
@@ -8,14 +6,14 @@ namespace DMotion
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(PlayablesSystem))]
-    internal partial class SingleClipStatMachineSystem : SystemBase
+    internal partial class SingleClipStateSystem : SystemBase
     {
         [BurstCompile]
         internal partial struct UpdateSingleClipStateMachineStatesJob : IJobEntity
         {
             internal float DeltaTime;
             internal void Execute(
-                ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+                ref DynamicBuffer<SingleClipState> singleClipStates,
                 ref DynamicBuffer<ClipSampler> clipSamplers,
                 in DynamicBuffer<PlayableState> playableStates
             )
@@ -35,7 +33,7 @@ namespace DMotion
         internal partial struct CleanSingleClipStatesJob : IJobEntity
         {
             internal void Execute(
-                ref DynamicBuffer<SingleClipStateMachineState> singleClipStates,
+                ref DynamicBuffer<SingleClipState> singleClipStates,
                 in DynamicBuffer<PlayableState> playableStates
             )
             {

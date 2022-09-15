@@ -43,7 +43,7 @@ namespace DMotion.Authoring
             dstManager.AddComponentData(entity, stateMachine);
             dstManager.AddComponentData(entity, AnimationStateMachineTransitionRequest.Null);
 
-            dstManager.AddBuffer<SingleClipStateMachineState>(entity);
+            dstManager.AddBuffer<SingleClipState>(entity);
             dstManager.AddBuffer<LinearBlendAnimationStateMachineState>(entity);
             
             dstManager.AddBuffer<PlayableState>(entity);
