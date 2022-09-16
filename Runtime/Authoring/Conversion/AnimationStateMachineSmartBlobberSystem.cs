@@ -75,13 +75,13 @@ namespace DMotion.Authoring
                             BlendParameterIndex = (ushort) blendParameterIndex
                         };
                         
-                        linearBlendState.ClipsWithThresholds = new UnsafeList<DMotion.ClipWithThreshold>(
+                        linearBlendState.ClipsWithThresholds = new UnsafeList<ClipIndexWithThreshold>(
                             linearBlendStateAsset.BlendClips.Length, allocator);
                         
                         linearBlendState.ClipsWithThresholds.Resize(linearBlendStateAsset.BlendClips.Length);
                         for (ushort blendClipIndex = 0; blendClipIndex < linearBlendState.ClipsWithThresholds.Length; blendClipIndex++)
                         {
-                            linearBlendState.ClipsWithThresholds[blendClipIndex] = new DMotion.ClipWithThreshold()
+                            linearBlendState.ClipsWithThresholds[blendClipIndex] = new ClipIndexWithThreshold
                             {
                                 ClipIndex = clipIndex,
                                 Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold

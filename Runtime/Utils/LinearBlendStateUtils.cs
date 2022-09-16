@@ -24,16 +24,17 @@ namespace DMotion
             };
 
             ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
-            var clipCount = (byte)linearBlendBlob.ClipSortedByThreshold.Length;
+            Assert.AreEqual(linearBlendBlob.SortedClipIndexes.Length, linearBlendBlob.SortedClipThresholds.Length);
+            var clipCount = (byte)linearBlendBlob.SortedClipIndexes.Length;
 
             var newSamplers =
                 new NativeArray<ClipSampler>(clipCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             for (var i = 0; i < clipCount; i++)
             {
-                var clip = linearBlendBlob.ClipSortedByThreshold[i];
+                var clipIndex = (ushort) linearBlendBlob.SortedClipIndexes[i];
                 newSamplers[i] = new ClipSampler
                 {
-                    ClipIndex = clip.ClipIndex,
+                    ClipIndex = clipIndex,
                     Clips = clips,
                     ClipEventsBlob = clipEvents,
                     PreviousTime = 0,
@@ -55,24 +56,24 @@ namespace DMotion
         internal static void UpdateSamplers(
             float dt,
             float blendRatio,
-            NativeArray<ClipWithThreshold> clipsAndThresholds,
+            in NativeArray<float> thresholds,
             in PlayableState playable,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            Assert.IsTrue(clipsAndThresholds.IsCreated);
+            Assert.IsTrue(thresholds.IsCreated);
             var startIndex = samplers.IdToIndex(playable.StartSamplerId);
-            var endIndex = startIndex + clipsAndThresholds.Length - 1;
+            var endIndex = startIndex + thresholds.Length - 1;
 
             //we assume thresholds are sorted here
-            blendRatio = math.clamp(blendRatio, clipsAndThresholds[0].Threshold, clipsAndThresholds[^1].Threshold);
+            blendRatio = math.clamp(blendRatio, thresholds[0], thresholds[^1]);
 
             //find clip tuple to be blended
             var firstClipIndex = -1;
             var secondClipIndex = -1;
-            for (var i = 1; i < clipsAndThresholds.Length; i++)
+            for (var i = 1; i < thresholds.Length; i++)
             {
-                var currentThreshold = clipsAndThresholds[i].Threshold;
-                var prevThreshold = clipsAndThresholds[i - 1].Threshold;
+                var currentThreshold = thresholds[i];
+                var prevThreshold = thresholds[i - 1];
                 if (blendRatio >= prevThreshold && blendRatio <= currentThreshold)
                 {
                     firstClipIndex = i - 1;
@@ -81,8 +82,10 @@ namespace DMotion
                 }
             }
 
-            var firstThreshold = clipsAndThresholds[firstClipIndex];
-            var secondThreshold = clipsAndThresholds[secondClipIndex];
+            Assert.IsTrue(firstClipIndex >= 0 && secondClipIndex >= 0);
+
+            var firstThreshold = thresholds[firstClipIndex];
+            var secondThreshold = thresholds[secondClipIndex];
 
             var firstSamplerIndex = startIndex + firstClipIndex;
             var secondSamplerIndex = startIndex + secondClipIndex;
@@ -99,7 +102,7 @@ namespace DMotion
                     samplers[i] = sampler;
                 }
 
-                var t = (blendRatio - firstThreshold.Threshold) / (secondThreshold.Threshold - firstThreshold.Threshold);
+                var t = (blendRatio - firstThreshold) / (secondThreshold - firstThreshold);
                 firstSampler.Weight = (1 - t) * playable.Weight;
                 secondSampler.Weight = t * playable.Weight;
                 samplers[firstSamplerIndex] = firstSampler;

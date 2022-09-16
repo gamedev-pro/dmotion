@@ -26,7 +26,7 @@ namespace DMotion
                         var linearBlendState = linearBlendStates[i];
                         ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
                         var blendRatio = blendParameters[linearBlendBlob.BlendParameterIndex].Value;
-                        var thresholds = CollectionUtils.AsArray(ref linearBlendBlob.ClipSortedByThreshold);
+                        var thresholds = CollectionUtils.AsArray(ref linearBlendBlob.SortedClipThresholds);
                         
                         LinearBlendStateUtils.UpdateSamplers(
                             DeltaTime,
