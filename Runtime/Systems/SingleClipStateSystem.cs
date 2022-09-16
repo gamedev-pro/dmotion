@@ -22,8 +22,8 @@ namespace DMotion
                 {
                     if (playableStates.TryGetWithId(singleClipStates[i].PlayableId, out var playable))
                     {
-                        singleClipStates[i]
-                            .UpdateSamplers(DeltaTime, playable, ref clipSamplers);
+                        SingleClipStateUtils
+                            .UpdateSamplers(singleClipStates[i], DeltaTime, playable, ref clipSamplers);
                     }
                 }
             }

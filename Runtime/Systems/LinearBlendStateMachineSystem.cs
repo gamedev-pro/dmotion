@@ -23,7 +23,17 @@ namespace DMotion
                 {
                     if (playableStates.TryGetWithId(linearBlendStates[i].PlayableId, out var playable))
                     {
-                        linearBlendStates[i].UpdateSamplers(DeltaTime, playable, blendParameters, ref clipSamplers);
+                        var linearBlendState = linearBlendStates[i];
+                        ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
+                        var blendRatio = blendParameters[linearBlendBlob.BlendParameterIndex].Value;
+                        var thresholds = CollectionUtils.AsArray(ref linearBlendBlob.ClipSortedByThreshold);
+                        
+                        LinearBlendStateUtils.UpdateSamplers(
+                            DeltaTime,
+                            blendRatio,
+                            thresholds,
+                            playable,
+                            ref clipSamplers);
                     }
                 }
             }

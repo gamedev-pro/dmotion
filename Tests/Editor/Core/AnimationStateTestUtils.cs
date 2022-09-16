@@ -18,7 +18,7 @@ namespace DMotion.Tests
 
             var clipsBlob = CreateFakeSkeletonClipSetBlob(1);
 
-            return SingleClipState.New(
+            return SingleClipStateUtils.New(
                 clipIndex, speed, loop,
                 clipsBlob,
                 BlobAssetReference<ClipEventsBlob>.Null,

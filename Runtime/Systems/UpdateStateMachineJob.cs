@@ -150,7 +150,7 @@ namespace DMotion
             switch (state.Type)
             {
                 case StateType.Single:
-                    var singleClipState = SingleClipState.NewForStateMachine(
+                    var singleClipState = SingleClipStateUtils.NewForStateMachine(
                         (byte)state.StateIndex,
                         stateMachineBlob,
                         clipsBlob,
@@ -160,7 +160,7 @@ namespace DMotion
                     playableId = singleClipState.PlayableId;
                     break;
                 case StateType.LinearBlend:
-                    var linearClipState = LinearBlendAnimationStateMachineState.New(
+                    var linearClipState = LinearBlendStateUtils.NewForStateMachine(
                         (byte)state.StateIndex,
                         stateMachineBlob,
                         clipsBlob,

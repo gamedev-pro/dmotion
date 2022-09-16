@@ -26,7 +26,7 @@ namespace DMotion
                 {
                     if (playOneShot.IsValid)
                     {
-                        var singleClipPlayable = SingleClipState.New(
+                        var singleClipPlayable = SingleClipStateUtils.New(
                             (ushort)playOneShot.ClipIndex,
                             playOneShot.Speed,
                             false,
