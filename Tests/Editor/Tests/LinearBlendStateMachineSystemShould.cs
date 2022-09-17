@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace DMotion.Tests
 {
-    [CreateSystemsForTest(typeof(PlayablesSystem), typeof(LinearBlendStateMachineSystem))]
+    [CreateSystemsForTest(typeof(PlayablesSystem), typeof(UpdateAnimationStatesSystem))]
     public class LinearBlendStateMachineSystemShould : ECSTestsFixture
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
@@ -21,7 +21,7 @@ namespace DMotion.Tests
         {
             CreateLinearBlendEntity();
             UpdateWorld();
-            ECSTestUtils.AssertSystemQueries<LinearBlendStateMachineSystem>(world);
+            ECSTestUtils.AssertSystemQueries<UpdateAnimationStatesSystem>(world);
             ECSTestUtils.AssertSystemQueries<PlayablesSystem>(world);
         }
 

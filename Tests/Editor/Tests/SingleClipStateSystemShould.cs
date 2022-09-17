@@ -3,7 +3,7 @@ using Unity.Entities;
 
 namespace DMotion.Tests
 {
-    [CreateSystemsForTest(typeof(PlayablesSystem), typeof(SingleClipStateSystem))]
+    [CreateSystemsForTest(typeof(PlayablesSystem), typeof(UpdateAnimationStatesSystem))]
     public class SingleClipStateSystemShould : ECSTestsFixture
     {
         [Test]
@@ -11,7 +11,7 @@ namespace DMotion.Tests
         {
             CreateSingleClipStateEntity();
             UpdateWorld();
-            ECSTestUtils.AssertSystemQueries<SingleClipStateSystem>(world);
+            ECSTestUtils.AssertSystemQueries<UpdateAnimationStatesSystem>(world);
             ECSTestUtils.AssertSystemQueries<PlayablesSystem>(world);
         }
 

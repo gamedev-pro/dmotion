@@ -70,7 +70,6 @@ namespace DMotion
         internal byte StartSamplerId;
         internal byte ClipCount;
 
-
         internal static int New(
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers,
