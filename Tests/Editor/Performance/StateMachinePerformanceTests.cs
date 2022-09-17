@@ -11,7 +11,10 @@ namespace DMotion.PerformanceTests
     [CreateSystemsForTest(
         typeof(AnimationStateMachineSystem),
         typeof(UpdateStateMachines),
-        typeof(ClipSamplingSystem))]
+        typeof(ClipSamplingSystem),
+        typeof(PlayablesSystem),
+        typeof(SingleClipStateSystem),
+        typeof(LinearBlendStateMachineSystem))]
     public class StateMachinePerformanceTests : PerformanceTestsFixture
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(noSkeletonPrefabEntity))]

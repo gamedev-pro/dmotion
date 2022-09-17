@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Reflection;
 using NUnit.Framework;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs.LowLevel.Unsafe;
 using Unity.PerformanceTesting;
 using Unity.PerformanceTesting.Runtime;
 using Unity.Profiling;
+using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace DMotion.Tests
 {
@@ -67,6 +73,38 @@ namespace DMotion.Tests
             AssertTestResult(nameof(benchmark.Median), benchmark.Median, sampleGroup.Median);
             AssertTestResult(nameof(benchmark.Min), benchmark.Min, sampleGroup.Min);
             AssertTestResult(nameof(benchmark.Max), benchmark.Max, sampleGroup.Max);
+        }
+
+        [MenuItem("Tools/DMotion/Set Performance Burst Parameters")]
+        public static void SetMaxPerformanceBurstParameters()
+        {
+            JobsUtility.JobCompilerEnabled = true;
+            JobsUtility.JobDebuggerEnabled = false;
+            NativeLeakDetection.Mode = NativeLeakDetectionMode.Disabled;
+            CompilationPipeline.codeOptimization = CodeOptimization.Release;
+            
+            BurstCompiler.Options.EnableBurstCompilation = true;
+            BurstCompiler.Options.EnableBurstDebug = false;
+            BurstCompiler.Options.EnableBurstSafetyChecks = false;
+            BurstCompiler.Options.ForceEnableBurstSafetyChecks = false;
+            BurstCompiler.Options.EnableBurstCompileSynchronously = true;
+            Coverage.enabled = false;
+        }
+
+        [MenuItem("Tools/DMotion/Set Debug Burst Parameters")]
+        public static void SetDebugBustParameters()
+        {
+            JobsUtility.JobCompilerEnabled = true;
+            JobsUtility.JobDebuggerEnabled = true;
+            NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
+            CompilationPipeline.codeOptimization = CodeOptimization.Debug;
+            
+            BurstCompiler.Options.EnableBurstDebug = true;
+            BurstCompiler.Options.EnableBurstCompilation = false;
+            BurstCompiler.Options.EnableBurstSafetyChecks = true;
+            BurstCompiler.Options.ForceEnableBurstSafetyChecks = true;
+            BurstCompiler.Options.EnableBurstCompileSynchronously = false;
+            Coverage.enabled = true;
         }
     }
 }
