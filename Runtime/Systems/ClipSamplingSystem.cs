@@ -27,6 +27,7 @@ namespace DMotion
         
         protected override void OnUpdate()
         {
+            // new NormalizedSamplersWeights().ScheduleParallel();
             //Sample bones (those only depend on updateFmsHandle)
             var sampleOptimizedHandle = new SampleOptimizedBonesJob
             {

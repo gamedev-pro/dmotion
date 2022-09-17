@@ -22,15 +22,10 @@ namespace DMotion
         internal ushort ClipIndex;
     }
 
-    internal struct ClipWithThreshold
-    {
-        internal ushort ClipIndex;
-        internal float Threshold;
-    }
-    
     internal struct LinearBlendStateBlob
     {
-        internal BlobArray<ClipWithThreshold> ClipSortedByThreshold;
+        internal BlobArray<int> SortedClipIndexes;
+        internal BlobArray<float> SortedClipThresholds;
         internal ushort BlendParameterIndex;
     }
 }

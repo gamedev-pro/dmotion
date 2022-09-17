@@ -132,7 +132,7 @@ public abstract class ECSTestsFixture : ECSTestsCommonBase
                 var baseType = typeof(SystemBase);
                 foreach (var t in requiredSystemsAttr.SystemTypes)
                 {
-                    Assert.IsTrue(baseType.IsAssignableFrom(t));
+                    Assert.IsTrue(baseType.IsAssignableFrom(t), $"Expected {t.Name} to be a subclass of {baseType.Name}");
                     world.CreateSystem(t);
                 }
             }

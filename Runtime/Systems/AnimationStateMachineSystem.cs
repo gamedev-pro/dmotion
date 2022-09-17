@@ -1,11 +1,12 @@
 ﻿using Unity.Entities;
+using Unity.Jobs;
 using Unity.Profiling;
 using Unity.Transforms;
 
 namespace DMotion
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
-    [UpdateBefore(typeof(ClipSamplingSystem))]
+    [UpdateBefore(typeof(PlayablesSystem))]
     public partial class AnimationStateMachineSystem : SystemBase
     {
         internal static readonly ProfilerMarker Marker_UpdateStateMachineJob =
@@ -15,7 +16,6 @@ namespace DMotion
         {
             new UpdateStateMachineJob
             {
-                DeltaTime = Time.DeltaTime,
                 Marker = Marker_UpdateStateMachineJob
             }.ScheduleParallel();
         }

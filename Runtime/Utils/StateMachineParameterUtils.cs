@@ -20,7 +20,7 @@ namespace DMotion
 
             return -1;
         }
-        
+
         public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, int hash, bool value)
         {
             var index = parameters.HashToIndex(hash);
@@ -33,7 +33,8 @@ namespace DMotion
         }
 
 
-        public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name, bool value)
+        public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name,
+            bool value)
         {
             var hash = name.GetHashCode();
             parameters.SetParameter(hash, value);
@@ -47,15 +48,18 @@ namespace DMotion
                 value = parameters[index].Value;
                 return true;
             }
+
             value = default;
             return false;
         }
-        public static bool TryGetValue(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name, out bool value)
+
+        public static bool TryGetValue(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name,
+            out bool value)
         {
             var hash = name.GetHashCode();
             return parameters.TryGetValue(hash, out value);
         }
-        
+
         public static int HashToIndex(this DynamicBuffer<BlendParameter> parameters, int hash)
         {
             for (var i = 0; i < parameters.Length; i++)
@@ -65,9 +69,10 @@ namespace DMotion
                     return i;
                 }
             }
+
             return -1;
         }
-        
+
         public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, int hash, float value)
         {
             var index = parameters.HashToIndex(hash);
@@ -80,12 +85,13 @@ namespace DMotion
         }
 
 
-        public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name, float value)
+        public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name,
+            float value)
         {
             var hash = name.GetHashCode();
             parameters.SetParameter(hash, value);
         }
-        
+
         public static void IncrementParameter(this DynamicBuffer<BlendParameter> parameters, int hash, float increment)
         {
             var index = parameters.HashToIndex(hash);
@@ -105,10 +111,13 @@ namespace DMotion
                 value = parameters[index].Value;
                 return true;
             }
+
             value = default;
             return false;
         }
-        public static bool TryGetValue(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name, out float value)
+
+        public static bool TryGetValue(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name,
+            out float value)
         {
             var hash = name.GetHashCode();
             return parameters.TryGetValue(hash, out value);
