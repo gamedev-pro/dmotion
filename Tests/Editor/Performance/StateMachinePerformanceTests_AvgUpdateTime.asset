@@ -17,11 +17,11 @@ MonoBehaviour:
     Benchmarks:
     - Count: 100000
       Median:
-        Value: 37
+        Value: 40
         Tolerance: 5
       Max:
         Value: 42
         Tolerance: 10
       Min:
-        Value: 37
+        Value: 39.5
         Tolerance: 10
