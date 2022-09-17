@@ -17,7 +17,7 @@ namespace DMotion
             ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
             ref PlayableTransitionRequest playableTransitionRequest,
             ref DynamicBuffer<SingleClipState> singleClipStates,
-            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<PlayableState> playableStates,
             in PlayableCurrentState playableCurrentState,
@@ -136,7 +136,7 @@ namespace DMotion
             BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
             BlobAssetReference<ClipEventsBlob> clipEventsBlob,
             ref DynamicBuffer<SingleClipState> singleClipStates,
-            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {

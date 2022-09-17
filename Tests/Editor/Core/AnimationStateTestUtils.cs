@@ -7,6 +7,50 @@ namespace DMotion.Tests
 {
     internal static class AnimationStateTestUtils
     {
+        internal static void SetBlendParameter(in LinearBlendStateMachineState linearBlendState, EntityManager manager,
+            Entity entity, float value)
+        {
+            var blendParams = manager.GetBuffer<BlendParameter>(entity);
+            ref var blob = ref linearBlendState.AsLinearBlend;
+            var blendRatio = blendParams[blob.BlendParameterIndex];
+            blendRatio.Value = value;
+            blendParams[blob.BlendParameterIndex] = blendRatio;
+        }
+        
+        internal static void FindActiveSamplerIndexesForLinearBlend(
+            in LinearBlendStateMachineState linearBlendState,
+            EntityManager manager, Entity entity,
+            out int firstClipIndex, out int secondClipIndex)
+        {
+            var blendParams = manager.GetBuffer<BlendParameter>(entity);
+            LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(
+                linearBlendState, blendParams,
+                out var blendRatio, out var thresholds);
+            LinearBlendStateUtils.FindActiveClipIndexes(blendRatio, thresholds, out firstClipIndex, out secondClipIndex);
+            var startIndex = ClipSamplerTestUtils.PlayableStartSamplerIdToIndex(manager, entity, linearBlendState.PlayableId);
+            firstClipIndex += startIndex;
+            secondClipIndex += startIndex;
+        }
+
+        internal static LinearBlendStateMachineState CreateLinearBlendForStateMachine(short stateIndex, EntityManager manager, Entity entity)
+        {
+            Assert.GreaterOrEqual(stateIndex, 0);
+            var stateMachine = manager.GetComponentData<AnimationStateMachine>(entity);
+            Assert.IsTrue(stateIndex < stateMachine.StateMachineBlob.Value.States.Length);
+            Assert.AreEqual(StateType.LinearBlend, stateMachine.StateMachineBlob.Value.States[stateIndex].Type);
+            var linearBlend = manager.GetBuffer<LinearBlendStateMachineState>(entity);
+            var playables = manager.GetBuffer<PlayableState>(entity);
+            var samplers = manager.GetBuffer<ClipSampler>(entity);
+            return LinearBlendStateUtils.NewForStateMachine(stateIndex,
+                stateMachine.StateMachineBlob,
+                stateMachine.ClipsBlob,
+                stateMachine.ClipEventsBlob,
+                ref linearBlend,
+                ref playables,
+                ref samplers
+            );
+        }
+        
         internal static SingleClipState CreateSingleClipState(EntityManager manager, Entity entity,
             float speed = 1.0f,
             bool loop = false,

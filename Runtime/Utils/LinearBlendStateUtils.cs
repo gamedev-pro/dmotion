@@ -1,4 +1,5 @@
-﻿using Latios.Kinemation;
+﻿using System.Runtime.CompilerServices;
+using Latios.Kinemation;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -8,16 +9,16 @@ namespace DMotion
 {
     internal static class LinearBlendStateUtils
     {
-        internal static LinearBlendAnimationStateMachineState NewForStateMachine(
+        internal static LinearBlendStateMachineState NewForStateMachine(
             short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents,
-            ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+            ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
             ref DynamicBuffer<PlayableState> playableStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var linearBlendState = new LinearBlendAnimationStateMachineState
+            var linearBlendState = new LinearBlendStateMachineState
             {
                 StateMachineBlob = stateMachineBlob,
                 StateIndex = stateIndex
@@ -31,7 +32,7 @@ namespace DMotion
                 new NativeArray<ClipSampler>(clipCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             for (var i = 0; i < clipCount; i++)
             {
-                var clipIndex = (ushort) linearBlendBlob.SortedClipIndexes[i];
+                var clipIndex = (ushort)linearBlendBlob.SortedClipIndexes[i];
                 newSamplers[i] = new ClipSampler
                 {
                     ClipIndex = clipIndex,
@@ -53,6 +54,18 @@ namespace DMotion
             return linearBlendState;
         }
 
+        internal static void ExtractLinearBlendVariablesFromStateMachine(
+            in LinearBlendStateMachineState linearBlendState,
+            in DynamicBuffer<BlendParameter> blendParameters,
+            out float blendRatio,
+            out NativeArray<float> thresholds)
+        {
+            ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
+            blendRatio = blendParameters[linearBlendBlob.BlendParameterIndex].Value;
+            thresholds = CollectionUtils.AsArray(ref linearBlendBlob.SortedClipThresholds);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void UpdateSamplers(
             float dt,
             float blendRatio,
@@ -67,22 +80,7 @@ namespace DMotion
             //we assume thresholds are sorted here
             blendRatio = math.clamp(blendRatio, thresholds[0], thresholds[^1]);
 
-            //find clip tuple to be blended
-            var firstClipIndex = -1;
-            var secondClipIndex = -1;
-            for (var i = 1; i < thresholds.Length; i++)
-            {
-                var currentThreshold = thresholds[i];
-                var prevThreshold = thresholds[i - 1];
-                if (blendRatio >= prevThreshold && blendRatio <= currentThreshold)
-                {
-                    firstClipIndex = i - 1;
-                    secondClipIndex = i;
-                    break;
-                }
-            }
-
-            Assert.IsTrue(firstClipIndex >= 0 && secondClipIndex >= 0);
+            FindActiveClipIndexes(blendRatio, thresholds, out var firstClipIndex, out var secondClipIndex);
 
             var firstThreshold = thresholds[firstClipIndex];
             var secondThreshold = thresholds[secondClipIndex];
@@ -123,7 +121,7 @@ namespace DMotion
                     {
                         var sampler = samplers[i];
                         var samplerSpeed = stateSpeed * sampler.Clip.duration * invLoopDuration;
-                        
+
                         sampler.PreviousTime = sampler.Time;
                         sampler.Time += dt * samplerSpeed;
 
@@ -136,6 +134,30 @@ namespace DMotion
                     }
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void FindActiveClipIndexes(
+            float blendRatio,
+            in NativeArray<float> thresholds,
+            out int firstClipIndex, out int secondClipIndex)
+        {
+            //we assume thresholds are sorted here
+            firstClipIndex = -1;
+            secondClipIndex = -1;
+            for (var i = 1; i < thresholds.Length; i++)
+            {
+                var currentThreshold = thresholds[i];
+                var prevThreshold = thresholds[i - 1];
+                if (blendRatio >= prevThreshold && blendRatio <= currentThreshold)
+                {
+                    firstClipIndex = i - 1;
+                    secondClipIndex = i;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(firstClipIndex >= 0 && secondClipIndex >= 0);
         }
     }
 }

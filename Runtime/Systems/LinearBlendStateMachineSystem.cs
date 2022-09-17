@@ -12,8 +12,9 @@ namespace DMotion
         internal partial struct UpdateLinearBlendStateMachineStatesJob : IJobEntity
         {
             internal float DeltaTime;
+
             internal void Execute(
-                ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+                ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
                 ref DynamicBuffer<ClipSampler> clipSamplers,
                 in DynamicBuffer<PlayableState> playableStates,
                 in DynamicBuffer<BlendParameter> blendParameters
@@ -24,10 +25,9 @@ namespace DMotion
                     if (playableStates.TryGetWithId(linearBlendStates[i].PlayableId, out var playable))
                     {
                         var linearBlendState = linearBlendStates[i];
-                        ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
-                        var blendRatio = blendParameters[linearBlendBlob.BlendParameterIndex].Value;
-                        var thresholds = CollectionUtils.AsArray(ref linearBlendBlob.SortedClipThresholds);
-                        
+                        LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(linearBlendState,
+                            blendParameters, out var blendRatio, out var thresholds);
+
                         LinearBlendStateUtils.UpdateSamplers(
                             DeltaTime,
                             blendRatio,
@@ -38,12 +38,12 @@ namespace DMotion
                 }
             }
         }
-        
+
         [BurstCompile]
         internal partial struct CleanLinearBlendStatesJob : IJobEntity
         {
             internal void Execute(
-                ref DynamicBuffer<LinearBlendAnimationStateMachineState> linearBlendStates,
+                ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
                 in DynamicBuffer<PlayableState> playableStates
             )
             {

@@ -22,14 +22,14 @@ namespace DMotion.Tests
             var singleClip = AnimationStateTestUtils.CreateSingleClipState(manager, entity);
             PlayableTestUtils.SetCurrentState(manager, entity, singleClip.PlayableId);
 
-            var sampler = ClipSamplerTestUtils.GetSamplerForPlayable(manager, entity, singleClip.PlayableId);
+            var sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
             Assert.AreEqual(0, sampler.Weight);
             Assert.AreEqual(0, sampler.Time);
             Assert.AreEqual(0, sampler.PreviousTime);
 
             UpdateWorld();
 
-            sampler = ClipSamplerTestUtils.GetSamplerForPlayable(manager, entity, singleClip.PlayableId);
+            sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
             Assert.Greater(sampler.Weight, 0);
             Assert.Greater(sampler.Time, 0);
             Assert.AreEqual(0, sampler.PreviousTime);
@@ -38,7 +38,7 @@ namespace DMotion.Tests
 
             UpdateWorld();
 
-            sampler = ClipSamplerTestUtils.GetSamplerForPlayable(manager, entity, singleClip.PlayableId);
+            sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
             Assert.Greater(sampler.Time, prevTime);
             Assert.AreEqual(prevTime, sampler.PreviousTime);
         }
@@ -52,7 +52,7 @@ namespace DMotion.Tests
              
              UpdateWorld();
              
-             var sampler = ClipSamplerTestUtils.GetSamplerForPlayable(manager, entity, singleClip.PlayableId);
+             var sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
              Assert.Greater(sampler.Weight, 0);
              Assert.Greater(sampler.Time, 0);
              Assert.AreEqual(0, sampler.PreviousTime);
@@ -61,7 +61,7 @@ namespace DMotion.Tests
              
              UpdateWorld(sampler.Clip.duration - prevTime * 0.5f);
              
-             sampler = ClipSamplerTestUtils.GetSamplerForPlayable(manager, entity, singleClip.PlayableId);
+             sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
              //clip time should have looped
              Assert.Less(sampler.Time, prevTime);
              Assert.AreEqual(prevTime, sampler.PreviousTime);           
