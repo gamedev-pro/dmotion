@@ -7,15 +7,6 @@ namespace DMotion.Tests
     public class SingleClipStateSystemShould : ECSTestsFixture
     {
         [Test]
-        public void Run_With_Valid_Queries()
-        {
-            CreateSingleClipStateEntity();
-            UpdateWorld();
-            ECSTestUtils.AssertSystemQueries<UpdateAnimationStatesSystem>(world);
-            ECSTestUtils.AssertSystemQueries<PlayablesSystem>(world);
-        }
-
-        [Test]
         public void UpdateSamplers()
         {
             var entity = CreateSingleClipStateEntity();

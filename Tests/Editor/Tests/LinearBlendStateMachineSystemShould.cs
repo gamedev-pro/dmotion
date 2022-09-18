@@ -17,15 +17,6 @@ namespace DMotion.Tests
         private Entity stateMachineEntityPrefab;
 
         [Test]
-        public void Run_With_Valid_Queries()
-        {
-            CreateLinearBlendEntity();
-            UpdateWorld();
-            ECSTestUtils.AssertSystemQueries<UpdateAnimationStatesSystem>(world);
-            ECSTestUtils.AssertSystemQueries<PlayablesSystem>(world);
-        }
-
-        [Test]
         public void Update_All_Samplers()
         {
             var entity = CreateLinearBlendEntity();
