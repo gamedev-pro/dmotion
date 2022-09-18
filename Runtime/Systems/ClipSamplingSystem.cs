@@ -32,18 +32,18 @@ namespace DMotion
             var sampleOptimizedHandle = new SampleOptimizedBonesJob
             {
                 Marker = Marker_SampleOptimizedBonesJob
-            }.ScheduleParallel();
+            }.ScheduleParallel(Dependency);
             
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones
             {
                 BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
-            }.ScheduleParallel();
+            }.ScheduleParallel(Dependency);
             
             var sampleRootDeltasHandle = new SampleRootDeltasJob
             {
                 Marker = Marker_SampleRootDeltasJob
-            }.ScheduleParallel();
+            }.ScheduleParallel(Dependency);
             
             var applyRootMotionHandle = new ApplyRootMotionToEntityJob
             {
