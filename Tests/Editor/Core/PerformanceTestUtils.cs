@@ -81,7 +81,7 @@ namespace DMotion.Tests
             JobsUtility.JobCompilerEnabled = true;
             JobsUtility.JobDebuggerEnabled = false;
             NativeLeakDetection.Mode = NativeLeakDetectionMode.Disabled;
-            CompilationPipeline.codeOptimization = CodeOptimization.Release;
+            // CompilationPipeline.codeOptimization = CodeOptimization.Release;
             
             BurstCompiler.Options.EnableBurstCompilation = true;
             BurstCompiler.Options.EnableBurstDebug = false;
@@ -97,7 +97,7 @@ namespace DMotion.Tests
             JobsUtility.JobCompilerEnabled = true;
             JobsUtility.JobDebuggerEnabled = true;
             NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
-            CompilationPipeline.codeOptimization = CodeOptimization.Debug;
+            // CompilationPipeline.codeOptimization = CodeOptimization.Debug;
             
             BurstCompiler.Options.EnableBurstDebug = true;
             BurstCompiler.Options.EnableBurstCompilation = false;
