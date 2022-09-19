@@ -8,8 +8,15 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [0.3.2] – 2022-9-18
 
+### Added
+
 - Gracefully blend between multiple One Shot transitions
+- Improvements to AnimationClip editor
+  - Timeline
+  - Camera orbit
 - Unit and Performance Tests
+
+### Changed
 - Internal refactors and cleanups:
   - Handling of Animation States now separate from State Machine (see UpdateAnimationStates)
   - Clip Sampling now separate from State Machine (see ClipSamplingSystem)
