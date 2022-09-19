@@ -35,7 +35,7 @@ namespace DMotion.Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.LabelField("Preview Object");
-                preview.GameObject = (GameObject)EditorGUILayout.ObjectField(preview.GameObject, typeof(GameObject), true);
+                preview.GameObject = (GameObject)EditorGUILayout.ObjectField(preview.GameObject, typeof(GameObject), false);
             }
             using (var c = new EditorGUI.ChangeCheckScope())
             {
