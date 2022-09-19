@@ -9,6 +9,5 @@ namespace DMotion
     internal struct SingleClipState : IBufferElementData
     {
         internal byte PlayableId;
-
     }
 }

@@ -24,7 +24,7 @@ namespace DMotion
                 StateIndex = stateIndex
             };
 
-            ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
+            ref var linearBlendBlob = ref linearBlendState.LinearBlendBlob;
             Assert.AreEqual(linearBlendBlob.SortedClipIndexes.Length, linearBlendBlob.SortedClipThresholds.Length);
             var clipCount = (byte)linearBlendBlob.SortedClipIndexes.Length;
 
@@ -60,7 +60,7 @@ namespace DMotion
             out float blendRatio,
             out NativeArray<float> thresholds)
         {
-            ref var linearBlendBlob = ref linearBlendState.AsLinearBlend;
+            ref var linearBlendBlob = ref linearBlendState.LinearBlendBlob;
             blendRatio = blendParameters[linearBlendBlob.BlendParameterIndex].Value;
             thresholds = CollectionUtils.AsArray(ref linearBlendBlob.SortedClipThresholds);
         }

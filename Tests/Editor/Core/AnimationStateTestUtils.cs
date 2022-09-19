@@ -11,7 +11,7 @@ namespace DMotion.Tests
             Entity entity, float value)
         {
             var blendParams = manager.GetBuffer<BlendParameter>(entity);
-            ref var blob = ref linearBlendState.AsLinearBlend;
+            ref var blob = ref linearBlendState.LinearBlendBlob;
             var blendRatio = blendParams[blob.BlendParameterIndex];
             blendRatio.Value = value;
             blendParams[blob.BlendParameterIndex] = blendRatio;
