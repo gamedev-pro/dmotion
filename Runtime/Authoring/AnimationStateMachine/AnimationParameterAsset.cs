@@ -5,6 +5,6 @@ namespace DMotion.Authoring
 {
     public abstract class AnimationParameterAsset : StateMachineSubAsset
     {
-        public int Hash => name.GetHashCode();
+        public int Hash => ((FixedString64Bytes) name).GetHashCode();
     }
 }

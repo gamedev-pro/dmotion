@@ -33,7 +33,7 @@ namespace DMotion
         }
 
 
-        public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name,
+        public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, FixedString64Bytes name,
             bool value)
         {
             var hash = name.GetHashCode();
@@ -53,7 +53,7 @@ namespace DMotion
             return false;
         }
 
-        public static bool TryGetValue(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name,
+        public static bool TryGetValue(this DynamicBuffer<BoolParameter> parameters, FixedString64Bytes name,
             out bool value)
         {
             var hash = name.GetHashCode();
@@ -85,7 +85,7 @@ namespace DMotion
         }
 
 
-        public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name,
+        public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, FixedString64Bytes name,
             float value)
         {
             var hash = name.GetHashCode();
@@ -116,7 +116,7 @@ namespace DMotion
             return false;
         }
 
-        public static bool TryGetValue(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name,
+        public static bool TryGetValue(this DynamicBuffer<BlendParameter> parameters, FixedString64Bytes name,
             out float value)
         {
             var hash = name.GetHashCode();
