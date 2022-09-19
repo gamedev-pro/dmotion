@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Profiling;
 using Unity.Transforms;
 
 namespace DMotion
@@ -11,6 +12,7 @@ namespace DMotion
     internal partial struct SampleNonOptimizedBones : IJobEntity
     {
         [ReadOnly] internal BufferFromEntity<ClipSampler> BfeClipSampler;
+        internal ProfilerMarker Marker;
 
         internal void Execute(
             ref Translation translation,
@@ -20,6 +22,7 @@ namespace DMotion
             in BoneIndex boneIndex
         )
         {
+            using var scope = Marker.Auto();
             var samplers = BfeClipSampler[skeletonRef.skeletonRoot];
 
             if (samplers.Length > 0 && TryFindFirstActiveSamplerIndex(samplers, out var firstSamplerIndex))

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Latios.Authoring.Systems;
 using Latios.Unsafe;
 using Unity.Collections;
@@ -14,10 +15,16 @@ namespace DMotion.Authoring
         internal float Speed;
         internal UnsafeList<StateOutTransitionConversionData> Transitions;
     }
+
+    internal struct ClipIndexWithThreshold
+    {
+        internal int ClipIndex;
+        internal float Threshold;
+    }
     
     internal struct LinearBlendStateConversionData
     {
-        internal UnsafeList<DMotion.ClipWithThreshold> ClipsWithThresholds;
+        internal UnsafeList<ClipIndexWithThreshold> ClipsWithThresholds;
         internal ushort BlendParameterIndex;
     }
     
@@ -29,7 +36,7 @@ namespace DMotion.Authoring
         internal UnsafeList<BoolTransition> BoolTransitions;
     }
     
-    internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>
+    internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>, IComparer<ClipIndexWithThreshold>
     {
         internal byte DefaultStateIndex;
         internal UnsafeList<AnimationStateConversionData> States;
@@ -83,18 +90,32 @@ namespace DMotion.Authoring
                 for (ushort i = 0; i < linearBlendStates.Length; i++)
                 {
                     var linearBlendStateConversionData = LinearBlendStates[i];
-                    linearBlendStates[i] = new LinearBlendStateBlob()
+                    linearBlendStates[i] = new LinearBlendStateBlob
                         { BlendParameterIndex = linearBlendStateConversionData.BlendParameterIndex };
+
+                    //TODO: Actually sort things first
+                    //Make sure clips are sorted by threshold
+                    var clipsArray = CollectionUtils.AsArray(linearBlendStateConversionData.ClipsWithThresholds);
+                    clipsArray.Sort(this);
                     
-                    //TODO: sort by threshold
-                    builder.ConstructFromNativeArray(
-                        ref linearBlendStates[i].ClipSortedByThreshold,
-                        linearBlendStateConversionData.ClipsWithThresholds.Ptr,
-                        linearBlendStateConversionData.ClipsWithThresholds.Length);
+                    var sortedIndexes = builder.Allocate(ref linearBlendStates[i].SortedClipIndexes, clipsArray.Length);
+                    var sortedThresholds = builder.Allocate(ref linearBlendStates[i].SortedClipThresholds, clipsArray.Length);
+
+                    for (var clipIndex = 0; clipIndex < clipsArray.Length; clipIndex++)
+                    {
+                        var clip = clipsArray[clipIndex];
+                        sortedIndexes[clipIndex] = clip.ClipIndex;
+                        sortedThresholds[clipIndex] = clip.Threshold;
+                    }
                 }
             }
             
             return builder.CreateBlobAssetReference<StateMachineBlob>(Allocator.Persistent);
+        }
+
+        public int Compare(ClipIndexWithThreshold x, ClipIndexWithThreshold y)
+        {
+            return x.Threshold.CompareTo(y.Threshold);
         }
     }
 }

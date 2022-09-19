@@ -1,4 +1,5 @@
-﻿using Latios.Kinemation;
+﻿using System.Runtime.CompilerServices;
+using Latios.Kinemation;
 using Unity.Entities;
 
 namespace DMotion
@@ -30,23 +31,29 @@ namespace DMotion
             Speed = speed;
         }
     }
+
     internal struct OneShotState : IComponentData
     {
-        internal short SamplerIndex;
-        internal float TransitionDuration;
+        internal sbyte AnimationStateId;
         internal float EndTime;
-        internal float Speed;
+        internal float BlendOutDuration;
 
-        internal bool IsValid => SamplerIndex >= 0;
-        internal static OneShotState Null => new OneShotState() { SamplerIndex = -1 };
-
-        internal OneShotState(int samplerIndex, float transitionDuration,
-            float endTime, float speed)
+        public static OneShotState Null => new (){ AnimationStateId = -1 };
+        
+        internal static OneShotState New(byte animationStateId, float endTime, float blendOutDuration)
         {
-            SamplerIndex = (short) samplerIndex;
-            TransitionDuration = transitionDuration;
-            EndTime = endTime;
-            Speed = speed;
+            return new OneShotState()
+            {
+                AnimationStateId = (sbyte)animationStateId,
+                EndTime = endTime,
+                BlendOutDuration = blendOutDuration
+            };
+        }
+        
+        internal bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => AnimationStateId >= 0;
         }
     }
 }

@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 7da08f9c38994e9e934ad5c26329f9d1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - stateMachinePrefab: {fileID: 3933796299544104853, guid: af9d020e6d232fc499c6cc7e3a34de8f, type: 3}
+  - clipWithEvents: {fileID: 11400000, guid: df437d5cdddf15d42b3bea5e66e6737f, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -15,15 +15,15 @@ namespace DMotion
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool approximately(in float a, in float b)
+        public static bool approximately(in float a, in float b, float epsilon = math.EPSILON)
         {
-            return a - b < math.EPSILON;
+            return a - b < epsilon;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool iszero(in float a)
+        public static bool iszero(in float a, float epsilon = math.EPSILON)
         {
-            return a < math.EPSILON;
+            return a < epsilon;
         }
     }
 }

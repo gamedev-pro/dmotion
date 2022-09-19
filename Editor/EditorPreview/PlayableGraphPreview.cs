@@ -27,6 +27,13 @@ namespace DMotion.Editor
         public abstract float SampleTime { get; }
         public abstract float NormalizedSampleTime { get; set; }
 
+        private float camDistance;
+        private Vector3 camPivot;
+        private Vector3 lookAtOffset;
+        private Vector2 camEuler;
+        private Vector2 lastMousePosition;
+        private Boolean isMouseDrag;
+
         public void Initialize()
         {
             AnimationMode.StartAnimationMode();
@@ -108,19 +115,19 @@ namespace DMotion.Editor
             previewRenderUtility?.Cleanup();
             previewRenderUtility = new PreviewRenderUtility();
 
-            var bounds = skinnedMeshRenderer.bounds;
-            var camPos = new Vector3(0f, bounds.size.y * 3, 10f);
-            previewRenderUtility.camera.transform.position = camPos;
-            var camRot = Quaternion.LookRotation(bounds.center - camPos);
-            previewRenderUtility.camera.transform.rotation = camRot;
-            previewRenderUtility.camera.nearClipPlane = 0.3f;
-            previewRenderUtility.camera.farClipPlane = 3000f;
-
             var light1 = previewRenderUtility.lights[0];
             light1.type = LightType.Directional;
             light1.color = Color.white;
             light1.intensity = 1;
-            light1.transform.rotation = camRot;
+
+            previewRenderUtility.camera.nearClipPlane = 0.3f;
+            previewRenderUtility.camera.farClipPlane = 3000f;
+
+            camPivot = skinnedMeshRenderer.transform.position;
+            lookAtOffset = Vector3.up * skinnedMeshRenderer.bounds.size.y / 2;
+            camDistance = 10;
+            camEuler = new Vector2(45, 30);
+            HandleCamera(true);
         }
         public void RefreshPreviewObjects()
         {
@@ -189,14 +196,64 @@ namespace DMotion.Editor
                     for (var i = 0; i < previewMesh.subMeshCount; i++)
                     {
                         previewRenderUtility.DrawMesh(previewMesh, Matrix4x4.identity,
-                            skinnedMeshRenderer.sharedMaterial, i);
+                            skinnedMeshRenderer.sharedMaterials[i], i);
                     }
 
+                    HandleCamera();
                     previewRenderUtility.camera.Render();
-
                     var resultRender = previewRenderUtility.EndPreview();
                     GUI.DrawTexture(r, resultRender, ScaleMode.StretchToFill, false);
                 }
+            }
+        }
+
+        private void HandleCamera(Boolean force = false)
+        {
+            // must set hotControl or MouseUp event will not be detected outside window
+            int controlId = GUIUtility.GetControlID(FocusType.Passive);
+            if (Event.current.GetTypeForControl(controlId) == EventType.MouseDown)
+                GUIUtility.hotControl = controlId;
+
+            var isMouseDown = Event.current.type == EventType.MouseDown;
+            var isMouseUp = Event.current.type == EventType.MouseUp;
+
+            // track mouse drag on our own because out of window event types are "Layout" or "repaint"
+            if (Event.current.type == EventType.MouseDrag)
+                isMouseDrag = true;
+
+            if (force || isMouseDrag)
+            {
+                Vector2 delta = Event.current.mousePosition - lastMousePosition;
+
+                // ignore large deltas from SetWantsMouseJumping (Screen.currentResolution minus 20)
+                if (Mathf.Abs(delta.x) > Screen.width) delta.x = 0;
+                if (Mathf.Abs(delta.y) > Screen.height) delta.y = 0;
+
+                camEuler += delta;
+
+                camEuler.y = Mathf.Clamp(camEuler.y, -179, -1); // -1 to avoid perpendicular angles
+
+                previewRenderUtility.camera.transform.position =
+                    Quaternion.Euler(-camEuler.y, camEuler.x, 0) * (Vector3.up * camDistance -camPivot) + camPivot;
+                previewRenderUtility.camera.transform.LookAt(camPivot + lookAtOffset);
+
+                // matcap feel
+                previewRenderUtility.lights[0].transform.rotation = previewRenderUtility.camera.transform.rotation;
+
+                // needed for repaint
+                GUI.changed = true;
+            }
+
+            // Undocumented feature that wraps the cursor around the screen edges by Screen.currentResolution minus 20
+            if (isMouseDown) EditorGUIUtility.SetWantsMouseJumping(1);
+            if (isMouseUp) {
+                EditorGUIUtility.SetWantsMouseJumping(0);
+                isMouseDrag = false;
+            }
+
+            // store lastMousePosition starting with mouseDown to prevent wrong initial delta
+            if (isMouseDown || isMouseDrag) {
+                lastMousePosition = Event.current.mousePosition;
             }
         }
     }

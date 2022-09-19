@@ -19,7 +19,7 @@ Overall, this system should feel similar to Unity's Mechanim system, however the
 - Loop and speed control
 - Blending between states during transitions
 - Boolean transitions
-- End Time transtiions
+- End Time transtions
 - Blend Parameters (float parameters for controlling Blend Trees)
 - Animation Events
 - Root Motion (with WriteGroup support, if you need to override default behaviour)
@@ -29,8 +29,10 @@ Overall, this system should feel similar to Unity's Mechanim system, however the
 
 ### Coming soon
 
+- Enum Transitions
 - 2D Blend Tree (cartesian/freeform)
 - State Machine Override (a.k.a Animator Override Controller)
+- IK Support
 
 ### Planned
 - Retargeting for Humanoid skeletons

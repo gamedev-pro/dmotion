@@ -1,236 +1,211 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
+using Unity.Profiling;
 
 namespace DMotion
 {
     [BurstCompile]
     internal partial struct UpdateStateMachineJob : IJobEntity
     {
-        internal float DeltaTime;
+        internal ProfilerMarker Marker;
+
         internal void Execute(
             ref AnimationStateMachine stateMachine,
+            ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
+            ref AnimationStateTransitionRequest animationStateTransitionRequest,
+            ref DynamicBuffer<SingleClipState> singleClipStates,
+            ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
             ref DynamicBuffer<ClipSampler> clipSamplers,
-            ref PlayOneShotRequest playOneShot,
-            ref OneShotState oneShotState,
-            in DynamicBuffer<BlendParameter> blendParameters,
+            ref DynamicBuffer<AnimationState> animationStates,
+            in AnimationCurrentState animationCurrentState,
             in DynamicBuffer<BoolParameter> boolParameters
-            )
+        )
         {
+            using var scope = Marker.Auto();
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
+
+            var shouldStateMachineBeActive = !animationCurrentState.IsValid ||
+                                             stateMachineTransitionRequest.IsRequested ||
+                                             animationCurrentState.AnimationStateId == stateMachine.CurrentState.AnimationStateId;
+
+            if (!shouldStateMachineBeActive)
+            {
+                return;
+            }
 
             //Initialize if necessary
             {
                 if (!stateMachine.CurrentState.IsValid)
                 {
-                    clipSamplers.Clear();
                     stateMachine.CurrentState = CreateState(
                         stateMachineBlob.DefaultStateIndex,
                         stateMachine.StateMachineBlob,
                         stateMachine.ClipsBlob,
                         stateMachine.ClipEventsBlob,
+                        ref singleClipStates,
+                        ref linearBlendStates,
+                        ref animationStates,
                         ref clipSamplers);
+
+                    animationStateTransitionRequest = new AnimationStateTransitionRequest
+                    {
+                        AnimationStateId = stateMachine.CurrentState.AnimationStateId,
+                        TransitionDuration = 0
+                    };
+
+                    //We already started a transition to a new state 
+                    stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
                 }
             }
-            //Evaluate if current transition ended
+
+            //Evaluate if we should transition into the state machine
             {
-                if (stateMachine.NextState.IsValid)
+                if (stateMachineTransitionRequest.IsRequested)
                 {
-                    if (stateMachine.NextState.Time > stateMachine.CurrentTransitionDuration)
+                    var isCurrentStateActive = animationCurrentState.AnimationStateId == stateMachine.CurrentState.AnimationStateId;
+                    // we're already playing our current state
+                    if (!isCurrentStateActive)
                     {
-                        var removeCount = stateMachine.CurrentState.ClipCount;
-                        clipSamplers.RemoveRange(stateMachine.CurrentState.StartSamplerIndex, removeCount);
-                        stateMachine.NextState.StartSamplerIndex -= removeCount;
-                        oneShotState.SamplerIndex -= removeCount;
+                        var isCurrentStateAnimationStateAlive =
+                            animationStates.ExistsWithId((byte)stateMachine.CurrentState.AnimationStateId);
                         
-                        stateMachine.CurrentState = stateMachine.NextState;
-                        stateMachine.NextState = AnimationState.Null;
+                        if (!isCurrentStateAnimationStateAlive)
+                        {
+                            //create a new animationState state for us to transition to
+                            stateMachine.CurrentState = CreateState(
+                                (short)stateMachine.CurrentState.StateIndex,
+                                stateMachine.StateMachineBlob,
+                                stateMachine.ClipsBlob,
+                                stateMachine.ClipEventsBlob,
+                                ref singleClipStates,
+                                ref linearBlendStates,
+                                ref animationStates,
+                                ref clipSamplers);
+                        }
+
+                        animationStateTransitionRequest = new AnimationStateTransitionRequest
+                        {
+                            AnimationStateId = stateMachine.CurrentState.AnimationStateId,
+                            TransitionDuration = stateMachineTransitionRequest.TransitionDuration
+                        };
                     }
-                }
-            }
-
-            //Evaluate requested one shot
-            {
-                if (playOneShot.IsValid)
-                {
-                    //initialize
-                    oneShotState = new OneShotState(clipSamplers.Length,
-                        playOneShot.TransitionDuration,
-                        playOneShot.EndTime,
-                        playOneShot.Speed);
                     
-                    clipSamplers.Add(new ClipSampler()
-                    {
-                        ClipIndex = (byte)playOneShot.ClipIndex,
-                        Clips = playOneShot.Clips,
-                        ClipEventsBlob = playOneShot.ClipEvents,
-                        Time = 0,
-                        PreviousTime = 0,
-                        Weight = 1
-                    });
-
-                    playOneShot = PlayOneShotRequest.Null;
+                    stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
                 }
             }
+
             //Evaluate transitions
             {
-                if (!oneShotState.IsValid)
-                {
-                    var stateToEvaluate = stateMachine.NextState.IsValid
-                        ? stateMachine.NextState
-                        : stateMachine.CurrentState;
-                    
-                    var shouldStartTransition = EvaluateTransitions(stateToEvaluate, boolParameters,
-                        out var transitionIndex);
+                //we really expect this guy to exist
+                var currentStateAnimationState = 
+                    animationStates.GetWithId((byte) stateMachine.CurrentState.AnimationStateId);
+                
+                var shouldStartTransition = EvaluateTransitions(
+                    currentStateAnimationState,
+                    ref stateMachine.CurrentStateBlob,
+                    boolParameters,
+                    out var transitionIndex);
 
-                    if (shouldStartTransition)
+                if (shouldStartTransition)
+                {
+                    ref var transition = ref stateMachine.CurrentStateBlob.Transitions[transitionIndex];
+                    stateMachine.CurrentState = CreateState(
+                        transition.ToStateIndex,
+                        stateMachine.StateMachineBlob,
+                        stateMachine.ClipsBlob,
+                        stateMachine.ClipEventsBlob,
+                        ref singleClipStates,
+                        ref linearBlendStates,
+                        ref animationStates,
+                        ref clipSamplers);
+
+                    animationStateTransitionRequest = new AnimationStateTransitionRequest
                     {
-                        ref var transition = ref stateToEvaluate.StateBlob.Transitions[transitionIndex];
-                        stateMachine.CurrentTransitionDuration = transition.TransitionDuration;
-                        stateMachine.NextState = CreateState(
-                            transition.ToStateIndex,
-                            stateMachine.StateMachineBlob,
-                            stateMachine.ClipsBlob,
-                            stateMachine.ClipEventsBlob,
-                            ref clipSamplers);
-                    }
-                }
-            }
-            
-            //Update One shot
-            {
-                if (oneShotState.IsValid)
-                {
-                    var sampler = clipSamplers[oneShotState.SamplerIndex];
-                    sampler.PreviousTime = sampler.Time;
-                    sampler.Time += DeltaTime * oneShotState.Speed;
-
-                    float oneShotWeight;
-                    //blend out
-                    if (sampler.Time > oneShotState.EndTime)
-                    {
-                        var blendOutTime = sampler.Clip.duration - oneShotState.EndTime;
-                        if (!mathex.iszero(blendOutTime))
-                        {
-                            oneShotWeight = math.clamp((sampler.Clip.duration - sampler.Time) /
-                                                   blendOutTime, 0, 1);
-                        }
-                        else
-                        {
-                            oneShotWeight = 0;
-                        }
-                    }
-                    //blend in
-                    else
-                    {
-                        oneShotWeight = math.clamp(sampler.Time /
-                                               oneShotState.TransitionDuration, 0, 1);
-                    }
-
-                    sampler.Weight = oneShotWeight;
-                    stateMachine.Weight = 1 - oneShotWeight;
-                    
-                    clipSamplers[oneShotState.SamplerIndex] = sampler;
-                    
-                    //if blend out finished
-                    if (sampler.Time >= sampler.Clip.duration)
-                    {
-                        stateMachine.Weight = 1;
-                        clipSamplers.RemoveAt(oneShotState.SamplerIndex);
-                        if (oneShotState.SamplerIndex < stateMachine.CurrentState.StartSamplerIndex)
-                        {
-                            stateMachine.CurrentState.StartSamplerIndex -= 1;
-                        }
-                        if (stateMachine.NextState.IsValid && oneShotState.SamplerIndex < stateMachine.NextState.StartSamplerIndex)
-                        {
-                            stateMachine.NextState.StartSamplerIndex -= 1;
-                        }
-                        
-                        oneShotState = OneShotState.Null;
-                    }
-                }
-            }
-            //Update samplers
-            {
-                if (stateMachine.NextState.IsValid)
-                {
-                    var nextStateBlend = math.clamp(stateMachine.NextState.Time /
-                                       stateMachine.CurrentTransitionDuration, 0, 1);
-                    stateMachine.CurrentState.UpdateSamplers(
-                        DeltaTime, (1 - nextStateBlend)*stateMachine.Weight,
-                        blendParameters, ref clipSamplers);
-                    stateMachine.NextState.UpdateSamplers(
-                        DeltaTime, nextStateBlend*stateMachine.Weight,
-                        blendParameters, ref clipSamplers);
-                }
-                else
-                {
-                    stateMachine.CurrentState.UpdateSamplers(DeltaTime, stateMachine.Weight, blendParameters, ref clipSamplers);
-                }
-            }
-
-            //Normalized weights if needed
-            {
-                var sumWeights = 0.0f;
-                for (var i = 0; i < clipSamplers.Length; i++)
-                {
-                    sumWeights += clipSamplers[i].Weight;
-                }
-
-                var inverseSumWeights = 1.0f / sumWeights;
-                for (var i = 0; i < clipSamplers.Length; i++)
-                {
-                    var sampler = clipSamplers[i];
-                    sampler.Weight *= inverseSumWeights;
-                    clipSamplers[i] = sampler;
+                        AnimationStateId = stateMachine.CurrentState.AnimationStateId,
+                        TransitionDuration = transition.TransitionDuration,
+                    };
                 }
             }
         }
 
-        private AnimationState CreateState(short stateIndex,
+        private StateMachineStateRef CreateState(short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
             BlobAssetReference<ClipEventsBlob> clipEventsBlob,
+            ref DynamicBuffer<SingleClipState> singleClipStates,
+            ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
+            ref DynamicBuffer<AnimationState> animationStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var state = new AnimationState()
+            ref var state = ref stateMachineBlob.Value.States[stateIndex];
+            var stateRef = new StateMachineStateRef
             {
-                StateMachineBlob = stateMachineBlob,
-                StateIndex = stateIndex,
-                Time = 0,
+                StateIndex = (ushort)stateIndex
             };
-            state.Initialize(clipsBlob, clipEventsBlob, ref samplers);
-            return state;
+
+            byte animationStateId;
+            switch (state.Type)
+            {
+                case StateType.Single:
+                    var singleClipState = SingleClipStateUtils.NewForStateMachine(
+                        (byte)state.StateIndex,
+                        stateMachineBlob,
+                        clipsBlob,
+                        clipEventsBlob,
+                        ref singleClipStates,
+                        ref animationStates, ref samplers);
+                    animationStateId = singleClipState.AnimationStateId;
+                    break;
+                case StateType.LinearBlend:
+                    var linearClipState = LinearBlendStateUtils.NewForStateMachine(
+                        (byte)state.StateIndex,
+                        stateMachineBlob,
+                        clipsBlob,
+                        clipEventsBlob,
+                        ref linearBlendStates,
+                        ref animationStates, ref samplers);
+
+                    animationStateId = linearClipState.AnimationStateId;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            stateRef.AnimationStateId = (sbyte)animationStateId;
+            return stateRef;
         }
-        
+
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitions(in AnimationState state,
+        private bool EvaluateTransitions(in AnimationState animation, ref AnimationStateBlob state,
             in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
         {
-            for (short i = 0; i < state.StateBlob.Transitions.Length; i++)
+            for (short i = 0; i < state.Transitions.Length; i++)
             {
-                if (EvaluateTransitionGroup(state, ref state.StateBlob.Transitions[i], boolParameters))
+                if (EvaluateTransitionGroup(animation, ref state.Transitions[i], boolParameters))
                 {
                     transitionIndex = i;
                     return true;
                 }
             }
+
             transitionIndex = -1;
             return false;
         }
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EvaluateTransitionGroup(in AnimationState state, ref StateOutTransitionGroup transitionGroup,
+        private bool EvaluateTransitionGroup(in AnimationState animation, ref StateOutTransitionGroup transitionGroup,
             in DynamicBuffer<BoolParameter> boolParameters)
         {
-            if (transitionGroup.HasEndTime && state.Time < transitionGroup.TransitionEndTime)
+            if (transitionGroup.HasEndTime && animation.Time < transitionGroup.TransitionEndTime)
             {
                 return false;
             }
+
             ref var boolTransitions = ref transitionGroup.BoolTransitions;
             var shouldTriggerTransition = transitionGroup.HasAnyConditions || transitionGroup.HasEndTime;
             for (var i = 0; i < boolTransitions.Length; i++)
@@ -238,6 +213,7 @@ namespace DMotion
                 var transition = boolTransitions[i];
                 shouldTriggerTransition &= transition.Evaluate(boolParameters[transition.ParameterIndex]);
             }
+
             return shouldTriggerTransition;
         }
     }

@@ -12,6 +12,7 @@ namespace DMotion.Authoring
     {
         public const string DMotionPath = "DMotion";
     }
+    
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;
@@ -36,12 +37,19 @@ namespace DMotion.Authoring
                 StateMachineBlob = stateMachineBlob,
                 ClipsBlob = clipsBlob,
                 ClipEventsBlob = clipEventsBlob,
-                CurrentState = AnimationState.Null,
-                NextState = AnimationState.Null,
-                Weight = 1
+                CurrentState = StateMachineStateRef.Null
             };
 
             dstManager.AddComponentData(entity, stateMachine);
+            dstManager.AddComponentData(entity, AnimationStateMachineTransitionRequest.Null);
+
+            dstManager.AddBuffer<SingleClipState>(entity);
+            dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
+            
+            dstManager.AddBuffer<AnimationState>(entity);
+            dstManager.AddComponentData(entity, AnimationStateTransition.Null);
+            dstManager.AddComponentData(entity, AnimationStateTransitionRequest.Null);
+            dstManager.AddComponentData(entity, AnimationCurrentState.Null);
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
 
@@ -110,7 +118,7 @@ namespace DMotion.Authoring
         {
             ValidateStateMachine();
             clipsBlobHandle = conversionSystem.RequestClipsBlob(Animator, StateMachineAsset.Clips);
-            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject, new StateMachineBlobBakeData()
+            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject, new StateMachineBlobBakeData
             {
                 StateMachineAsset = StateMachineAsset
             });
