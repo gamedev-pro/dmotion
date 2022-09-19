@@ -13,38 +13,38 @@ namespace DMotion
         {
             internal void Execute(
                 ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
-                ref PlayableTransitionRequest playableTransitionRequest,
+                ref AnimationStateTransitionRequest animationStateTransitionRequest,
                 ref PlayOneShotRequest playOneShot,
                 ref OneShotState oneShotState,
                 ref DynamicBuffer<SingleClipState> singleClipStates,
-                ref DynamicBuffer<PlayableState> playableStates,
+                ref DynamicBuffer<AnimationState> animationStates,
                 ref DynamicBuffer<ClipSampler> clipSamplers,
-                in PlayableCurrentState playableTransition
+                in AnimationCurrentState animationTransition
             )
             {
                 //Evaluate requested one shot
                 {
                     if (playOneShot.IsValid)
                     {
-                        var singleClipPlayable = SingleClipStateUtils.New(
+                        var singleClipAnimationState = SingleClipStateUtils.New(
                             (ushort)playOneShot.ClipIndex,
                             playOneShot.Speed,
                             false,
                             playOneShot.Clips,
                             playOneShot.ClipEvents,
                             ref singleClipStates,
-                            ref playableStates,
+                            ref animationStates,
                             ref clipSamplers);
 
-                        playableTransitionRequest = PlayableTransitionRequest.New(singleClipPlayable.PlayableId,
+                        animationStateTransitionRequest = AnimationStateTransitionRequest.New(singleClipAnimationState.AnimationStateId,
                             playOneShot.TransitionDuration);
 
-                        var playableState = playableStates.GetWithId(singleClipPlayable.PlayableId);
-                        var playOneShotClip = clipSamplers.GetWithId(playableState.StartSamplerId);
+                        var animationState = animationStates.GetWithId(singleClipAnimationState.AnimationStateId);
+                        var playOneShotClip = clipSamplers.GetWithId(animationState.StartSamplerId);
 
                         var endTime = playOneShot.EndTime * playOneShotClip.Clip.duration;
                         var blendOutDuration = playOneShot.TransitionDuration;
-                        oneShotState = OneShotState.New(singleClipPlayable.PlayableId,endTime, blendOutDuration);
+                        oneShotState = OneShotState.New(singleClipAnimationState.AnimationStateId,endTime, blendOutDuration);
 
                         playOneShot = PlayOneShotRequest.Null;
                     }
@@ -52,12 +52,12 @@ namespace DMotion
 
                 //Evaluate one shot end
                 {
-                    if (oneShotState.IsValid && oneShotState.PlayableId == playableTransition.PlayableId)
+                    if (oneShotState.IsValid && oneShotState.AnimationStateId == animationTransition.AnimationStateId)
                     {
-                        var oneShotPlayableState = playableStates.GetWithId((byte)oneShotState.PlayableId);
+                        var oneShotAnimationState = animationStates.GetWithId((byte)oneShotState.AnimationStateId);
 
                         //request transition back to state machine if we're done
-                        if (oneShotPlayableState.Time >= oneShotState.EndTime)
+                        if (oneShotAnimationState.Time >= oneShotState.EndTime)
                         {
                             stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.New(oneShotState.BlendOutDuration);
                             oneShotState = OneShotState.Null;

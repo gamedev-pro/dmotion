@@ -9,10 +9,10 @@ namespace DMotion
     internal struct StateMachineStateRef
     {
         internal ushort StateIndex;
-        internal sbyte PlayableId;
-        internal bool IsValid => PlayableId >= 0;
+        internal sbyte AnimationStateId;
+        internal bool IsValid => AnimationStateId >= 0;
 
-        internal static StateMachineStateRef Null => new() { PlayableId = -1 };
+        internal static StateMachineStateRef Null => new() { AnimationStateId = -1 };
     }
 
     [BurstCompile]

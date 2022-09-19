@@ -3,7 +3,7 @@ using Unity.Entities;
 
 namespace DMotion.Tests
 {
-    [CreateSystemsForTest(typeof(PlayablesSystem), typeof(UpdateAnimationStatesSystem))]
+    [CreateSystemsForTest(typeof(BlendAnimationStatesSystem), typeof(UpdateAnimationStatesSystem))]
     public class SingleClipStateSystemShould : ECSTestsFixture
     {
         [Test]
@@ -11,16 +11,16 @@ namespace DMotion.Tests
         {
             var entity = CreateSingleClipStateEntity();
             var singleClip = AnimationStateTestUtils.CreateSingleClipState(manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, singleClip.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, singleClip.AnimationStateId);
 
-            var sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
+            var sampler = ClipSamplerTestUtils.GetFirstSamplerForAnimationState(manager, entity, singleClip.AnimationStateId);
             Assert.AreEqual(0, sampler.Weight);
             Assert.AreEqual(0, sampler.Time);
             Assert.AreEqual(0, sampler.PreviousTime);
 
             UpdateWorld();
 
-            sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
+            sampler = ClipSamplerTestUtils.GetFirstSamplerForAnimationState(manager, entity, singleClip.AnimationStateId);
             Assert.Greater(sampler.Weight, 0);
             Assert.Greater(sampler.Time, 0);
             Assert.AreEqual(0, sampler.PreviousTime);
@@ -29,7 +29,7 @@ namespace DMotion.Tests
 
             UpdateWorld();
 
-            sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
+            sampler = ClipSamplerTestUtils.GetFirstSamplerForAnimationState(manager, entity, singleClip.AnimationStateId);
             Assert.Greater(sampler.Time, prevTime);
             Assert.AreEqual(prevTime, sampler.PreviousTime);
         }
@@ -39,11 +39,11 @@ namespace DMotion.Tests
         {
              var entity = CreateSingleClipStateEntity();
              var singleClip = AnimationStateTestUtils.CreateSingleClipState(manager, entity, speed: 1, loop: true);
-             PlayableTestUtils.SetCurrentState(manager, entity, singleClip.PlayableId);
+             AnimationStateTestUtils.SetCurrentState(manager, entity, singleClip.AnimationStateId);
              
              UpdateWorld();
              
-             var sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
+             var sampler = ClipSamplerTestUtils.GetFirstSamplerForAnimationState(manager, entity, singleClip.AnimationStateId);
              Assert.Greater(sampler.Weight, 0);
              Assert.Greater(sampler.Time, 0);
              Assert.AreEqual(0, sampler.PreviousTime);
@@ -52,7 +52,7 @@ namespace DMotion.Tests
              
              UpdateWorld(sampler.Clip.duration - prevTime * 0.5f);
              
-             sampler = ClipSamplerTestUtils.GetFirstSamplerForPlayable(manager, entity, singleClip.PlayableId);
+             sampler = ClipSamplerTestUtils.GetFirstSamplerForAnimationState(manager, entity, singleClip.AnimationStateId);
              //clip time should have looped
              Assert.Less(sampler.Time, prevTime);
              Assert.AreEqual(prevTime, sampler.PreviousTime);           
@@ -64,7 +64,7 @@ namespace DMotion.Tests
             var entity = CreateSingleClipStateEntity();
             var s1 = AnimationStateTestUtils.CreateSingleClipState(manager, entity);
             var s2 = AnimationStateTestUtils.CreateSingleClipState(manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, s1.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, s1.AnimationStateId);
 
             var singleClips = manager.GetBuffer<SingleClipState>(entity);
             var samplers = manager.GetBuffer<ClipSampler>(entity);
@@ -72,7 +72,7 @@ namespace DMotion.Tests
             Assert.AreEqual(2, samplers.Length);
 
             const float transitionDuration = 0.2f;
-            PlayableTestUtils.TransitionTo(manager, entity, s2.PlayableId, transitionDuration);
+            AnimationStateTestUtils.TransitionTo(manager, entity, s2.AnimationStateId, transitionDuration);
             
             UpdateWorld();
             
@@ -88,14 +88,14 @@ namespace DMotion.Tests
             singleClips = manager.GetBuffer<SingleClipState>(entity);
             samplers = manager.GetBuffer<ClipSampler>(entity);
             Assert.AreEqual(1, singleClips.Length);
-            Assert.AreEqual(s2.PlayableId, singleClips[0].PlayableId);
+            Assert.AreEqual(s2.AnimationStateId, singleClips[0].AnimationStateId);
             Assert.AreEqual(1, samplers.Length);
             Assert.AreEqual(1, samplers[0].Weight);
         }
 
         private Entity CreateSingleClipStateEntity()
         {
-            var entity = PlayableTestUtils.CreatePlayableEntity(manager);
+            var entity = AnimationStateTestUtils.CreateAnimationStateEntity(manager);
             manager.AddBuffer<SingleClipState>(entity);
             return entity;
         }

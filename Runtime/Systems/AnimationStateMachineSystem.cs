@@ -6,7 +6,7 @@ using Unity.Transforms;
 namespace DMotion
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
-    [UpdateBefore(typeof(PlayablesSystem))]
+    [UpdateBefore(typeof(BlendAnimationStatesSystem))]
     public partial class AnimationStateMachineSystem : SystemBase
     {
         internal static readonly ProfilerMarker Marker_UpdateStateMachineJob =

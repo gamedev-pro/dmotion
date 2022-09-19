@@ -12,7 +12,7 @@ namespace DMotion.PerformanceTests
         typeof(AnimationStateMachineSystem),
         typeof(UpdateStateMachines),
         typeof(ClipSamplingSystem),
-        typeof(PlayablesSystem),
+        typeof(BlendAnimationStatesSystem),
         typeof(UpdateAnimationStatesSystem))]
     public class StateMachinePerformanceTests : PerformanceTestsFixture
     {

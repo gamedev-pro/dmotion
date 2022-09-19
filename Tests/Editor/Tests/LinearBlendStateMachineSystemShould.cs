@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace DMotion.Tests
 {
-    [CreateSystemsForTest(typeof(PlayablesSystem), typeof(UpdateAnimationStatesSystem))]
+    [CreateSystemsForTest(typeof(BlendAnimationStatesSystem), typeof(UpdateAnimationStatesSystem))]
     public class LinearBlendStateMachineSystemShould : ECSTestsFixture
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
@@ -21,13 +21,13 @@ namespace DMotion.Tests
         {
             var entity = CreateLinearBlendEntity();
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, linearBlendState.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
 
-            var playable = PlayableTestUtils.GetPlayableFromEntity(manager, entity, linearBlendState.PlayableId);
+            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, linearBlendState.AnimationStateId);
             var startSamplerIndex =
-                ClipSamplerTestUtils.PlayableStartSamplerIdToIndex(manager, entity, linearBlendState.PlayableId);
+                ClipSamplerTestUtils.AnimationStateStartSamplerIdToIndex(manager, entity, linearBlendState.AnimationStateId);
 
-            var samplerIndexes = Enumerable.Range(startSamplerIndex, playable.ClipCount).ToArray();
+            var samplerIndexes = Enumerable.Range(startSamplerIndex, animationState.ClipCount).ToArray();
 
             //Assert everything is zero
             var samplers = manager.GetBuffer<ClipSampler>(entity);
@@ -55,13 +55,13 @@ namespace DMotion.Tests
         {
             var entity = CreateLinearBlendEntity();
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, linearBlendState.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
             AnimationStateTestUtils.SetBlendParameter(linearBlendState, manager, entity, 0.1f);
 
             UpdateWorld();
 
             var allSamplers =
-                ClipSamplerTestUtils.GetAllSamplersForPlayable(manager, entity, linearBlendState.PlayableId);
+                ClipSamplerTestUtils.GetAllSamplersForAnimationState(manager, entity, linearBlendState.AnimationStateId);
 
             var sumWeight = allSamplers.Sum(s => s.Weight);
             Assert.AreEqual(1, sumWeight);
@@ -72,7 +72,7 @@ namespace DMotion.Tests
         {
             var entity = CreateLinearBlendEntity();
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, linearBlendState.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
             AnimationStateTestUtils.SetBlendParameter(linearBlendState, manager, entity, 0.1f);
 
             UpdateWorld();
@@ -92,13 +92,13 @@ namespace DMotion.Tests
         {
             var entity = CreateLinearBlendEntity();
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, linearBlendState.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
 
-            var playable = PlayableTestUtils.GetPlayableFromEntity(manager, entity, linearBlendState.PlayableId);
+            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, linearBlendState.AnimationStateId);
             var startSamplerIndex =
-                ClipSamplerTestUtils.PlayableStartSamplerIdToIndex(manager, entity, linearBlendState.PlayableId);
+                ClipSamplerTestUtils.AnimationStateStartSamplerIdToIndex(manager, entity, linearBlendState.AnimationStateId);
 
-            var samplerIndexes = Enumerable.Range(startSamplerIndex, playable.ClipCount).ToArray();
+            var samplerIndexes = Enumerable.Range(startSamplerIndex, animationState.ClipCount).ToArray();
             
             foreach (var i in samplerIndexes)
             {
@@ -127,14 +127,14 @@ namespace DMotion.Tests
         {
             var entity = CreateLinearBlendEntity();
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
-            PlayableTestUtils.SetCurrentState(manager, entity, linearBlendState.PlayableId);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
             var anotherState = AnimationStateTestUtils.CreateSingleClipState(manager, entity);
 
             var linearBlendStates = manager.GetBuffer<LinearBlendStateMachineState>(entity);
             Assert.AreEqual(1, linearBlendStates.Length);
 
             const float transitionDuration = 0.2f;
-            PlayableTestUtils.TransitionTo(manager, entity, anotherState.PlayableId, transitionDuration);
+            AnimationStateTestUtils.TransitionTo(manager, entity, anotherState.AnimationStateId, transitionDuration);
 
             UpdateWorld();
 

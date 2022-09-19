@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Unity.Burst;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 
@@ -14,21 +12,21 @@ namespace DMotion
         [ReadOnly]
         internal BufferTypeHandle<SingleClipState> SingleClipStatesHandle;
         [ReadOnly]
-        internal BufferTypeHandle<PlayableState> PlayableStatesHandle;
+        internal BufferTypeHandle<AnimationState> AnimationStatesHandle;
 
         public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
         {
             var clipSamplersAccessor = batchInChunk.GetBufferAccessor(ClipSamplersHandle);
             var singleStatesAccessor = batchInChunk.GetBufferAccessor(SingleClipStatesHandle);
-            var playableStatesAccessor = batchInChunk.GetBufferAccessor(PlayableStatesHandle);
+            var animationStatesAccessor = batchInChunk.GetBufferAccessor(AnimationStatesHandle);
             
             for(var i = 0; i < batchInChunk.Count; i++)
             {
                 var clipSamplers = clipSamplersAccessor[i];
                 var singleStates = singleStatesAccessor[i];
-                var playables = playableStatesAccessor[i];
+                var animationStates = animationStatesAccessor[i];
                 
-                Execute(ref clipSamplers, singleStates, playables);
+                Execute(ref clipSamplers, singleStates, animationStates);
             }
         }
     }
@@ -37,19 +35,19 @@ namespace DMotion
     {
         internal BufferTypeHandle<SingleClipState> SingleClipStatesHandle;
         [ReadOnly]
-        internal BufferTypeHandle<PlayableState> PlayableStatesHandle;
+        internal BufferTypeHandle<AnimationState> AnimationStatesHandle;
 
         public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
         {
             var singleStatesAccessor = batchInChunk.GetBufferAccessor(SingleClipStatesHandle);
-            var playableStatesAccessor = batchInChunk.GetBufferAccessor(PlayableStatesHandle);
+            var animationStatesAccessor = batchInChunk.GetBufferAccessor(AnimationStatesHandle);
             
             for(var i = 0; i < batchInChunk.Count; i++)
             {
                 var singleStates = singleStatesAccessor[i];
-                var playables = playableStatesAccessor[i];
+                var animationStates = animationStatesAccessor[i];
                 
-                Execute(ref singleStates, playables);
+                Execute(ref singleStates, animationStates);
             }
         }
     }

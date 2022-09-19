@@ -6,28 +6,28 @@ namespace DMotion.Tests
 {
     internal static class ClipSamplerTestUtils
     {
-        internal static ClipSampler GetFirstSamplerForPlayable(EntityManager manager, Entity entity, byte playableId)
+        internal static ClipSampler GetFirstSamplerForAnimationState(EntityManager manager, Entity entity, byte animationStateId)
         {
-            var playable = PlayableTestUtils.GetPlayableFromEntity(manager, entity, playableId);
+            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, animationStateId);
             var clipSamplers = manager.GetBuffer<ClipSampler>(entity);
-            var sampler = clipSamplers.GetWithId(playable.StartSamplerId);
+            var sampler = clipSamplers.GetWithId(animationState.StartSamplerId);
             return sampler;
         }
 
-        internal static int PlayableStartSamplerIdToIndex(EntityManager manager, Entity entity, byte playableId)
+        internal static int AnimationStateStartSamplerIdToIndex(EntityManager manager, Entity entity, byte animationStateId)
         {
-            var playable = PlayableTestUtils.GetPlayableFromEntity(manager, entity, playableId);
+            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, animationStateId);
             var clipSamplers = manager.GetBuffer<ClipSampler>(entity);
-            return clipSamplers.IdToIndex(playable.StartSamplerId);
+            return clipSamplers.IdToIndex(animationState.StartSamplerId);
         }
 
-        internal static IEnumerable<ClipSampler> GetAllSamplersForPlayable(EntityManager manager, Entity entity,
-            byte playableId)
+        internal static IEnumerable<ClipSampler> GetAllSamplersForAnimationState(EntityManager manager, Entity entity,
+            byte animationStateId)
         {
-            var playable = PlayableTestUtils.GetPlayableFromEntity(manager, entity, playableId);
+            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, animationStateId);
             var clipSamplers = manager.GetBuffer<ClipSampler>(entity);
-            var startIndex = clipSamplers.IdToIndex(playable.StartSamplerId);
-            for (var i = startIndex; i < startIndex + playable.ClipCount; i++)
+            var startIndex = clipSamplers.IdToIndex(animationState.StartSamplerId);
+            for (var i = startIndex; i < startIndex + animationState.ClipCount; i++)
             {
                 yield return clipSamplers[i];
             }

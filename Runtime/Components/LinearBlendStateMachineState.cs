@@ -6,7 +6,7 @@ namespace DMotion
     [BurstCompile]
     internal struct LinearBlendStateMachineState : IBufferElementData
     {
-        internal byte PlayableId;
+        internal byte AnimationStateId;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal short StateIndex;
         internal readonly ref AnimationStateBlob StateBlob => ref StateMachineBlob.Value.States[StateIndex];

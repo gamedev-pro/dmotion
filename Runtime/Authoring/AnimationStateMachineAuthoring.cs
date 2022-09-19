@@ -46,10 +46,10 @@ namespace DMotion.Authoring
             dstManager.AddBuffer<SingleClipState>(entity);
             dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
             
-            dstManager.AddBuffer<PlayableState>(entity);
-            dstManager.AddComponentData(entity, PlayableTransition.Null);
-            dstManager.AddComponentData(entity, PlayableTransitionRequest.Null);
-            dstManager.AddComponentData(entity, PlayableCurrentState.Null);
+            dstManager.AddBuffer<AnimationState>(entity);
+            dstManager.AddComponentData(entity, AnimationStateTransition.Null);
+            dstManager.AddComponentData(entity, AnimationStateTransitionRequest.Null);
+            dstManager.AddComponentData(entity, AnimationCurrentState.Null);
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
 

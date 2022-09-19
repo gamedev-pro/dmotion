@@ -28,10 +28,10 @@ namespace DMotion.Tests
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
             
-            //Set a random current playable that is not us
-            manager.SetComponentData(newEntity, new PlayableCurrentState
+            //Set a random current animationState that is not us
+            manager.SetComponentData(newEntity, new AnimationCurrentState
             {
-                PlayableId = 1
+                AnimationStateId = 1
             });
 
             UpdateWorld();
@@ -79,13 +79,13 @@ namespace DMotion.Tests
         public void StartTransition_From_BoolParameter()
         {
             var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            PlayableTestUtils.AssertNoOnGoingTransition(manager, newEntity);
+            AnimationStateTestUtils.AssertNoOnGoingTransition(manager, newEntity);
             manager.SetBoolParameter(newEntity, 0, true);
             UpdateWorld();
 
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.IsTrue(stateMachine.CurrentState.IsValid);
-            PlayableTestUtils.AssertTransitionRequested(manager, newEntity, (byte)stateMachine.CurrentState.PlayableId);
+            AnimationStateTestUtils.AssertTransitionRequested(manager, newEntity, (byte)stateMachine.CurrentState.AnimationStateId);
         }
         
         // [Test]

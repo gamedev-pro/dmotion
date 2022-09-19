@@ -12,15 +12,15 @@ namespace DMotion
         internal void Execute(
             ref DynamicBuffer<ClipSampler> clipSamplers,
             in DynamicBuffer<SingleClipState> singleClipStates,
-            in DynamicBuffer<PlayableState> playableStates
+            in DynamicBuffer<AnimationState> animationStates
         )
         {
             for (var i = 0; i < singleClipStates.Length; i++)
             {
-                if (playableStates.TryGetWithId(singleClipStates[i].PlayableId, out var playable))
+                if (animationStates.TryGetWithId(singleClipStates[i].AnimationStateId, out var animationState))
                 {
                     SingleClipStateUtils
-                        .UpdateSamplers(singleClipStates[i], DeltaTime, playable, ref clipSamplers);
+                        .UpdateSamplers(singleClipStates[i], DeltaTime, animationState, ref clipSamplers);
                 }
             }
         }
@@ -32,12 +32,12 @@ namespace DMotion
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Execute(
             ref DynamicBuffer<SingleClipState> singleClipStates,
-            in DynamicBuffer<PlayableState> playableStates
+            in DynamicBuffer<AnimationState> animationStates
         )
         {
             for (int i = singleClipStates.Length - 1; i >= 0; i--)
             {
-                if (!playableStates.TryGetWithId(singleClipStates[i].PlayableId, out _))
+                if (!animationStates.TryGetWithId(singleClipStates[i].AnimationStateId, out _))
                 {
                     singleClipStates.RemoveAtSwapBack(i);
                 }

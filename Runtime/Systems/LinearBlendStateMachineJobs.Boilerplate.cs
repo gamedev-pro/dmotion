@@ -12,7 +12,7 @@ namespace DMotion
         [ReadOnly]
         internal BufferTypeHandle<LinearBlendStateMachineState> LinearBlendStateMachineStatesHandle;
         [ReadOnly]
-        internal BufferTypeHandle<PlayableState> PlayableStatesHandle;
+        internal BufferTypeHandle<AnimationState> AnimationStatesHandle;
         [ReadOnly]
         internal BufferTypeHandle<BlendParameter> BlendParametersStateHandle;
 
@@ -20,17 +20,17 @@ namespace DMotion
         {
             var clipSamplersAccessor = batchInChunk.GetBufferAccessor(ClipSamplersHandle);
             var linearBlendStatesAccessor = batchInChunk.GetBufferAccessor(LinearBlendStateMachineStatesHandle);
-            var playableStatesAccessor = batchInChunk.GetBufferAccessor(PlayableStatesHandle);
+            var animationStatesAccessor = batchInChunk.GetBufferAccessor(AnimationStatesHandle);
             var blendParametersAccessor = batchInChunk.GetBufferAccessor(BlendParametersStateHandle);
             
             for(var i = 0; i < batchInChunk.Count; i++)
             {
                 var clipSamplers = clipSamplersAccessor[i];
                 var linearBlendStates = linearBlendStatesAccessor[i];
-                var playables = playableStatesAccessor[i];
+                var animationStates = animationStatesAccessor[i];
                 var blendParameters = blendParametersAccessor[i];
                 
-                Execute(ref clipSamplers, playables, linearBlendStates, blendParameters);
+                Execute(ref clipSamplers, animationStates, linearBlendStates, blendParameters);
             }
         }
     }
@@ -39,19 +39,19 @@ namespace DMotion
     {
         internal BufferTypeHandle<LinearBlendStateMachineState> LinearBlendStateMachineStates;
         [ReadOnly]
-        internal BufferTypeHandle<PlayableState> PlayableStatesHandle;
+        internal BufferTypeHandle<AnimationState> AnimationStatesHandle;
 
         public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
         {
             var linearBlendStatesAccessor = batchInChunk.GetBufferAccessor(LinearBlendStateMachineStates);
-            var playableStatesAccessor = batchInChunk.GetBufferAccessor(PlayableStatesHandle);
+            var animationStatesAccessor = batchInChunk.GetBufferAccessor(AnimationStatesHandle);
             
             for(var i = 0; i < batchInChunk.Count; i++)
             {
                 var linearBlendStates = linearBlendStatesAccessor[i];
-                var playables = playableStatesAccessor[i];
+                var animationStates = animationStatesAccessor[i];
                 
-                Execute(ref linearBlendStates, playables);
+                Execute(ref linearBlendStates, animationStates);
             }
         }
     }

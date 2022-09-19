@@ -34,17 +34,17 @@ namespace DMotion
 
     internal struct OneShotState : IComponentData
     {
-        internal sbyte PlayableId;
+        internal sbyte AnimationStateId;
         internal float EndTime;
         internal float BlendOutDuration;
 
-        public static OneShotState Null => new (){ PlayableId = -1 };
+        public static OneShotState Null => new (){ AnimationStateId = -1 };
         
-        internal static OneShotState New(byte playableId, float endTime, float blendOutDuration)
+        internal static OneShotState New(byte animationStateId, float endTime, float blendOutDuration)
         {
             return new OneShotState()
             {
-                PlayableId = (sbyte)playableId,
+                AnimationStateId = (sbyte)animationStateId,
                 EndTime = endTime,
                 BlendOutDuration = blendOutDuration
             };
@@ -53,7 +53,7 @@ namespace DMotion
         internal bool IsValid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => PlayableId >= 0;
+            get => AnimationStateId >= 0;
         }
     }
 }

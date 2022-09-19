@@ -10,14 +10,14 @@ namespace DMotion
 
         internal void Execute(
             ref DynamicBuffer<ClipSampler> clipSamplers,
-            in DynamicBuffer<PlayableState> playableStates,
+            in DynamicBuffer<AnimationState> animationStates,
             in DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
             in DynamicBuffer<BlendParameter> blendParameters
         )
         {
             for (var i = 0; i < linearBlendStates.Length; i++)
             {
-                if (playableStates.TryGetWithId(linearBlendStates[i].PlayableId, out var playable))
+                if (animationStates.TryGetWithId(linearBlendStates[i].AnimationStateId, out var animationState))
                 {
                     var linearBlendState = linearBlendStates[i];
                     LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(linearBlendState,
@@ -27,7 +27,7 @@ namespace DMotion
                         DeltaTime,
                         blendRatio,
                         thresholds,
-                        playable,
+                        animationState,
                         ref clipSamplers);
                 }
             }
@@ -39,12 +39,12 @@ namespace DMotion
     {
         internal void Execute(
             ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
-            in DynamicBuffer<PlayableState> playableStates
+            in DynamicBuffer<AnimationState> animationStates
         )
         {
             for (int i = linearBlendStates.Length - 1; i >= 0; i--)
             {
-                if (!playableStates.TryGetWithId(linearBlendStates[i].PlayableId, out _))
+                if (!animationStates.TryGetWithId(linearBlendStates[i].AnimationStateId, out _))
                 {
                     linearBlendStates.RemoveAtSwapBack(i);
                 }

@@ -8,6 +8,6 @@ namespace DMotion
     [BurstCompile]
     internal struct SingleClipState : IBufferElementData
     {
-        internal byte PlayableId;
+        internal byte AnimationStateId;
     }
 }

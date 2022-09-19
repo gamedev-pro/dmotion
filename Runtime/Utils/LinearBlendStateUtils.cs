@@ -15,7 +15,7 @@ namespace DMotion
             BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents,
             ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
-            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<AnimationState> animationStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
             var linearBlendState = new LinearBlendStateMachineState
@@ -44,11 +44,11 @@ namespace DMotion
                 };
             }
 
-            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSamplers,
+            var animationStateIndex = AnimationState.New(ref animationStates, ref samplers, newSamplers,
                 linearBlendState.StateBlob.Speed,
                 linearBlendState.StateBlob.Loop);
 
-            linearBlendState.PlayableId = playableStates[playableIndex].Id;
+            linearBlendState.AnimationStateId = animationStates[animationStateIndex].Id;
             linearBlendStates.Add(linearBlendState);
 
             return linearBlendState;
@@ -70,11 +70,11 @@ namespace DMotion
             float dt,
             float blendRatio,
             in NativeArray<float> thresholds,
-            in PlayableState playable,
+            in AnimationState animation,
             ref DynamicBuffer<ClipSampler> samplers)
         {
             Assert.IsTrue(thresholds.IsCreated);
-            var startIndex = samplers.IdToIndex(playable.StartSamplerId);
+            var startIndex = samplers.IdToIndex(animation.StartSamplerId);
             var endIndex = startIndex + thresholds.Length - 1;
 
             //we assume thresholds are sorted here
@@ -101,8 +101,8 @@ namespace DMotion
                 }
 
                 var t = (blendRatio - firstThreshold) / (secondThreshold - firstThreshold);
-                firstSampler.Weight = (1 - t) * playable.Weight;
-                secondSampler.Weight = t * playable.Weight;
+                firstSampler.Weight = (1 - t) * animation.Weight;
+                secondSampler.Weight = t * animation.Weight;
                 samplers[firstSamplerIndex] = firstSampler;
                 samplers[secondSamplerIndex] = secondSampler;
             }
@@ -116,7 +116,7 @@ namespace DMotion
                 if (!mathex.iszero(loopDuration))
                 {
                     var invLoopDuration = 1.0f / loopDuration;
-                    var stateSpeed = playable.Speed;
+                    var stateSpeed = animation.Speed;
                     for (var i = startIndex; i <= endIndex; i++)
                     {
                         var sampler = samplers[i];
@@ -125,7 +125,7 @@ namespace DMotion
                         sampler.PreviousTime = sampler.Time;
                         sampler.Time += dt * samplerSpeed;
 
-                        if (playable.Loop)
+                        if (animation.Loop)
                         {
                             sampler.LoopToClipTime();
                         }

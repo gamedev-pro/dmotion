@@ -11,7 +11,7 @@ namespace DMotion
             BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents,
             ref DynamicBuffer<SingleClipState> singleClips,
-            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<AnimationState> animationStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
             ref var state = ref stateMachineBlob.Value.States[stateIndex];
@@ -20,7 +20,7 @@ namespace DMotion
                 clips,
                 clipEvents,
                 ref singleClips,
-                ref playableStates,
+                ref animationStates,
                 ref samplers);
         }
 
@@ -31,7 +31,7 @@ namespace DMotion
             BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents,
             ref DynamicBuffer<SingleClipState> singleClips,
-            ref DynamicBuffer<PlayableState> playableStates,
+            ref DynamicBuffer<AnimationState> animationStates,
             ref DynamicBuffer<ClipSampler> samplers)
         {
             var singleClipState = new SingleClipState();
@@ -46,23 +46,23 @@ namespace DMotion
                 Weight = 0
             };
 
-            var playableIndex = PlayableState.New(ref playableStates, ref samplers, newSampler, speed, loop);
-            singleClipState.PlayableId = playableStates[playableIndex].Id;
+            var animationStateIndex = AnimationState.New(ref animationStates, ref samplers, newSampler, speed, loop);
+            singleClipState.AnimationStateId = animationStates[animationStateIndex].Id;
             singleClips.Add(singleClipState);
             return singleClipState;
         }
 
         public static void UpdateSamplers(SingleClipState singleClipState, float dt,
-            in PlayableState playable,
+            in AnimationState animation,
             ref DynamicBuffer<ClipSampler> samplers)
         {
-            var samplerIndex = samplers.IdToIndex(playable.StartSamplerId);
+            var samplerIndex = samplers.IdToIndex(animation.StartSamplerId);
             var sampler = samplers[samplerIndex];
-            sampler.Weight = playable.Weight;
+            sampler.Weight = animation.Weight;
 
             sampler.PreviousTime = sampler.Time;
-            sampler.Time += dt * playable.Speed;
-            if (playable.Loop)
+            sampler.Time += dt * animation.Speed;
+            if (animation.Loop)
             {
                 sampler.LoopToClipTime();
             }
