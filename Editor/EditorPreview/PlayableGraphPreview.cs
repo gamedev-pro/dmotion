@@ -196,7 +196,7 @@ namespace DMotion.Editor
                     for (var i = 0; i < previewMesh.subMeshCount; i++)
                     {
                         previewRenderUtility.DrawMesh(previewMesh, Matrix4x4.identity,
-                            skinnedMeshRenderer.sharedMaterial, i);
+                            skinnedMeshRenderer.sharedMaterials[i], i);
                     }
 
                     HandleCamera();
