@@ -18,7 +18,7 @@ namespace DMotion.Authoring
         public IntegerTransitionCondition AsIntegerCondition => new()
         {
             IntParameter = (IntParameterAsset)Parameter,
-            Comparison = (IntegerConditionComparison)ComparisonMode,
+            ComparisonMode = (IntConditionComparison)ComparisonMode,
             ComparisonValue = (int)ComparisonValue
         };
     }
@@ -35,20 +35,10 @@ namespace DMotion.Authoring
         public BoolConditionModes ComparisonValue;
     }
 
-    public enum IntegerConditionComparison
-    {
-        Equal,
-        NotEqual,
-        Greater,
-        Less,
-        GreaterOrEqual,
-        LessOrEqual
-    }
-
     public struct IntegerTransitionCondition
     {
         public IntParameterAsset IntParameter;
-        public IntegerConditionComparison Comparison;
+        public IntConditionComparison ComparisonMode;
         public int ComparisonValue;
     }
 }

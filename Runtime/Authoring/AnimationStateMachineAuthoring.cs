@@ -59,6 +59,7 @@ namespace DMotion.Authoring
             }
 
             dstManager.AddBuffer<BoolParameter>(entity);
+            dstManager.AddBuffer<IntParameter>(entity);
             dstManager.AddBuffer<BlendParameter>(entity);
             foreach (var p in StateMachineAsset.Parameters)
             {
@@ -67,6 +68,10 @@ namespace DMotion.Authoring
                     case BoolParameterAsset _:
                         var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
                         boolParameters.Add(new BoolParameter(p.name, p.Hash));
+                        break;
+                    case IntParameterAsset _:
+                        var intParameters = dstManager.GetBuffer<IntParameter>(entity);
+                        intParameters.Add(new IntParameter(p.name, p.Hash));
                         break;
                     case FloatParameterAsset _:
                         var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);

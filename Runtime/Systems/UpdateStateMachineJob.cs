@@ -21,7 +21,8 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<AnimationState> animationStates,
             in AnimationCurrentState animationCurrentState,
-            in DynamicBuffer<BoolParameter> boolParameters
+            in DynamicBuffer<BoolParameter> boolParameters,
+            in DynamicBuffer<IntParameter> intParameters
         )
         {
             using var scope = Marker.Auto();
@@ -29,7 +30,8 @@ namespace DMotion
 
             var shouldStateMachineBeActive = !animationCurrentState.IsValid ||
                                              stateMachineTransitionRequest.IsRequested ||
-                                             animationCurrentState.AnimationStateId == stateMachine.CurrentState.AnimationStateId;
+                                             animationCurrentState.AnimationStateId ==
+                                             stateMachine.CurrentState.AnimationStateId;
 
             if (!shouldStateMachineBeActive)
             {
@@ -65,13 +67,14 @@ namespace DMotion
             {
                 if (stateMachineTransitionRequest.IsRequested)
                 {
-                    var isCurrentStateActive = animationCurrentState.AnimationStateId == stateMachine.CurrentState.AnimationStateId;
+                    var isCurrentStateActive = animationCurrentState.AnimationStateId ==
+                                               stateMachine.CurrentState.AnimationStateId;
                     // we're already playing our current state
                     if (!isCurrentStateActive)
                     {
                         var isCurrentStateAnimationStateAlive =
                             animationStates.ExistsWithId((byte)stateMachine.CurrentState.AnimationStateId);
-                        
+
                         if (!isCurrentStateAnimationStateAlive)
                         {
                             //create a new animationState state for us to transition to
@@ -92,7 +95,7 @@ namespace DMotion
                             TransitionDuration = stateMachineTransitionRequest.TransitionDuration
                         };
                     }
-                    
+
                     stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
                 }
             }
@@ -100,13 +103,14 @@ namespace DMotion
             //Evaluate transitions
             {
                 //we really expect this guy to exist
-                var currentStateAnimationState = 
-                    animationStates.GetWithId((byte) stateMachine.CurrentState.AnimationStateId);
-                
+                var currentStateAnimationState =
+                    animationStates.GetWithId((byte)stateMachine.CurrentState.AnimationStateId);
+
                 var shouldStartTransition = EvaluateTransitions(
                     currentStateAnimationState,
                     ref stateMachine.CurrentStateBlob,
                     boolParameters,
+                    intParameters,
                     out var transitionIndex);
 
                 if (shouldStartTransition)
@@ -181,11 +185,13 @@ namespace DMotion
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool EvaluateTransitions(in AnimationState animation, ref AnimationStateBlob state,
-            in DynamicBuffer<BoolParameter> boolParameters, out short transitionIndex)
+            in DynamicBuffer<BoolParameter> boolParameters,
+            in DynamicBuffer<IntParameter> intParameters,
+            out short transitionIndex)
         {
             for (short i = 0; i < state.Transitions.Length; i++)
             {
-                if (EvaluateTransitionGroup(animation, ref state.Transitions[i], boolParameters))
+                if (EvaluateTransitionGroup(animation, ref state.Transitions[i], boolParameters, intParameters))
                 {
                     transitionIndex = i;
                     return true;
@@ -199,19 +205,33 @@ namespace DMotion
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool EvaluateTransitionGroup(in AnimationState animation, ref StateOutTransitionGroup transitionGroup,
-            in DynamicBuffer<BoolParameter> boolParameters)
+            in DynamicBuffer<BoolParameter> boolParameters,
+            in DynamicBuffer<IntParameter> intParameters)
         {
             if (transitionGroup.HasEndTime && animation.Time < transitionGroup.TransitionEndTime)
             {
                 return false;
             }
 
-            ref var boolTransitions = ref transitionGroup.BoolTransitions;
             var shouldTriggerTransition = transitionGroup.HasAnyConditions || transitionGroup.HasEndTime;
-            for (var i = 0; i < boolTransitions.Length; i++)
+
+            //evaluate bool transitions
             {
-                var transition = boolTransitions[i];
-                shouldTriggerTransition &= transition.Evaluate(boolParameters[transition.ParameterIndex]);
+                ref var boolTransitions = ref transitionGroup.BoolTransitions;
+                for (var i = 0; i < boolTransitions.Length; i++)
+                {
+                    var transition = boolTransitions[i];
+                    shouldTriggerTransition &= transition.Evaluate(boolParameters[transition.ParameterIndex]);
+                }
+            }
+            //evaluate int transitions
+            {
+                ref var intTransitions = ref transitionGroup.IntTransitions;
+                for (var i = 0; i < intTransitions.Length; i++)
+                {
+                    var transition = intTransitions[i];
+                    shouldTriggerTransition &= transition.Evaluate(intParameters[transition.ParameterIndex]);
+                }
             }
 
             return shouldTriggerTransition;

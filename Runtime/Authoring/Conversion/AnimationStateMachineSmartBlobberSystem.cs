@@ -28,7 +28,8 @@ namespace DMotion.Authoring
 
             var allocator = World.UpdateAllocator.ToAllocator;
             var defaultStateIndex = stateMachineAsset.States.ToList().IndexOf(stateMachineAsset.DefaultState);
-            Assert.IsTrue(defaultStateIndex >= 0, $"Couldn't find state {stateMachineAsset.DefaultState.name}, in state machine {stateMachineAsset.name}");
+            Assert.IsTrue(defaultStateIndex >= 0,
+                $"Couldn't find state {stateMachineAsset.DefaultState.name}, in state machine {stateMachineAsset.name}");
             converter.DefaultStateIndex = (byte)defaultStateIndex;
             BuildStates(stateMachineAsset, ref converter, allocator);
 
@@ -40,14 +41,14 @@ namespace DMotion.Authoring
         {
             var singleClipStates = stateMachineAsset.States.OfType<SingleClipStateAsset>().ToArray();
             var linearBlendStates = stateMachineAsset.States.OfType<LinearBlendStateAsset>().ToArray();
-            
+
             converter.States =
                 new UnsafeList<AnimationStateConversionData>(stateMachineAsset.States.Count, allocator);
             converter.States.Resize(stateMachineAsset.States.Count);
 
             converter.SingleClipStates =
                 new UnsafeList<SingleClipStateBlob>(singleClipStates.Length, allocator);
-            
+
             converter.LinearBlendStates =
                 new UnsafeList<LinearBlendStateConversionData>(linearBlendStates.Length,
                     allocator);
@@ -66,20 +67,22 @@ namespace DMotion.Authoring
                                 .OfType<FloatParameterAsset>()
                                 .ToList()
                                 .FindIndex(f => f == linearBlendStateAsset.BlendParameter);
-                        
+
                         Assert.IsTrue(blendParameterIndex >= 0,
                             $"({stateMachineAsset.name}) Couldn't find parameter {linearBlendStateAsset.BlendParameter.name}, for Linear Blend State");
-                        
+
                         var linearBlendState = new LinearBlendStateConversionData()
                         {
-                            BlendParameterIndex = (ushort) blendParameterIndex
+                            BlendParameterIndex = (ushort)blendParameterIndex
                         };
-                        
+
                         linearBlendState.ClipsWithThresholds = new UnsafeList<ClipIndexWithThreshold>(
                             linearBlendStateAsset.BlendClips.Length, allocator);
-                        
+
                         linearBlendState.ClipsWithThresholds.Resize(linearBlendStateAsset.BlendClips.Length);
-                        for (ushort blendClipIndex = 0; blendClipIndex < linearBlendState.ClipsWithThresholds.Length; blendClipIndex++)
+                        for (ushort blendClipIndex = 0;
+                             blendClipIndex < linearBlendState.ClipsWithThresholds.Length;
+                             blendClipIndex++)
                         {
                             linearBlendState.ClipsWithThresholds[blendClipIndex] = new ClipIndexWithThreshold
                             {
@@ -102,14 +105,15 @@ namespace DMotion.Authoring
                     default:
                         throw new ArgumentOutOfRangeException(nameof(stateAsset));
                 }
-                
+
                 Assert.IsTrue(stateImplIndex >= 0, $"Index to state implementation needs to be assigned");
                 converter.States[i] =
                     BuildStateConversionData(stateMachineAsset, stateAsset, stateImplIndex, allocator);
             }
         }
 
-        private AnimationStateConversionData BuildStateConversionData(StateMachineAsset stateMachineAsset, AnimationStateAsset state, int stateIndex, Allocator allocator)
+        private AnimationStateConversionData BuildStateConversionData(StateMachineAsset stateMachineAsset,
+            AnimationStateAsset state, int stateIndex, Allocator allocator)
         {
             var stateConversionData = new AnimationStateConversionData()
             {
@@ -128,7 +132,7 @@ namespace DMotion.Authoring
             for (var transitionIndex = 0; transitionIndex < stateConversionData.Transitions.Length; transitionIndex++)
             {
                 var outTransitionAsset = state.OutTransitions[transitionIndex];
-                
+
                 var toStateIndex =
                     (short)stateMachineAsset.States.ToList().FindIndex(s => s == outTransitionAsset.ToState);
                 Assert.IsTrue(toStateIndex >= 0,
@@ -146,14 +150,16 @@ namespace DMotion.Authoring
                     outTransition.BoolTransitions =
                         new UnsafeList<BoolTransition>(boolTransitions.Length, allocator);
                     outTransition.BoolTransitions.Resize(boolTransitions.Length);
-                    for (var boolTransitionIndex = 0; boolTransitionIndex < outTransition.BoolTransitions.Length; boolTransitionIndex++)
+                    for (var boolTransitionIndex = 0;
+                         boolTransitionIndex < outTransition.BoolTransitions.Length;
+                         boolTransitionIndex++)
                     {
                         var boolTransitionAsset = boolTransitions[boolTransitionIndex];
                         var parameterIndex = stateMachineAsset.Parameters
                             .OfType<BoolParameterAsset>()
                             .ToList()
                             .FindIndex(p => p == boolTransitionAsset.BoolParameter);
-                        
+
                         Assert.IsTrue(parameterIndex >= 0,
                             $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.BoolParameter.name}, for transition");
                         outTransition.BoolTransitions[boolTransitionIndex] = new BoolTransition
@@ -164,8 +170,36 @@ namespace DMotion.Authoring
                     }
                 }
 
+                //Create int transitions
+                {
+                    var intTransitions = outTransitionAsset.IntTransitions.ToArray();
+                    var intParameters = stateMachineAsset.Parameters
+                        .OfType<IntParameterAsset>()
+                        .ToList();
+                    outTransition.IntTransitions =
+                        new UnsafeList<IntTransition>(intTransitions.Length, allocator);
+                    outTransition.IntTransitions.Resize(intTransitions.Length);
+                    for (var intTransitionIndex = 0;
+                         intTransitionIndex < outTransition.IntTransitions.Length;
+                         intTransitionIndex++)
+                    {
+                        var intTransitionAsset = intTransitions[intTransitionIndex];
+                        var parameterIndex = intParameters.FindIndex(p => p == intTransitionAsset.IntParameter);
+
+                        Assert.IsTrue(parameterIndex >= 0,
+                            $"({stateMachineAsset.name}) Couldn't find parameter {intTransitionAsset.IntParameter.name}, for transition");
+                        outTransition.IntTransitions[intTransitionIndex] = new IntTransition
+                        {
+                            ParameterIndex = parameterIndex,
+                            ComparisonValue = intTransitionAsset.ComparisonValue,
+                            ComparisonMode = intTransitionAsset.ComparisonMode
+                        };
+                    }
+                }
+
                 stateConversionData.Transitions[transitionIndex] = outTransition;
             }
+
             return stateConversionData;
         }
     }

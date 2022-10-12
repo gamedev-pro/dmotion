@@ -19,6 +19,8 @@ namespace DMotion.Authoring
 
         public IEnumerable<BoolTransitionCondition> BoolTransitions =>
             Conditions.Where(c => c.Parameter is BoolParameterAsset).Select(c => c.AsBoolCondition);
+        public IEnumerable<IntegerTransitionCondition> IntTransitions =>
+            Conditions.Where(c => c.Parameter is IntParameterAsset).Select(c => c.AsIntegerCondition);
 
         public StateOutTransition(AnimationStateAsset to,
             float transitionDuration = 0.15f, List<TransitionCondition> boolTransitions = null)

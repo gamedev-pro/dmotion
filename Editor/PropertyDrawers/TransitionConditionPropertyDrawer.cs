@@ -71,8 +71,8 @@ namespace DMotion.Editor
             var rects = position.HorizontalLayout(0.4f, 0.4f, 0.2f).ToArray();
             parameterPopupSelector.OnGUI(rects[0], parameterProperty, GUIContent.none);
 
-            var enumValue = (IntegerConditionComparison)EditorGUI.EnumPopup(rects[1],
-                (IntegerConditionComparison)comparisonModeProperty.intValue);
+            var enumValue = (IntConditionComparison)EditorGUI.EnumPopup(rects[1],
+                (IntConditionComparison)comparisonModeProperty.intValue);
             comparisonModeProperty.intValue = (int)enumValue;
 
             comparisonValueProperty.floatValue =
