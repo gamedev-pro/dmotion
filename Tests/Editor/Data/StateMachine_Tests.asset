@@ -1,5 +1,44 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-3490424480745318495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 583f2fcb59054a579c1f8b03cf1d88ce, type: 3}
+  m_Name: MovementMode
+  m_EditorClassIdentifier: 
+--- !u!114 &-1463504797061018257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
+  m_Name: Other Locomotion
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: 335224122487346526}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3490424480745318495}
+      ComparisonValue: 0
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 419.2, y: 176.20001}
+    Guid: 79f4ff6f458f96541940db76ed01ee9a
+  Clip: {fileID: 11400000, guid: 9d018dec06499c946898ce0f264669ec, type: 2}
 --- !u!114 &-556129329264314096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28,9 +67,11 @@ MonoBehaviour:
   States:
   - {fileID: 335224122487346526}
   - {fileID: 5953759798062009019}
+  - {fileID: -1463504797061018257}
   Parameters:
   - {fileID: -556129329264314096}
   - {fileID: 9102714923962245846}
+  - {fileID: -3490424480745318495}
 --- !u!114 &335224122487346526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52,6 +93,14 @@ MonoBehaviour:
     TransitionDuration: 0.15
     Conditions:
     - Parameter: {fileID: 9102714923962245846}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  - ToState: {fileID: -1463504797061018257}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3490424480745318495}
       ComparisonValue: 1
       ComparisonMode: 0
   StateEditorData:

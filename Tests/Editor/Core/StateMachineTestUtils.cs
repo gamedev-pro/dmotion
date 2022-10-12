@@ -21,5 +21,15 @@ namespace DMotion.Tests
             parameter.Value = newValue;
             boolParameters[index] = parameter;
         }
+        
+        public static void SetIntParameter(this EntityManager manager, Entity entity, int index, int newValue)
+        {
+            Assert.IsTrue(manager.HasComponent<IntParameter>(entity));
+            var intParameters = manager.GetBuffer<IntParameter>(entity);
+            Assert.IsTrue(intParameters.Length > 0);
+            var parameter = intParameters[index];
+            parameter.Value = newValue;
+            intParameters[index] = parameter;
+        }
     }
 }

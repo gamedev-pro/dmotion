@@ -5,6 +5,8 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - stateMachinePrefab: {fileID: 3933796299544104853, guid: af9d020e6d232fc499c6cc7e3a34de8f, type: 3}
+  - boolParameter: {fileID: -8447519872970154950, guid: 9640d20d2a36ab941aa69db1a5053a55, type: 2}
+  - intParameterAsset: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
