@@ -148,17 +148,17 @@ namespace DMotion.Authoring
                     outTransition.BoolTransitions.Resize(boolTransitions.Length);
                     for (var boolTransitionIndex = 0; boolTransitionIndex < outTransition.BoolTransitions.Length; boolTransitionIndex++)
                     {
-                        var boolTransitionAsset = outTransitionAsset.Conditions[boolTransitionIndex];
+                        var boolTransitionAsset = boolTransitions[boolTransitionIndex];
                         var parameterIndex = stateMachineAsset.Parameters
                             .OfType<BoolParameterAsset>()
                             .ToList()
-                            .FindIndex(p => p == boolTransitionAsset.Parameter);
+                            .FindIndex(p => p == boolTransitionAsset.BoolParameter);
                         
                         Assert.IsTrue(parameterIndex >= 0,
-                            $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.Parameter.name}, for transition");
-                        outTransition.BoolTransitions[boolTransitionIndex] = new BoolTransition()
+                            $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.BoolParameter.name}, for transition");
+                        outTransition.BoolTransitions[boolTransitionIndex] = new BoolTransition
                         {
-                            ComparisonValue = boolTransitionAsset.ComparisonValue == 1.0f,
+                            ComparisonValue = boolTransitionAsset.ComparisonValue == BoolConditionModes.True,
                             ParameterIndex = parameterIndex
                         };
                     }

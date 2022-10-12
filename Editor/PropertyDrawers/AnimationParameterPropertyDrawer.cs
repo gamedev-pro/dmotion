@@ -37,21 +37,8 @@ namespace DMotion.Editor
                     var typeRect = position;
                     typeRect.xMax -= deleteButtonRect.width - EditorGUIUtility.standardVerticalSpacing;
                     typeRect.xMin += labelRect.width + EditorGUIUtility.standardVerticalSpacing*3;
-                    EditorGUI.LabelField(typeRect, $"({GetParameterTypeName(parameterAsset)})");
+                    EditorGUI.LabelField(typeRect, $"({parameterAsset.ParameterTypeName})");
                 }
-            }
-        }
-
-        private string GetParameterTypeName(AnimationParameterAsset parameterAsset)
-        {
-            switch (parameterAsset)
-            {
-                case BoolParameterAsset _:
-                    return "Boolean";
-                case FloatParameterAsset _:
-                    return "Float";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(parameterAsset));
             }
         }
     }

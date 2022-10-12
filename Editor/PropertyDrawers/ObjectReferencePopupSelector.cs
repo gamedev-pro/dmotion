@@ -19,12 +19,12 @@ namespace DMotion.Editor
         where T : Object
     {
         private Object target;
-        private Type filterType;
+        private Type[] filterTypes;
 
-        internal SubAssetReferencePopupSelector(Object target, Type filterType = null)
+        internal SubAssetReferencePopupSelector(Object target, params Type[] filterTypes)
         {
             this.target = target;
-            this.filterType = filterType;
+            this.filterTypes = filterTypes;
         }
         
         protected override T[] CollectOptions()
@@ -32,9 +32,9 @@ namespace DMotion.Editor
             var childs = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(target))
                 .OfType<T>();
 
-            if (filterType != null)
+            if (filterTypes != null && filterTypes.Length > 0)
             {
-                childs = childs.Where(filterType.IsInstanceOfType);
+                childs = childs.Where(t => filterTypes.Any(f => f.IsInstanceOfType(t)));
             }
 
             return childs.ToArray();
