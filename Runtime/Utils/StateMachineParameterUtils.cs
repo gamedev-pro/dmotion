@@ -4,6 +4,35 @@ using Unity.Entities;
 
 namespace DMotion
 {
+    public struct StateMachineParameterRef<TBuffer, TValue>
+        where TBuffer : struct, IStateMachineParameter<TValue>
+        where TValue : struct
+    {
+        public sbyte Index;
+
+        public void SetValue(DynamicBuffer<TBuffer> parameters, TValue value)
+        {
+            if (Index >= 0 && Index < parameters.Length)
+            {
+                var p = parameters[Index];
+                p.Value = value;
+                parameters[Index] = p;
+            }
+        }
+
+        public bool TryGetValue(DynamicBuffer<TBuffer> parameters, out TValue value)
+        {
+            if (Index >= 0 && Index < parameters.Length)
+            {
+                value = parameters[Index].Value;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+    }
+
     [BurstCompile]
     public static class StateMachineParameterUtils
     {
@@ -39,7 +68,8 @@ namespace DMotion
             }
         }
 
-        public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString32Bytes name, TValue value)
+        public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+            FixedString32Bytes name, TValue value)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
         {
@@ -47,7 +77,8 @@ namespace DMotion
             parameters.SetParameter(hash, value);
         }
 
-        public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash, out TValue value)
+        public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash,
+            out TValue value)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
         {
@@ -69,6 +100,26 @@ namespace DMotion
         {
             var hash = name.GetHashCode();
             return parameters.TryGetValue(hash, out value);
+        }
+
+        public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+            int hash)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            return new StateMachineParameterRef<TBuffer, TValue>()
+            {
+                Index = (sbyte) parameters.HashToIndex(hash)
+            };
+        }
+        
+        public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+            FixedString32Bytes name)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            var hash = name.GetHashCode();
+            return parameters.CreateRef<TBuffer, TValue>(hash);
         }
     }
 }
