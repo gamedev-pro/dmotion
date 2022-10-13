@@ -12,7 +12,7 @@ namespace DMotion.Authoring
         public BoolTransitionCondition AsBoolCondition => new()
         {
             BoolParameter = (BoolParameterAsset)Parameter,
-            ComparisonValue = (BoolConditionModes)ComparisonMode
+            ComparisonValue = (BoolConditionComparison)ComparisonMode
         };
 
         public IntegerTransitionCondition AsIntegerCondition => new()
@@ -23,7 +23,7 @@ namespace DMotion.Authoring
         };
     }
 
-    public enum BoolConditionModes
+    public enum BoolConditionComparison
     {
         True,
         False
@@ -32,7 +32,7 @@ namespace DMotion.Authoring
     public struct BoolTransitionCondition
     {
         public BoolParameterAsset BoolParameter;
-        public BoolConditionModes ComparisonValue;
+        public BoolConditionComparison ComparisonValue;
 
         public TransitionCondition ToGenericCondition()
         {

@@ -157,7 +157,7 @@ namespace DMotion.Authoring
                             $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.BoolParameter.name}, for transition");
                         outTransition.BoolTransitions[boolTransitionIndex] = new BoolTransition
                         {
-                            ComparisonValue = boolTransitionAsset.ComparisonValue == BoolConditionModes.True,
+                            ComparisonValue = boolTransitionAsset.ComparisonValue == BoolConditionComparison.True,
                             ParameterIndex = parameterIndex
                         };
                     }

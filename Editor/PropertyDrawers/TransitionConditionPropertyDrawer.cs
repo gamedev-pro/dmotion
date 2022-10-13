@@ -58,10 +58,10 @@ namespace DMotion.Editor
             var rects = position.HorizontalLayout(0.7f, 0.3f).ToArray();
             parameterPopupSelector.OnGUI(rects[0], parameterProperty, GUIContent.none);
 
-            var enumValue = (BoolConditionModes)EditorGUI.EnumPopup(rects[1],
-                (BoolConditionModes)comparisonModeProperty.intValue);
+            var enumValue = (BoolConditionComparison)EditorGUI.EnumPopup(rects[1],
+                (BoolConditionComparison)comparisonModeProperty.intValue);
             comparisonModeProperty.intValue = (int)enumValue;
-            comparisonValueProperty.floatValue = enumValue == BoolConditionModes.True ? 1 : 0;
+            comparisonValueProperty.floatValue = enumValue == BoolConditionComparison.True ? 1 : 0;
         }
 
         private void DrawIntegerTransitionCondition(Rect position, SerializedProperty parameterProperty,

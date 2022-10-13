@@ -35,6 +35,7 @@ namespace DMotion.Authoring
             {
                 stateMachineAsset.DefaultState = state;
             }
+
             return state;
         }
 
@@ -63,6 +64,17 @@ namespace DMotion.Authoring
                 ComparisonValue = comparisonValue
             };
             outTransition.Conditions.Add(intTransitionCondition.ToGenericCondition());
+        }
+
+        public void AddBoolCondition(StateOutTransition outTransition, BoolParameterAsset boolParameter,
+            BoolConditionComparison comparison)
+        {
+            var boolTransitionCondition = new BoolTransitionCondition
+            {
+                BoolParameter = boolParameter,
+                ComparisonValue = comparison,
+            };
+            outTransition.Conditions.Add(boolTransitionCondition.ToGenericCondition());
         }
     }
 }
