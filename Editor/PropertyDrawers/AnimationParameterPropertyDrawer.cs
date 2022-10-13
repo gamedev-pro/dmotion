@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
@@ -15,29 +16,36 @@ namespace DMotion.Editor
             {
                 using (var c = new EditorGUI.ChangeCheckScope())
                 {
-                    var labelRect = position;
-                    labelRect.width = EditorGUIUtility.labelWidth;
-                    parameterAsset.name = EditorGUI.TextField(labelRect, parameterAsset.name);
+                    var labelWidth = EditorGUIUtility.labelWidth;
+                    var deleteButtonWidth = EditorGUIUtility.singleLineHeight;
+                    var typeWidth = position.width - labelWidth - deleteButtonWidth;
+                    var rects = position.HorizontalLayout(labelWidth, typeWidth, deleteButtonWidth).ToArray();
 
-                    if (c.changed)
+                    //label
                     {
-                        EditorUtility.SetDirty(parameterAsset);
-                    }
-                    
-                    var deleteButtonRect = position;
-                    deleteButtonRect.xMin = deleteButtonRect.xMax - EditorGUIUtility.singleLineHeight;
-                    if (GUI.Button(deleteButtonRect, "-"))
-                    {
-                        var stateMachine = property.serializedObject.targetObject as StateMachineAsset;
-                        stateMachine.DeleteParameter(parameterAsset);
-                        property.serializedObject.ApplyModifiedProperties();
-                        property.serializedObject.Update();
+                        parameterAsset.name = EditorGUI.TextField(rects[0], parameterAsset.name);
+
+                        if (c.changed)
+                        {
+                            EditorUtility.SetDirty(parameterAsset);
+                        }
                     }
 
-                    var typeRect = position;
-                    typeRect.xMax -= deleteButtonRect.width - EditorGUIUtility.standardVerticalSpacing;
-                    typeRect.xMin += labelRect.width + EditorGUIUtility.standardVerticalSpacing*3;
-                    EditorGUI.LabelField(typeRect, $"({parameterAsset.ParameterTypeName})");
+                    //type
+                    {
+                        EditorGUI.LabelField(rects[1], $"({parameterAsset.ParameterTypeName})");
+                    }
+
+                    //delete
+                    {
+                        if (GUI.Button(rects[2], "-"))
+                        {
+                            var stateMachine = property.serializedObject.targetObject as StateMachineAsset;
+                            stateMachine.DeleteParameter(parameterAsset);
+                            property.serializedObject.ApplyModifiedProperties();
+                            property.serializedObject.Update();
+                        }
+                    }
                 }
             }
         }
