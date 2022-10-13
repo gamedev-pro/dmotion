@@ -9,8 +9,8 @@ namespace DMotion.Authoring
     {
         public bool Loop = true;
         public float Speed = 1;
-        
-        public List<StateOutTransition> OutTransitions = new List<StateOutTransition>();
+
+        public List<StateOutTransition> OutTransitions = new(); 
 
         public abstract StateType Type { get; }
         public abstract int ClipCount { get; }

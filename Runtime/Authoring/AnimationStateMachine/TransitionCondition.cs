@@ -33,6 +33,16 @@ namespace DMotion.Authoring
     {
         public BoolParameterAsset BoolParameter;
         public BoolConditionModes ComparisonValue;
+
+        public TransitionCondition ToGenericCondition()
+        {
+            return new TransitionCondition
+            {
+                Parameter = BoolParameter,
+                ComparisonValue = (float)ComparisonValue,
+                ComparisonMode = (int)ComparisonValue
+            };
+        }
     }
 
     public struct IntegerTransitionCondition
@@ -40,5 +50,14 @@ namespace DMotion.Authoring
         public IntParameterAsset IntParameter;
         public IntConditionComparison ComparisonMode;
         public int ComparisonValue;
+        public TransitionCondition ToGenericCondition()
+        {
+            return new TransitionCondition
+            {
+                Parameter = IntParameter,
+                ComparisonValue = ComparisonValue,
+                ComparisonMode = (int) ComparisonMode
+            };
+        }
     }
 }

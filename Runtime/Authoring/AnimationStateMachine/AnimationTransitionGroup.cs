@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Codice.CM.Common;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -23,11 +24,22 @@ namespace DMotion.Authoring
             Conditions.Where(c => c.Parameter is IntParameterAsset).Select(c => c.AsIntegerCondition);
 
         public StateOutTransition(AnimationStateAsset to,
-            float transitionDuration = 0.15f, List<TransitionCondition> boolTransitions = null)
+            float transitionDuration = 0.15f,
+            List<BoolTransitionCondition> boolTransitions = null,
+            List<IntegerTransitionCondition> intTransitions = null)
         {
             ToState = to;
             TransitionDuration = transitionDuration;
-            Conditions = boolTransitions ?? new List<TransitionCondition>();
+            Conditions = new List<TransitionCondition>();
+            if (boolTransitions != null)
+            {
+                Conditions.AddRange(boolTransitions.Select(b => b.ToGenericCondition()));
+            }
+
+            if (intTransitions != null)
+            {
+                Conditions.AddRange(intTransitions.Select(i => i.ToGenericCondition()));
+            }
         }
     }
 }

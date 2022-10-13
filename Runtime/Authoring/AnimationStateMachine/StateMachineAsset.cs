@@ -8,8 +8,8 @@ namespace DMotion.Authoring
     public class StateMachineAsset : ScriptableObject
     {
         public AnimationStateAsset DefaultState;
-        public List<AnimationStateAsset> States = new List<AnimationStateAsset>();
-        public List<AnimationParameterAsset> Parameters = new List<AnimationParameterAsset>();
+        public List<AnimationStateAsset> States = new();
+        public List<AnimationParameterAsset> Parameters = new();
 
         public IEnumerable<AnimationClipAsset> Clips => States.SelectMany(s => s.Clips);
         public int ClipCount => States.Sum(s => s.ClipCount);

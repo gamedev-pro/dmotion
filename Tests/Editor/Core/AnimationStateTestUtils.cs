@@ -35,6 +35,7 @@ namespace DMotion.Tests
         {
             var animationStateTransitionRequest = manager.GetComponentData<AnimationStateTransitionRequest>(entity);
             Assert.IsTrue(animationStateTransitionRequest.IsValid);
+            Assert.AreEqual(animationStateTransitionRequest.AnimationStateId, expectedAnimationStateId);
         }
 
         public static void AssertOnGoingTransition(EntityManager manager, Entity entity, byte expectedAnimationStateId)

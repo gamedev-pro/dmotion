@@ -12,7 +12,7 @@ namespace DMotion.Authoring
     {
         public const string DMotionPath = "DMotion";
     }
-    
+
     public class AnimationStateMachineAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;
@@ -21,75 +21,34 @@ namespace DMotion.Authoring
 
         public RootMotionMode RootMotionMode;
         public bool EnableEvents = true;
-        
+
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsBlobHandle;
         private SmartBlobberHandle<StateMachineBlob> stateMachineBlobHandle;
         private SmartBlobberHandle<ClipEventsBlob> clipEventsBlobHandle;
-        
+
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             var stateMachineBlob = stateMachineBlobHandle.Resolve();
             var clipsBlob = clipsBlobHandle.Resolve();
             var clipEventsBlob = clipEventsBlobHandle.Resolve();
 
-            var stateMachine = new AnimationStateMachine()
-            {
-                StateMachineBlob = stateMachineBlob,
-                ClipsBlob = clipsBlob,
-                ClipEventsBlob = clipEventsBlob,
-                CurrentState = StateMachineStateRef.Null
-            };
-
-            dstManager.AddComponentData(entity, stateMachine);
-            dstManager.AddComponentData(entity, AnimationStateMachineTransitionRequest.Null);
-
-            dstManager.AddBuffer<SingleClipState>(entity);
-            dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
+            AnimationStateMachineConversionUtils.AddStateMachineSystemComponents(dstManager, entity, StateMachineAsset,
+                stateMachineBlob,
+                clipsBlob,
+                clipEventsBlob);
+            AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
+            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
             
-            dstManager.AddBuffer<AnimationState>(entity);
-            dstManager.AddComponentData(entity, AnimationStateTransition.Null);
-            dstManager.AddComponentData(entity, AnimationStateTransitionRequest.Null);
-            dstManager.AddComponentData(entity, AnimationCurrentState.Null);
-            var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
-            clipSamplers.Capacity = 10;
-
             if (EnableEvents && StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
             {
                 dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
             }
 
-            dstManager.AddBuffer<BoolParameter>(entity);
-            dstManager.AddBuffer<IntParameter>(entity);
-            dstManager.AddBuffer<BlendParameter>(entity);
-            foreach (var p in StateMachineAsset.Parameters)
-            {
-                switch (p)
-                {
-                    case BoolParameterAsset _:
-                        var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
-                        boolParameters.Add(new BoolParameter(p.name, p.Hash));
-                        break;
-                    case IntParameterAsset _:
-                        var intParameters = dstManager.GetBuffer<IntParameter>(entity);
-                        intParameters.Add(new IntParameter(p.name, p.Hash));
-                        break;
-                    case FloatParameterAsset _:
-                        var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
-                        floatParameters.Add(new BlendParameter(p.name, p.Hash));
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(p));
-                }
-            }
-
-            dstManager.AddComponentData(entity, PlayOneShotRequest.Null);
-            dstManager.AddComponentData(entity, OneShotState.Null);
-
             if (gameObject != Owner)
             {
                 var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
                 dstManager.AddComponentData(ownerEntity, new AnimatorOwner() { AnimatorEntity = entity });
-                dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity});
+                dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity });
             }
 
             switch (RootMotionMode)
@@ -108,6 +67,7 @@ namespace DMotion.Authoring
                     {
                         dstManager.AddComponentData(entity, new ApplyRootMotionToEntity());
                     }
+
                     break;
                 case RootMotionMode.EnabledManual:
                     dstManager.AddComponentData(entity, new RootDeltaTranslation());
@@ -116,17 +76,18 @@ namespace DMotion.Authoring
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
         }
 
-        public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager, GameObjectConversionSystem conversionSystem)
+        public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager,
+            GameObjectConversionSystem conversionSystem)
         {
             ValidateStateMachine();
             clipsBlobHandle = conversionSystem.RequestClipsBlob(Animator, StateMachineAsset.Clips);
-            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject, new StateMachineBlobBakeData
-            {
-                StateMachineAsset = StateMachineAsset
-            });
+            stateMachineBlobHandle = conversionSystem.RequestStateMachineBlob(Animator.gameObject,
+                new StateMachineBlobBakeData
+                {
+                    StateMachineAsset = StateMachineAsset
+                });
             clipEventsBlobHandle = conversionSystem.RequestClipEventsBlob(Animator.gameObject, StateMachineAsset.Clips);
         }
 
@@ -136,7 +97,8 @@ namespace DMotion.Authoring
             {
                 foreach (var c in s.Clips)
                 {
-                    Assert.IsTrue(c != null && c.Clip != null, $"State ({s.name}) in State Machine {StateMachineAsset.name} has invalid clips");
+                    Assert.IsTrue(c != null && c.Clip != null,
+                        $"State ({s.name}) in State Machine {StateMachineAsset.name} has invalid clips");
                 }
             }
         }
