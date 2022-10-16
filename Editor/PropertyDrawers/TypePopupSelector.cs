@@ -39,7 +39,11 @@ namespace DMotion.Editor
             {
                 var rect = position;
                 rect.height = 400;
+                rect.width = 250;
+                rect = GUIUtility.GUIToScreenRect(rect);
                 var w = EditorWindow.GetWindowWithRect<SelectSerializableTypePopup>(rect, true, "Select Type", true);
+                w.position = rect;
+
                 w.Show(selected, filterType, onSelected, TypeFilter);
             }
         }       
