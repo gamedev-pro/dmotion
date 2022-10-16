@@ -9,6 +9,13 @@ namespace DMotion.Editor
     [CustomPropertyDrawer(typeof(AnimationParameterAsset))]
     internal class AnimationParameterPropertyDrawer : PropertyDrawer
     {
+        private EnumTypePopupSelector enumTypePopupSelector;
+
+        public AnimationParameterPropertyDrawer()
+        {
+            enumTypePopupSelector = new EnumTypePopupSelector();
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var parameterAsset = property.objectReferenceValue as AnimationParameterAsset;
@@ -23,17 +30,34 @@ namespace DMotion.Editor
 
                     //label
                     {
-                        parameterAsset.name = EditorGUI.TextField(rects[0], parameterAsset.name);
+                        var newName = EditorGUI.DelayedTextField(rects[0], parameterAsset.name);
 
-                        if (c.changed)
+                        if (newName != parameterAsset.name)
                         {
+                            parameterAsset.name = newName;
                             EditorUtility.SetDirty(parameterAsset);
+                            AssetDatabase.SaveAssetIfDirty(parameterAsset);
+                            AssetDatabase.Refresh();
                         }
                     }
 
                     //type
                     {
-                        EditorGUI.LabelField(rects[1], $"({parameterAsset.ParameterTypeName})");
+                        if (parameterAsset is EnumParameterAsset enumParameterAsset)
+                        {
+                            enumTypePopupSelector.DrawSelectionPopup(rects[1],
+                                GUIContent.none,
+                                enumParameterAsset.EnumType.Type,
+                                newType =>
+                                {
+                                    enumParameterAsset.EnumType.Type = newType;
+                                    EditorUtility.SetDirty(enumParameterAsset);
+                                });
+                        }
+                        else
+                        {
+                            EditorGUI.LabelField(rects[1], $"({parameterAsset.ParameterTypeName})");
+                        }
                     }
 
                     //delete

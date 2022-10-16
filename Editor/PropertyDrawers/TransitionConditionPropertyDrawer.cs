@@ -39,6 +39,10 @@ namespace DMotion.Editor
                             comparisonValueProperty,
                             comparisonModeProperty);
                         break;
+                    case EnumParameterAsset enumParameterAsset:
+                        DrawEnumTransitionCondition(position, enumParameterAsset, parameterProperty,
+                            comparisonValueProperty, comparisonModeProperty);
+                        break;
                     case IntParameterAsset:
                         DrawIntegerTransitionCondition(position, parameterProperty, comparisonValueProperty,
                             comparisonModeProperty);
@@ -77,6 +81,23 @@ namespace DMotion.Editor
 
             comparisonValueProperty.floatValue =
                 EditorGUI.IntField(rects[2], GUIContent.none, (int)comparisonValueProperty.floatValue);
+        }
+
+        private void DrawEnumTransitionCondition(Rect position,
+            EnumParameterAsset enumParameterAsset,
+            SerializedProperty parameterProperty,
+            SerializedProperty comparisonValueProperty,
+            SerializedProperty comparisonModeProperty)
+        {
+            var rects = position.HorizontalLayout(0.3f, 0.2f, 0.3f).ToArray();
+            parameterPopupSelector.OnGUI(rects[0], parameterProperty, GUIContent.none);
+
+            var comparisonEnumValue = (IntConditionComparison)EditorGUI.EnumPopup(rects[1],
+                (IntConditionComparison)comparisonModeProperty.intValue);
+            comparisonModeProperty.intValue = (int)comparisonEnumValue;
+
+            comparisonValueProperty.floatValue = EditorGUIUtils.GenericEnumPopup(rects[2], enumParameterAsset.EnumType.Type,
+                (int)comparisonValueProperty.floatValue);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
