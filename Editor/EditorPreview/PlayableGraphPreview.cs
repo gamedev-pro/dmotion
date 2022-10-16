@@ -207,8 +207,12 @@ namespace DMotion.Editor
             }
         }
 
-        private void HandleCamera(Boolean force = false)
+        private void HandleCamera(bool force = false)
         {
+            if (Event.current == null)
+            {
+                return;
+            }
             // must set hotControl or MouseUp event will not be detected outside window
             int controlId = GUIUtility.GetControlID(FocusType.Passive);
             if (Event.current.GetTypeForControl(controlId) == EventType.MouseDown)

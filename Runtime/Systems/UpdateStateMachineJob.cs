@@ -155,7 +155,7 @@ namespace DMotion
             {
                 case StateType.Single:
                     var singleClipState = SingleClipStateUtils.NewForStateMachine(
-                        (byte)state.StateIndex,
+                        (byte)stateIndex,
                         stateMachineBlob,
                         clipsBlob,
                         clipEventsBlob,
@@ -165,7 +165,7 @@ namespace DMotion
                     break;
                 case StateType.LinearBlend:
                     var linearClipState = LinearBlendStateUtils.NewForStateMachine(
-                        (byte)state.StateIndex,
+                        (byte)stateIndex,
                         stateMachineBlob,
                         clipsBlob,
                         clipEventsBlob,
