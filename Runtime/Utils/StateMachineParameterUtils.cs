@@ -1,9 +1,11 @@
-﻿using Unity.Burst;
+﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 
 namespace DMotion
 {
+    [BurstCompile]
     public struct StateMachineParameterRef<TBuffer, TValue>
         where TBuffer : struct, IStateMachineParameter<TValue>
         where TValue : struct
@@ -50,9 +52,10 @@ namespace DMotion
             return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetHashCode(string name)
         {
-            return name.GetHashCode();
+            return ((FixedString64Bytes) name).GetHashCode();
         }
 
         public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash, TValue value)
@@ -69,7 +72,7 @@ namespace DMotion
         }
 
         public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
-            FixedString32Bytes name, TValue value)
+            FixedString64Bytes name, TValue value)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
         {
@@ -93,7 +96,7 @@ namespace DMotion
             return false;
         }
 
-        public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString32Bytes name,
+        public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString64Bytes name,
             out TValue value)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
@@ -114,7 +117,7 @@ namespace DMotion
         }
         
         public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
-            FixedString32Bytes name)
+            FixedString64Bytes name)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
         {
