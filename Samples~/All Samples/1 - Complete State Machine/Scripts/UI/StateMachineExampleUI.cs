@@ -11,5 +11,6 @@ namespace DMotion.Samples.CompleteStateMachine
         public Button AtkButton;
         public Button AtkRmButton;
         public Toggle IsFallingToggle;
+        public TMP_Dropdown MovementModeDropdown;
     }
 }

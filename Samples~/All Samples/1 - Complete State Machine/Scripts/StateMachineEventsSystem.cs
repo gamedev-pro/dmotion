@@ -6,6 +6,13 @@ using UnityEngine;
 
 namespace DMotion.Samples.CompleteStateMachine
 {
+    public enum MovementMode
+    {
+        Normal,
+        Crouching,
+        Strafing,
+    }
+    
     public struct StateMachineExampleEvents : IComponentData
     {
         public int StartAttackEventHash;
