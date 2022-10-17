@@ -10,7 +10,7 @@ I've built this tool with usability and performance in mind. *The runtime is 100
 
 Overall, this system should feel similar to Unity's Mechanim system, however there is no intention to build a feature by feature clone of Mechanim, and I deliberately excluded features of Mechanim that I believe are not useful (more on that below), and added new use features that I've found are useful for games, which Mechanim does not support.
 
-### Current Features (v0.3.0)
+### Current Features (v0.3.3)
 
 - Fully bursted runtime
 - State Machine visual editor (and other custom editors)
