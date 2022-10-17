@@ -134,7 +134,7 @@ namespace DMotion.Tests
             Assert.AreEqual(1, linearBlendStates.Length);
 
             const float transitionDuration = 0.2f;
-            AnimationStateTestUtils.TransitionTo(manager, entity, anotherState.AnimationStateId, transitionDuration);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, anotherState.AnimationStateId, transitionDuration);
 
             UpdateWorld();
 

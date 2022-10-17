@@ -51,7 +51,7 @@ namespace DMotion.Tests
             var currentState = manager.GetComponentData<AnimationCurrentState>(entity);
             Assert.IsFalse(currentState.IsValid);
             
-            AnimationStateTestUtils.TransitionTo(manager, entity, animationState.Id);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, animationState.Id);
             
             //Force animationState to not be cleaned-up
             animationState.Weight = 1;
@@ -121,7 +121,7 @@ namespace DMotion.Tests
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, entity);
             
             AnimationStateTestUtils.AssertCurrentState(manager, entity, 0);
-            AnimationStateTestUtils.TransitionTo(manager, entity, animationState.Id, transitionDuration);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, animationState.Id, transitionDuration);
 
             //update a couple of times and make sure we're still transitioning
             for (var i = 0; i < 3; i++)
@@ -145,7 +145,7 @@ namespace DMotion.Tests
 
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, entity);
             AnimationStateTestUtils.SetCurrentState(manager, entity, p1.Id);
-            AnimationStateTestUtils.TransitionTo(manager, entity, p2.Id);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, p2.Id);
 
             var weight = p2.Weight;
             Assert.Zero(weight);

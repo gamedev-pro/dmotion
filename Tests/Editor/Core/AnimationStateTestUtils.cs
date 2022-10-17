@@ -14,10 +14,16 @@ namespace DMotion.Tests
                 $"Expected invalid transition request, but requested is to {animationStateTransitionRequest.AnimationStateId}");
         }
 
+        public static void AssertCurrentStateInvalid(EntityManager manager, Entity entity)
+        {
+            var currentAnimationState = manager.GetComponentData<AnimationCurrentState>(entity);
+            Assert.IsFalse(currentAnimationState.IsValid, "Expected Animation state not to be valid");
+        }
+        
         public static void AssertCurrentState(EntityManager manager, Entity entity, byte id)
         {
             var currentAnimationState = manager.GetComponentData<AnimationCurrentState>(entity);
-            Assert.IsTrue(currentAnimationState.IsValid);
+            Assert.IsTrue(currentAnimationState.IsValid, "Expected AnimationCurrentState to be valid");
             Assert.AreEqual(id, currentAnimationState.AnimationStateId);
             var animationState = GetAnimationStateFromEntity(manager, entity, id);
             Assert.AreEqual(1, animationState.Weight);
@@ -68,6 +74,10 @@ namespace DMotion.Tests
             animationStates[index] = animation;
         }
 
+        internal static void SetInvalidCurrentState(EntityManager manager, Entity entity)
+        {
+            manager.SetComponentData(entity, AnimationCurrentState.Null);
+        }
         internal static void SetCurrentState(EntityManager manager, Entity entity, byte animationStateId)
         {
             manager.SetComponentData(entity, new AnimationCurrentState{AnimationStateId = (sbyte) animationStateId});
@@ -76,10 +86,20 @@ namespace DMotion.Tests
             SetAnimationState(manager, entity, animationState);
         }
         
-        internal static void TransitionTo(EntityManager manager, Entity entity, byte animationStateId,
+        internal static void RequestTransitionTo(EntityManager manager, Entity entity, byte animationStateId,
             float transitionDuration = 0.1f)
         {
             manager.SetComponentData(entity, new AnimationStateTransitionRequest
+            {
+                AnimationStateId = (sbyte)animationStateId,
+                TransitionDuration = transitionDuration
+            });
+        }
+        internal static void SetAnimationStateTransition(EntityManager manager, Entity entity, byte animationStateId,
+            float transitionDuration = 0.1f)
+        {
+            manager.SetComponentData(entity, AnimationStateTransitionRequest.Null);
+            manager.SetComponentData(entity, new AnimationStateTransition
             {
                 AnimationStateId = (sbyte)animationStateId,
                 TransitionDuration = transitionDuration

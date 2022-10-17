@@ -72,7 +72,7 @@ namespace DMotion.Tests
             Assert.AreEqual(2, samplers.Length);
 
             const float transitionDuration = 0.2f;
-            AnimationStateTestUtils.TransitionTo(manager, entity, s2.AnimationStateId, transitionDuration);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, s2.AnimationStateId, transitionDuration);
             
             UpdateWorld();
             

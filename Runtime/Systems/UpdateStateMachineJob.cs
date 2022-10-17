@@ -4,6 +4,7 @@ using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Profiling;
+using UnityEngine;
 
 namespace DMotion
 {
@@ -21,6 +22,7 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> clipSamplers,
             ref DynamicBuffer<AnimationState> animationStates,
             in AnimationCurrentState animationCurrentState,
+            in AnimationStateTransition animationStateTransition,
             in DynamicBuffer<BoolParameter> boolParameters,
             in DynamicBuffer<IntParameter> intParameters
         )
@@ -28,12 +30,8 @@ namespace DMotion
             using var scope = Marker.Auto();
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
 
-            var shouldStateMachineBeActive = !animationCurrentState.IsValid ||
-                                             stateMachineTransitionRequest.IsRequested ||
-                                             animationCurrentState.AnimationStateId ==
-                                             stateMachine.CurrentState.AnimationStateId;
-
-            if (!shouldStateMachineBeActive)
+            if (!ShouldStateMachineBeActive(animationCurrentState, animationStateTransition,
+                    stateMachineTransitionRequest, stateMachine.CurrentState))
             {
                 return;
             }
@@ -134,6 +132,20 @@ namespace DMotion
                 }
             }
         }
+
+        public static bool ShouldStateMachineBeActive(in AnimationCurrentState animationCurrentState,
+            in AnimationStateTransition animationStateTransition,
+            in AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
+            in StateMachineStateRef currentState)
+        {
+            return !animationCurrentState.IsValid ||
+                   stateMachineTransitionRequest.IsRequested ||
+                   animationCurrentState.AnimationStateId ==
+                   currentState.AnimationStateId ||
+                   animationStateTransition.AnimationStateId ==
+                   currentState.AnimationStateId;
+        }
+
 
         private StateMachineStateRef CreateState(short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,

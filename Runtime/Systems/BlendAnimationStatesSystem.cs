@@ -2,6 +2,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace DMotion
@@ -30,38 +31,37 @@ namespace DMotion
                 }
 
                 //Check for new transition
-                var toAnimationStateIndex = -1;
                 if (transitionRequest.IsValid)
                 {
-                    toAnimationStateIndex = animationStates.IdToIndex((byte)transitionRequest.AnimationStateId);
+                    var newToStateIndex = animationStates.IdToIndex((byte)transitionRequest.AnimationStateId);
                     //if we don't have a valid state, just transition instantly
                     var transitionDuration = animationCurrentState.IsValid ? transitionRequest.TransitionDuration : 0;
-                    if (toAnimationStateIndex >= 0)
+                    if (newToStateIndex >= 0)
                     {
-                        animationStateTransition.AnimationStateId = transitionRequest.AnimationStateId;
-                        animationStateTransition.TransitionDuration = transitionDuration;
+                        animationStateTransition = new AnimationStateTransition
+                        {
+                            AnimationStateId = transitionRequest.AnimationStateId,
+                            TransitionDuration = transitionDuration,
+                        };
                     }
 
                     transitionRequest = AnimationStateTransitionRequest.Null;
                 }
-                else
-                {
-                    toAnimationStateIndex = animationStates.IdToIndex((byte)animationStateTransition.AnimationStateId);
 
-                    //Check if the current transition has ended
-                    if (toAnimationStateIndex >= 0)
-                    {
-                        if (animationStateTransition.HasEnded(animationStates[toAnimationStateIndex]))
-                        {
-                            animationCurrentState = AnimationCurrentState.New(animationStateTransition.AnimationStateId);
-                            animationStateTransition = AnimationStateTransition.Null;
-                        }
-                    }
-                }
+                var toAnimationStateIndex = animationStates.IdToIndex((byte)animationStateTransition.AnimationStateId);
+                
 
                 //Execute blend
                 if (toAnimationStateIndex >= 0)
                 {
+                    //Check if the current transition has ended
+                    if (animationStateTransition.HasEnded(animationStates[toAnimationStateIndex]))
+                    {
+                        animationCurrentState =
+                            AnimationCurrentState.New(animationStateTransition.AnimationStateId);
+                        animationStateTransition = AnimationStateTransition.Null;
+                    }
+
                     var toAnimationState = animationStates[toAnimationStateIndex];
 
                     if (mathex.iszero(animationStateTransition.TransitionDuration))
@@ -71,7 +71,7 @@ namespace DMotion
                     else
                     {
                         toAnimationState.Weight = math.clamp(toAnimationState.Time /
-                                                       animationStateTransition.TransitionDuration, 0, 1);
+                                                             animationStateTransition.TransitionDuration, 0, 1);
                     }
 
                     animationStates[toAnimationStateIndex] = toAnimationState;
@@ -89,7 +89,8 @@ namespace DMotion
                             }
                         }
 
-                        Assert.IsFalse(mathex.iszero(sumWeights), "Remaining weights are zero. Did AnimationStates not get cleaned up?");
+                        Assert.IsFalse(mathex.iszero(sumWeights),
+                            "Remaining weights are zero. Did AnimationStates not get cleaned up?");
 
                         var targetWeight = 1 - toAnimationState.Weight;
                         var inverseSumWeights = targetWeight / sumWeights;
@@ -101,6 +102,11 @@ namespace DMotion
                                 animationState.Weight *= inverseSumWeights;
                                 animationStates[i] = animationState;
                             }
+                        }
+
+                        for (var i = 0; i < animationStates.Length; i++)
+                        {
+                            var animationState = animationStates[i];
                         }
                     }
                 }
