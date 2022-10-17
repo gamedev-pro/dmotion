@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] – 2022-10-16
+
+### Added
+- Int Transitions
+- Enum Transitions
+
+### Fixed
+- Fixed bug where StateMachine would not update during AnimationState transition
+- Fix bug where LinearBlend and SingleStates would reference wrong AnimationState in StateMachine (fix at UpdateStateMachineJob.CreateState)
+
 ## [0.3.2] – 2022-9-18
 
 ### Added
