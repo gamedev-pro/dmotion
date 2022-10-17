@@ -140,10 +140,16 @@ namespace DMotion
         {
             return !animationCurrentState.IsValid ||
                    stateMachineTransitionRequest.IsRequested ||
-                   animationCurrentState.AnimationStateId ==
-                   currentState.AnimationStateId ||
-                   animationStateTransition.AnimationStateId ==
-                   currentState.AnimationStateId;
+                   (
+                       currentState.IsValid && animationCurrentState.IsValid &&
+                       animationCurrentState.AnimationStateId ==
+                       currentState.AnimationStateId
+                   ) ||
+                   (
+                       currentState.IsValid && animationStateTransition.IsValid &&
+                       animationStateTransition.AnimationStateId ==
+                       currentState.AnimationStateId
+                   );
         }
 
 

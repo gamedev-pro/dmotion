@@ -87,20 +87,21 @@ namespace DMotion.Tests
         public void NotInitialize_If_NotPlaying()
         {
             var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
+            var currentState = StateMachineTestUtils.GetCurrentState(manager, newEntity);
+            Assert.AreEqual(currentState, StateMachineStateRef.Null);
             
             //Set a random current animationState that is not us
-            manager.SetComponentData(newEntity, new AnimationCurrentState
-            {
-                AnimationStateId = 1
-            });
+            var otherState =
+                AnimationStateTestUtils.NewAnimationStateFromEntity(manager, newEntity, default(ClipSampler));
+            AnimationStateTestUtils.SetCurrentState(manager, newEntity, otherState.Id);
 
+            var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, newEntity);
+            Assert.IsFalse(shouldBeActive, "Expected state machine not to be active");
             UpdateWorld();
 
             //We shouldn't have initialized
-            stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
+            currentState = StateMachineTestUtils.GetCurrentState(manager, newEntity);
+            Assert.AreEqual(currentState, StateMachineStateRef.Null, "Expected state machine not to have initialized");
         }
         
         [Test]
