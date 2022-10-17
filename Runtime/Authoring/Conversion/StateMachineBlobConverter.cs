@@ -34,6 +34,7 @@ namespace DMotion.Authoring
         internal float TransitionDuration;
         internal float TransitionEndTime;
         internal UnsafeList<BoolTransition> BoolTransitions;
+        internal UnsafeList<IntTransition> IntTransitions;
     }
     
     internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>, IComparer<ClipIndexWithThreshold>
@@ -80,6 +81,11 @@ namespace DMotion.Authoring
                             ref transitions[transitionIndex].BoolTransitions,
                             transitionConversionData.BoolTransitions.Ptr,
                             transitionConversionData.BoolTransitions.Length);
+                        
+                        builder.ConstructFromNativeArray(
+                            ref transitions[transitionIndex].IntTransitions,
+                            transitionConversionData.IntTransitions.Ptr,
+                            transitionConversionData.IntTransitions.Length);
                     }
                 }
             }

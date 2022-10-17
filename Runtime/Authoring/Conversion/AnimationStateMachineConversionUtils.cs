@@ -1,64 +1,266 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using Latios.Authoring;
 using Latios.Kinemation;
-using Latios.Kinemation.Authoring;
+using Unity.Assertions;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    public static class AnimationStateMachineConversionUtils
+    internal static class AnimationStateMachineConversionUtils
     {
-        public static SmartBlobberHandle<SkeletonClipSetBlob> RequestClipsBlob(
-            this GameObjectConversionSystem conversionSystem,
-            Animator animator,
-            params AnimationClipAsset[] clipAssets)
+        public static BlobAssetReference<StateMachineBlob> CreateStateMachineBlob(StateMachineAsset stateMachineAsset,
+            Allocator allocator)
         {
-            return conversionSystem.RequestClipsBlob(animator, (IEnumerable<AnimationClipAsset>) clipAssets);
+            return CreateConverter(stateMachineAsset, allocator).BuildBlob();
         }
-        
-        public static SmartBlobberHandle<SkeletonClipSetBlob> RequestClipsBlob(
-            this GameObjectConversionSystem conversionSystem,
-            Animator animator,
-            IEnumerable<AnimationClipAsset> clipAssets)
+
+        internal static StateMachineBlobConverter CreateConverter(StateMachineAsset stateMachineAsset,
+            Allocator allocator)
         {
-            var clips = clipAssets.Select(c => new SkeletonClipConfig()
+            var converter = new StateMachineBlobConverter();
+            var defaultStateIndex = stateMachineAsset.States.ToList().IndexOf(stateMachineAsset.DefaultState);
+            Assert.IsTrue(defaultStateIndex >= 0,
+                $"Couldn't find state {stateMachineAsset.DefaultState.name}, in state machine {stateMachineAsset.name}");
+            converter.DefaultStateIndex = (byte)defaultStateIndex;
+            BuildStates(stateMachineAsset, ref converter, allocator);
+            return converter;
+        }
+
+        private static void BuildStates(StateMachineAsset stateMachineAsset, ref StateMachineBlobConverter converter,
+            Allocator allocator)
+        {
+            var singleClipStates = stateMachineAsset.States.OfType<SingleClipStateAsset>().ToArray();
+            var linearBlendStates = stateMachineAsset.States.OfType<LinearBlendStateAsset>().ToArray();
+
+            converter.States =
+                new UnsafeList<AnimationStateConversionData>(stateMachineAsset.States.Count, allocator);
+            converter.States.Resize(stateMachineAsset.States.Count);
+
+            converter.SingleClipStates =
+                new UnsafeList<SingleClipStateBlob>(singleClipStates.Length, allocator);
+
+            converter.LinearBlendStates =
+                new UnsafeList<LinearBlendStateConversionData>(linearBlendStates.Length,
+                    allocator);
+
+            ushort clipIndex = 0;
+            for (var i = 0; i < converter.States.Length; i++)
             {
-                clip = c.Clip,
-                settings = SkeletonClipCompressionSettings.kDefaultSettings
-            });
-            return conversionSystem.CreateBlob(animator.gameObject, new SkeletonClipSetBakeData()
+                var stateAsset = stateMachineAsset.States[i];
+                var stateImplIndex = -1;
+                switch (stateAsset)
+                {
+                    case LinearBlendStateAsset linearBlendStateAsset:
+                        stateImplIndex = converter.LinearBlendStates.Length;
+                        var blendParameterIndex =
+                            stateMachineAsset.Parameters
+                                .OfType<FloatParameterAsset>()
+                                .ToList()
+                                .FindIndex(f => f == linearBlendStateAsset.BlendParameter);
+
+                        Assert.IsTrue(blendParameterIndex >= 0,
+                            $"({stateMachineAsset.name}) Couldn't find parameter {linearBlendStateAsset.BlendParameter.name}, for Linear Blend State");
+
+                        var linearBlendState = new LinearBlendStateConversionData()
+                        {
+                            BlendParameterIndex = (ushort)blendParameterIndex
+                        };
+
+                        linearBlendState.ClipsWithThresholds = new UnsafeList<ClipIndexWithThreshold>(
+                            linearBlendStateAsset.BlendClips.Length, allocator);
+
+                        linearBlendState.ClipsWithThresholds.Resize(linearBlendStateAsset.BlendClips.Length);
+                        for (ushort blendClipIndex = 0;
+                             blendClipIndex < linearBlendState.ClipsWithThresholds.Length;
+                             blendClipIndex++)
+                        {
+                            linearBlendState.ClipsWithThresholds[blendClipIndex] = new ClipIndexWithThreshold
+                            {
+                                ClipIndex = clipIndex,
+                                Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold
+                            };
+                            clipIndex++;
+                        }
+
+                        converter.LinearBlendStates.Add(linearBlendState);
+                        break;
+                    case SingleClipStateAsset singleClipStateAsset:
+                        stateImplIndex = converter.SingleClipStates.Length;
+                        converter.SingleClipStates.Add(new SingleClipStateBlob()
+                        {
+                            ClipIndex = clipIndex,
+                        });
+                        clipIndex++;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(stateAsset));
+                }
+
+                Assert.IsTrue(stateImplIndex >= 0, $"Index to state implementation needs to be assigned");
+                converter.States[i] =
+                    BuildStateConversionData(stateMachineAsset, stateAsset, stateImplIndex, allocator);
+            }
+        }
+
+        private static AnimationStateConversionData BuildStateConversionData(StateMachineAsset stateMachineAsset,
+            AnimationStateAsset state, int stateIndex, Allocator allocator)
+        {
+            var stateConversionData = new AnimationStateConversionData()
             {
-                animator = animator,
-                clips = clips.ToArray()
-            });
+                Type = state.Type,
+                StateIndex = (ushort)stateIndex,
+                Loop = state.Loop,
+                Speed = state.Speed
+            };
+
+            //Create Transition Groups
+            var transitionCount = state.OutTransitions.Count;
+            stateConversionData.Transitions =
+                new UnsafeList<StateOutTransitionConversionData>(transitionCount, allocator);
+            stateConversionData.Transitions.Resize(transitionCount);
+
+            for (var transitionIndex = 0; transitionIndex < stateConversionData.Transitions.Length; transitionIndex++)
+            {
+                var outTransitionAsset = state.OutTransitions[transitionIndex];
+
+                var toStateIndex =
+                    (short)stateMachineAsset.States.ToList().FindIndex(s => s == outTransitionAsset.ToState);
+                Assert.IsTrue(toStateIndex >= 0,
+                    $"State {outTransitionAsset.ToState.name} not present on State Machine {stateMachineAsset.name}");
+                var outTransition = new StateOutTransitionConversionData()
+                {
+                    ToStateIndex = toStateIndex,
+                    TransitionEndTime = outTransitionAsset.HasEndTime ? Mathf.Max(0, outTransitionAsset.EndTime) : -1f,
+                    TransitionDuration = outTransitionAsset.TransitionDuration,
+                };
+
+                //Create bool transitions
+                {
+                    var boolTransitions = outTransitionAsset.BoolTransitions.ToArray();
+                    outTransition.BoolTransitions =
+                        new UnsafeList<BoolTransition>(boolTransitions.Length, allocator);
+                    outTransition.BoolTransitions.Resize(boolTransitions.Length);
+                    for (var boolTransitionIndex = 0;
+                         boolTransitionIndex < outTransition.BoolTransitions.Length;
+                         boolTransitionIndex++)
+                    {
+                        var boolTransitionAsset = boolTransitions[boolTransitionIndex];
+                        var parameterIndex = stateMachineAsset.Parameters
+                            .OfType<BoolParameterAsset>()
+                            .ToList()
+                            .FindIndex(p => p == boolTransitionAsset.BoolParameter);
+
+                        Assert.IsTrue(parameterIndex >= 0,
+                            $"({stateMachineAsset.name}) Couldn't find parameter {boolTransitionAsset.BoolParameter.name}, for transition");
+                        outTransition.BoolTransitions[boolTransitionIndex] = new BoolTransition
+                        {
+                            ComparisonValue = boolTransitionAsset.ComparisonValue == BoolConditionComparison.True,
+                            ParameterIndex = parameterIndex
+                        };
+                    }
+                }
+
+                //Create int transitions
+                {
+                    var intTransitions = outTransitionAsset.IntTransitions.ToArray();
+                    var intParameters = stateMachineAsset.Parameters
+                        .OfType<IntParameterAsset>()
+                        .ToList();
+                    outTransition.IntTransitions =
+                        new UnsafeList<IntTransition>(intTransitions.Length, allocator);
+                    outTransition.IntTransitions.Resize(intTransitions.Length);
+                    for (var intTransitionIndex = 0;
+                         intTransitionIndex < outTransition.IntTransitions.Length;
+                         intTransitionIndex++)
+                    {
+                        var intTransitionAsset = intTransitions[intTransitionIndex];
+                        var parameterIndex = intParameters.FindIndex(p => p == intTransitionAsset.IntParameter);
+
+                        Assert.IsTrue(parameterIndex >= 0,
+                            $"({stateMachineAsset.name}) Couldn't find parameter {intTransitionAsset.IntParameter.name}, for transition");
+                        outTransition.IntTransitions[intTransitionIndex] = new IntTransition
+                        {
+                            ParameterIndex = parameterIndex,
+                            ComparisonValue = intTransitionAsset.ComparisonValue,
+                            ComparisonMode = intTransitionAsset.ComparisonMode
+                        };
+                    }
+                }
+
+                stateConversionData.Transitions[transitionIndex] = outTransition;
+            }
+
+            return stateConversionData;
         }
-        public static SmartBlobberHandle<StateMachineBlob> RequestStateMachineBlob(
-            this GameObjectConversionSystem conversionSystem,
-            GameObject gameObject,
-            StateMachineBlobBakeData bakeData)
+
+        internal static void AddAnimationStateSystemComponents(EntityManager dstManager, Entity entity)
         {
-            return conversionSystem.World.GetExistingSystem<AnimationStateMachineSmartBlobberSystem>()
-                .AddToConvert(gameObject, bakeData);
+            dstManager.AddBuffer<AnimationState>(entity);
+            dstManager.AddComponentData(entity, AnimationStateTransition.Null);
+            dstManager.AddComponentData(entity, AnimationStateTransitionRequest.Null);
+            dstManager.AddComponentData(entity, AnimationCurrentState.Null);
+            var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
+            clipSamplers.Capacity = 10;
         }
-        
-        public static SmartBlobberHandle<ClipEventsBlob> RequestClipEventsBlob(
-            this GameObjectConversionSystem conversionSystem,
-            GameObject gameObject,
-            params AnimationClipAsset[] clips)
+
+        internal static void AddOneShotSystemComponents(EntityManager dstManager, Entity entity)
         {
-            return conversionSystem.RequestClipEventsBlob(gameObject, (IEnumerable<AnimationClipAsset>)clips);
+            dstManager.AddComponentData(entity, PlayOneShotRequest.Null);
+            dstManager.AddComponentData(entity, OneShotState.Null);
         }
-        
-        public static SmartBlobberHandle<ClipEventsBlob> RequestClipEventsBlob(
-            this GameObjectConversionSystem conversionSystem,
-            GameObject gameObject,
-            IEnumerable<AnimationClipAsset> clips)
+
+        internal static void AddStateMachineSystemComponents(EntityManager dstManager, Entity entity,
+            StateMachineAsset stateMachineAsset,
+            BlobAssetReference<StateMachineBlob> stateMachineBlob,
+            BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            BlobAssetReference<ClipEventsBlob> clipEventsBlob)
         {
-            return conversionSystem.World.GetExistingSystem<ClipEventsSmartBlobberSystem>()
-                .AddToConvert(gameObject, new ClipEventsBlobBakeData(){Clips = clips.ToArray()});
+            //state machine data
+            {
+                var stateMachine = new AnimationStateMachine
+                {
+                    StateMachineBlob = stateMachineBlob,
+                    ClipsBlob = clipsBlob,
+                    ClipEventsBlob = clipEventsBlob,
+                    CurrentState = StateMachineStateRef.Null
+                };
+
+                dstManager.AddComponentData(entity, stateMachine);
+                dstManager.AddComponentData(entity, AnimationStateMachineTransitionRequest.Null);
+
+                dstManager.AddBuffer<SingleClipState>(entity);
+                dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
+            }
+
+            //Parameters
+            {
+                dstManager.AddBuffer<BoolParameter>(entity);
+                dstManager.AddBuffer<IntParameter>(entity);
+                dstManager.AddBuffer<BlendParameter>(entity);
+                foreach (var p in stateMachineAsset.Parameters)
+                {
+                    switch (p)
+                    {
+                        case BoolParameterAsset:
+                            var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
+                            boolParameters.Add(new BoolParameter(p.name, p.Hash));
+                            break;
+                        case IntParameterAsset:
+                            var intParameters = dstManager.GetBuffer<IntParameter>(entity);
+                            intParameters.Add(new IntParameter(p.name, p.Hash));
+                            break;
+                        case FloatParameterAsset:
+                            var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
+                            floatParameters.Add(new BlendParameter(p.name, p.Hash));
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(p));
+                    }
+                }
+            }
         }
     }
 }

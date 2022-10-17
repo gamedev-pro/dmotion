@@ -33,7 +33,9 @@ namespace DMotion.Editor
                     {
                         var menu = new GenericMenu();
                         menu.AddItem(new GUIContent("Boolean"), false, CreateParameter<BoolParameterAsset>);
+                        menu.AddItem(new GUIContent("Integer"), false, CreateParameter<IntParameterAsset>);
                         menu.AddItem(new GUIContent("Float"), false, CreateParameter<FloatParameterAsset>);
+                        menu.AddItem(new GUIContent("Enum"), false, CreateParameter<EnumParameterAsset>);
                         menu.DropDown(rect);
                     }
                 }

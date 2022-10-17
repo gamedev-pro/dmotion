@@ -19,12 +19,12 @@ namespace DMotion.Editor
         where T : Object
     {
         private Object target;
-        private Type filterType;
+        private Type[] filterTypes;
 
-        internal SubAssetReferencePopupSelector(Object target, Type filterType = null)
+        internal SubAssetReferencePopupSelector(Object target, params Type[] filterTypes)
         {
             this.target = target;
-            this.filterType = filterType;
+            this.filterTypes = filterTypes;
         }
         
         protected override T[] CollectOptions()
@@ -32,9 +32,9 @@ namespace DMotion.Editor
             var childs = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(target))
                 .OfType<T>();
 
-            if (filterType != null)
+            if (filterTypes != null && filterTypes.Length > 0)
             {
-                childs = childs.Where(filterType.IsInstanceOfType);
+                childs = childs.Where(t => filterTypes.Any(f => f.IsInstanceOfType(t)));
             }
 
             return childs.ToArray();
@@ -48,30 +48,30 @@ namespace DMotion.Editor
     internal class ObjectReferencePopupSelector<T> : ObjectReferencePopupSelector
         where T : Object
     {
-        private T[] allEventNameAssets;
-        private string[] allEventNameOptions;
-        private T[] EventNameAssets
+        private T[] allAssets;
+        private string[] allAssetNameOptions;
+        private T[] Assets
         {
             get
             {
-                if (allEventNameAssets == null || IsDirty)
+                if (allAssets == null || IsDirty)
                 {
-                    allEventNameAssets = CollectOptions();
+                    allAssets = CollectOptions();
                 }
  
-                return allEventNameAssets;
+                return allAssets;
             }
         }
  
-        private string[] EventNameOptions
+        private string[] AssetNameOptions
         {
             get
             {
-                if (allEventNameOptions == null || IsDirty)
+                if (allAssetNameOptions == null || IsDirty)
                 {
-                    allEventNameOptions = EventNameAssets.Select(e => e.name).ToArray();
+                    allAssetNameOptions = Assets.Select(e => e.name).ToArray();
                 }
-                return allEventNameOptions;
+                return allAssetNameOptions;
             }
         }
         
@@ -98,11 +98,11 @@ namespace DMotion.Editor
             }
              
             var currEventName = property.objectReferenceValue as T;
-            var index = Array.FindIndex(EventNameAssets, e => e == currEventName);
-            var newIndex = EditorGUI.Popup(position, index, EventNameOptions);
+            var index = Array.FindIndex(Assets, e => e == currEventName);
+            var newIndex = EditorGUI.Popup(position, index, AssetNameOptions);
             if (index != newIndex)
             {
-                property.objectReferenceValue = EventNameAssets[newIndex];
+                property.objectReferenceValue = Assets[newIndex];
             }
 
             IsDirty = false;

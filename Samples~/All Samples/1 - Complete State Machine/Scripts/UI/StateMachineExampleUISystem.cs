@@ -1,12 +1,12 @@
-﻿using DMotion;
-using Unity.Entities;
+﻿using Unity.Entities;
 
 namespace DMotion.Samples.CompleteStateMachine
 {
     public partial class StateMachineExampleUISystem : SystemBase
     {
-        private static int IsFallingHash => StateMachineParameterUtils.GetHashCode("IsFalling");
-        private static int SpeedHash => StateMachineParameterUtils.GetHashCode("Speed");
+        private static readonly int IsFallingHash = StateMachineParameterUtils.GetHashCode("IsFalling");
+        private static readonly int SpeedHash = StateMachineParameterUtils.GetHashCode("Speed");
+        private static readonly int MovementModeHash = StateMachineParameterUtils.GetHashCode("MovementMode");
 
         private bool playCircleSlash = false;
         private bool playSlash = false;
@@ -40,14 +40,17 @@ namespace DMotion.Samples.CompleteStateMachine
         {
             var oneShots = GetSingleton<StateMachineExampleOneShots>();
             var stateMachineUI = this.GetSingleton<StateMachineExampleUI>();
+            
             Entities
                 .ForEach((
                     ref PlayOneShotRequest playOneShot,
                     ref DynamicBuffer<BlendParameter> blendParameters,
-                    ref DynamicBuffer<BoolParameter> boolParameters) =>
+                    ref DynamicBuffer<BoolParameter> boolParameters,
+                    ref DynamicBuffer<IntParameter> intParameters) =>
                 {
                     boolParameters.SetParameter(IsFallingHash, stateMachineUI.IsFallingToggle.isOn);
                     blendParameters.SetParameter(SpeedHash, stateMachineUI.BlendSlider.value);
+                    intParameters.SetParameter(MovementModeHash, stateMachineUI.MovementModeDropdown.value);
 
                     if (playSlash)
                     {

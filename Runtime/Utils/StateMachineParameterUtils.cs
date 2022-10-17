@@ -1,14 +1,45 @@
-﻿using Unity.Burst;
+﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEditor;
 
 namespace DMotion
 {
     [BurstCompile]
+    public struct StateMachineParameterRef<TBuffer, TValue>
+        where TBuffer : struct, IStateMachineParameter<TValue>
+        where TValue : struct
+    {
+        public sbyte Index;
+
+        public void SetValue(DynamicBuffer<TBuffer> parameters, TValue value)
+        {
+            if (Index >= 0 && Index < parameters.Length)
+            {
+                var p = parameters[Index];
+                p.Value = value;
+                parameters[Index] = p;
+            }
+        }
+
+        public bool TryGetValue(DynamicBuffer<TBuffer> parameters, out TValue value)
+        {
+            if (Index >= 0 && Index < parameters.Length)
+            {
+                value = parameters[Index].Value;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+    }
+
+    [BurstCompile]
     public static class StateMachineParameterUtils
     {
-        public static int HashToIndex(this DynamicBuffer<BoolParameter> parameters, int hash)
+        public static int HashToIndex<T>(this DynamicBuffer<T> parameters, int hash)
+            where T : struct, IHasHash
         {
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -21,111 +52,77 @@ namespace DMotion
             return -1;
         }
 
-        public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, int hash, bool value)
-        {
-            var index = parameters.HashToIndex(hash);
-            if (index >= 0)
-            {
-                var p = parameters[index];
-                p.Value = value;
-                parameters[index] = p;
-            }
-        }
-
-
-        public static void SetParameter(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name,
-            bool value)
-        {
-            var hash = name.GetHashCode();
-            parameters.SetParameter(hash, value);
-        }
-
-        public static bool TryGetValue(this DynamicBuffer<BoolParameter> parameters, int hash, out bool value)
-        {
-            var index = parameters.HashToIndex(hash);
-            if (index >= 0)
-            {
-                value = parameters[index].Value;
-                return true;
-            }
-
-            value = default;
-            return false;
-        }
-
-        public static bool TryGetValue(this DynamicBuffer<BoolParameter> parameters, FixedString32Bytes name,
-            out bool value)
-        {
-            var hash = name.GetHashCode();
-            return parameters.TryGetValue(hash, out value);
-        }
-
-        public static int HashToIndex(this DynamicBuffer<BlendParameter> parameters, int hash)
-        {
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                if (parameters[i].Hash == hash)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, int hash, float value)
-        {
-            var index = parameters.HashToIndex(hash);
-            if (index >= 0)
-            {
-                var p = parameters[index];
-                p.Value = value;
-                parameters[index] = p;
-            }
-        }
-
-
-        public static void SetParameter(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name,
-            float value)
-        {
-            var hash = name.GetHashCode();
-            parameters.SetParameter(hash, value);
-        }
-
-        public static void IncrementParameter(this DynamicBuffer<BlendParameter> parameters, int hash, float increment)
-        {
-            var index = parameters.HashToIndex(hash);
-            if (index >= 0)
-            {
-                var p = parameters[index];
-                p.Value += increment;
-                parameters[index] = p;
-            }
-        }
-
-        public static bool TryGetValue(this DynamicBuffer<BlendParameter> parameters, int hash, out float value)
-        {
-            var index = parameters.HashToIndex(hash);
-            if (index >= 0)
-            {
-                value = parameters[index].Value;
-                return true;
-            }
-
-            value = default;
-            return false;
-        }
-
-        public static bool TryGetValue(this DynamicBuffer<BlendParameter> parameters, FixedString32Bytes name,
-            out float value)
-        {
-            var hash = name.GetHashCode();
-            return parameters.TryGetValue(hash, out value);
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetHashCode(string name)
         {
-            return name.GetHashCode();
+            return ((FixedString64Bytes) name).GetHashCode();
+        }
+
+        public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash, TValue value)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            var index = parameters.HashToIndex(hash);
+            if (index >= 0)
+            {
+                var p = parameters[index];
+                p.Value = value;
+                parameters[index] = p;
+            }
+        }
+
+        public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+            FixedString64Bytes name, TValue value)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            var hash = name.GetHashCode();
+            parameters.SetParameter(hash, value);
+        }
+
+        public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash,
+            out TValue value)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            var index = parameters.HashToIndex(hash);
+            if (index >= 0)
+            {
+                value = parameters[index].Value;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
+        public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString64Bytes name,
+            out TValue value)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            var hash = name.GetHashCode();
+            return parameters.TryGetValue(hash, out value);
+        }
+
+        public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+            int hash)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            return new StateMachineParameterRef<TBuffer, TValue>()
+            {
+                Index = (sbyte) parameters.HashToIndex(hash)
+            };
+        }
+        
+        public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+            FixedString64Bytes name)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            var hash = name.GetHashCode();
+            return parameters.CreateRef<TBuffer, TValue>(hash);
         }
     }
 }

@@ -13,8 +13,8 @@ namespace DMotion.Samples.CompleteStateMachine
         {
             Entities.ForEach((in AttackWindow attackWindow) =>
             {
-                FixedString32Bytes open = attackWindow.IsOpen ? "Open" : "Closed";
-                Debug.Log(FixedString.Format("Attack window is: {0}", open));
+                // FixedString32Bytes open = attackWindow.IsOpen ? "Open" : "Closed";
+                // Debug.Log(FixedString.Format("Attack window is: {0}", open));
             }).Schedule();
         }
     }

@@ -5,5 +5,6 @@ namespace DMotion.Authoring
 {
     public class BoolParameterAsset : AnimationParameterAsset
     {
+        public override string ParameterTypeName => "Boolean";
     }
 }

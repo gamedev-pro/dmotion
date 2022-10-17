@@ -9,6 +9,14 @@ namespace DMotion.Tests
     public class BlendAnimationStatesSystemShould : ECSTestsFixture
     {
         [Test]
+        public void Run_With_Valid_Queries()
+        {
+            AnimationStateTestUtils.CreateAnimationStateEntity(manager);
+            UpdateWorld();
+            ECSTestUtils.AssertSystemQueries<BlendAnimationStatesSystem>(world);
+        }
+        
+        [Test]
         public void Create_New_AnimationState()
         {
             var entity = AnimationStateTestUtils.CreateAnimationStateEntity(manager);
@@ -51,7 +59,7 @@ namespace DMotion.Tests
             var currentState = manager.GetComponentData<AnimationCurrentState>(entity);
             Assert.IsFalse(currentState.IsValid);
             
-            AnimationStateTestUtils.TransitionTo(manager, entity, animationState.Id);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, animationState.Id);
             
             //Force animationState to not be cleaned-up
             animationState.Weight = 1;
@@ -65,17 +73,17 @@ namespace DMotion.Tests
         [Test]
         public void StartTransition_From_Request()
         {
-            const float transitionDuration = 0.1f;
             var entity = AnimationStateTestUtils.CreateAnimationStateEntity(manager);
+            var initialState =
+                AnimationStateTestUtils.NewAnimationStateFromEntity(manager, entity, default(ClipSampler));
+            AnimationStateTestUtils.SetCurrentState(manager, entity, initialState.Id);
+            
             var animationState = AnimationStateTestUtils.NewAnimationStateFromEntity(manager, entity, default(ClipSampler));
+            
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, entity);
-            Assert.IsFalse(manager.GetComponentData<AnimationCurrentState>(entity).IsValid);
+            AnimationStateTestUtils.AssertCurrentState(manager, entity, initialState.Id);
 
-            manager.SetComponentData(entity, new AnimationStateTransitionRequest
-            {
-                AnimationStateId = (sbyte)animationState.Id,
-                TransitionDuration = transitionDuration
-            });
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, animationState.Id);
 
             UpdateWorld();
             AnimationStateTestUtils.AssertOnGoingTransition(manager, entity, animationState.Id);
@@ -84,29 +92,27 @@ namespace DMotion.Tests
         [Test]
         public void StartTransition_From_Request_Even_When_Transitioning()
         {
-            const float transitionDuration = 0.1f;
             var entity = AnimationStateTestUtils.CreateAnimationStateEntity(manager);
+            var initialState =
+                AnimationStateTestUtils.NewAnimationStateFromEntity(manager, entity, default(ClipSampler));
+            AnimationStateTestUtils.SetCurrentState(manager, entity, initialState.Id);
+            
             var animationState = AnimationStateTestUtils.NewAnimationStateFromEntity(manager, entity, default(ClipSampler));
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, entity);
-            Assert.IsFalse(manager.GetComponentData<AnimationCurrentState>(entity).IsValid);
+            AnimationStateTestUtils.AssertCurrentState(manager, entity, initialState.Id);
 
-            manager.SetComponentData(entity, new AnimationStateTransitionRequest
-            {
-                AnimationStateId = (sbyte)animationState.Id,
-                TransitionDuration = transitionDuration
-            });
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, animationState.Id);
 
             UpdateWorld();
             AnimationStateTestUtils.AssertOnGoingTransition(manager, entity, animationState.Id);
 
             var secondAnimationState = AnimationStateTestUtils.NewAnimationStateFromEntity(manager, entity, default(ClipSampler));
 
-            manager.SetComponentData(entity, new AnimationStateTransitionRequest
-            {
-                AnimationStateId = (sbyte)secondAnimationState.Id
-            });
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, secondAnimationState.Id);
 
             UpdateWorld();
+            //we still expected the current state to be the initial state. Previous transition was interrupted
+            AnimationStateTestUtils.AssertCurrentState(manager, entity, initialState.Id, assertWeight: false);
             AnimationStateTestUtils.AssertOnGoingTransition(manager, entity, secondAnimationState.Id);
         }
 
@@ -121,7 +127,7 @@ namespace DMotion.Tests
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, entity);
             
             AnimationStateTestUtils.AssertCurrentState(manager, entity, 0);
-            AnimationStateTestUtils.TransitionTo(manager, entity, animationState.Id, transitionDuration);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, animationState.Id, transitionDuration);
 
             //update a couple of times and make sure we're still transitioning
             for (var i = 0; i < 3; i++)
@@ -145,7 +151,7 @@ namespace DMotion.Tests
 
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, entity);
             AnimationStateTestUtils.SetCurrentState(manager, entity, p1.Id);
-            AnimationStateTestUtils.TransitionTo(manager, entity, p2.Id);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, p2.Id);
 
             var weight = p2.Weight;
             Assert.Zero(weight);

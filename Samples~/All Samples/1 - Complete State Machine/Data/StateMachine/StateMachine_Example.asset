@@ -12,7 +12,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bf49d2668cb4e4e8a67a3039a2ecc63, type: 3}
   m_Name: Attack
   m_EditorClassIdentifier: 
---- !u!114 &-824457067591523315
+--- !u!114 &-8277666033390285027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5d0933cd30548669565cf8c60749648, type: 3}
+  m_Name: Movement - Crouching
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: 84364453544067473}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3481804438300072411}
+      ComparisonValue: 0
+      ComparisonMode: 0
+  - ToState: {fileID: -6642729254166906212}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3481804438300072411}
+      ComparisonValue: 2
+      ComparisonMode: 0
+  - ToState: {fileID: -7085936119884536874}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: 7344316594631064389}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 768.80005, y: 323.19998}
+    Guid: e4f7da2ce36e05b41898e833848fdba5
+  BlendClips:
+  - Clip: {fileID: 11400000, guid: 8bc0859fef61c7945863b7da14be93cf, type: 2}
+    Threshold: 0
+  - Clip: {fileID: 11400000, guid: ef6cd90edeb422246ada0da2f39d6433, type: 2}
+    Threshold: 0.2
+  BlendParameter: {fileID: 3089010798117439694}
+--- !u!114 &-7085936119884536874
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -22,20 +70,102 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
-  m_Name: Attack
+  m_Name: IsFalling
   m_EditorClassIdentifier: 
   Loop: 1
   Speed: 1
   OutTransitions:
   - ToState: {fileID: 84364453544067473}
-    HasEndTime: 1
-    EndTime: 0.85
-    NormalizedTransitionDuration: 0.15
-    Conditions: []
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: 7344316594631064389}
+      ComparisonValue: 0
+      ComparisonMode: 1
+  - ToState: {fileID: -8277666033390285027}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: 7344316594631064389}
+      ComparisonValue: 0
+      ComparisonMode: 1
+  - ToState: {fileID: -6642729254166906212}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: 7344316594631064389}
+      ComparisonValue: 0
+      ComparisonMode: 1
   StateEditorData:
-    GraphPosition: {x: 720.6, y: 421.80002}
-    Guid: 5d2eb3237faf73745acfbee41c66ea28
-  Clip: {fileID: 11400000, guid: 411918f1c0037bd4da6262a82555471d, type: 2}
+    GraphPosition: {x: 612.8, y: 89.40289}
+    Guid: 91b9b5e2435e0d241945e7f8a1c32fb4
+  Clip: {fileID: 11400000, guid: 6b1e121bbab943847aa41e3b270da004, type: 2}
+--- !u!114 &-6642729254166906212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5d0933cd30548669565cf8c60749648, type: 3}
+  m_Name: Movement - Strafing
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: 84364453544067473}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3481804438300072411}
+      ComparisonValue: 0
+      ComparisonMode: 0
+  - ToState: {fileID: -8277666033390285027}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3481804438300072411}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  - ToState: {fileID: -7085936119884536874}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: 7344316594631064389}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 599.99994, y: 512.8049}
+    Guid: 8dd74e6b0bf96ed4b966a17fc2ba7c02
+  BlendClips:
+  - Clip: {fileID: 11400000, guid: 65fa5c504679b5f4a8d032b3c07acb70, type: 2}
+    Threshold: 0
+  - Clip: {fileID: 11400000, guid: 85ae3405e5633d04cbf874097cf3f38d, type: 2}
+    Threshold: 0.2
+  BlendParameter: {fileID: 3089010798117439694}
+--- !u!114 &-3481804438300072411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dedf630c4bbf4fc39cb1d1b528eb9a91, type: 3}
+  m_Name: MovementMode
+  m_EditorClassIdentifier: 
+  EnumType:
+    AssemblyQualifiedTypeName: DMotion.Samples.CompleteStateMachine.MovementMode,
+      Samples.CompleStateMachine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,12 +181,14 @@ MonoBehaviour:
   DefaultState: {fileID: 84364453544067473}
   States:
   - {fileID: 84364453544067473}
-  - {fileID: 8907509821198412086}
-  - {fileID: -824457067591523315}
+  - {fileID: -7085936119884536874}
+  - {fileID: -8277666033390285027}
+  - {fileID: -6642729254166906212}
   Parameters:
   - {fileID: 7344316594631064389}
   - {fileID: 3089010798117439694}
   - {fileID: -8447519872970154950}
+  - {fileID: -3481804438300072411}
 --- !u!114 &84364453544067473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,26 +199,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5d0933cd30548669565cf8c60749648, type: 3}
-  m_Name: Locomotion
+  m_Name: Movement - Normal
   m_EditorClassIdentifier: 
   Loop: 1
   Speed: 1
   OutTransitions:
-  - ToState: {fileID: 8907509821198412086}
-    HasEndTime: 1
-    EndTime: 0.76
-    NormalizedTransitionDuration: 0.15
+  - ToState: {fileID: -8277666033390285027}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3481804438300072411}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  - ToState: {fileID: -6642729254166906212}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
+    Conditions:
+    - Parameter: {fileID: -3481804438300072411}
+      ComparisonValue: 2
+      ComparisonMode: 0
+  - ToState: {fileID: -7085936119884536874}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.15
     Conditions:
     - Parameter: {fileID: 7344316594631064389}
       ComparisonValue: 1
       ComparisonMode: 0
-  - ToState: {fileID: -824457067591523315}
-    HasEndTime: 0
-    EndTime: 0
-    NormalizedTransitionDuration: 0.15
-    Conditions: []
   StateEditorData:
-    GraphPosition: {x: 484.59998, y: 324}
+    GraphPosition: {x: 435.99994, y: 323.19998}
     Guid: 72e1f4e820f444942bd1743b72d9c91f
   BlendClips:
   - Clip: {fileID: 11400000, guid: 2d8b5b7a11d7f3c418b9a6677c0cc292, type: 2}
@@ -120,30 +263,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bf49d2668cb4e4e8a67a3039a2ecc63, type: 3}
   m_Name: IsFalling
   m_EditorClassIdentifier: 
---- !u!114 &8907509821198412086
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
-  m_Name: IsFalling
-  m_EditorClassIdentifier: 
-  Loop: 1
-  Speed: 1
-  OutTransitions:
-  - ToState: {fileID: 84364453544067473}
-    HasEndTime: 0
-    EndTime: 0
-    NormalizedTransitionDuration: 0.15
-    Conditions:
-    - Parameter: {fileID: 7344316594631064389}
-      ComparisonValue: 0
-      ComparisonMode: 1
-  StateEditorData:
-    GraphPosition: {x: 699.6, y: 188.2}
-    Guid: 07cc65759a0b3ec4cb52846346ab263c
-  Clip: {fileID: 11400000, guid: 2fa5654cbbd35e54f9a7b6cf79f67e1d, type: 2}
