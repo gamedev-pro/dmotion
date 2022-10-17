@@ -18,8 +18,7 @@ Overall, this system should feel similar to Unity's Mechanim system, however the
 - 1D Blend Tree
 - Loop and speed control
 - Blending between states during transitions
-- Boolean transitions
-- End Time transtions
+- Transitions: Boolean, Int, Enum and End Time
 - Blend Parameters (float parameters for controlling Blend Trees)
 - Animation Events
 - Root Motion (with WriteGroup support, if you need to override default behaviour)
@@ -29,9 +28,10 @@ Overall, this system should feel similar to Unity's Mechanim system, however the
 
 ### Coming soon
 
-- Enum Transitions
 - 2D Blend Tree (cartesian/freeform)
 - State Machine Override (a.k.a Animator Override Controller)
+- SubStates
+- Visual Debugging
 - IK Support
 
 ### Planned
