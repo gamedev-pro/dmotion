@@ -13,6 +13,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Enum Transitions
 
 ### Fixed
+- Fix AnimationParameterAsset hash calculation when using strings
 - Fixed bug where StateMachine would not update during AnimationState transition
 - Fix bug where LinearBlend and SingleStates would reference wrong AnimationState in StateMachine (fix at UpdateStateMachineJob.CreateState)
 
