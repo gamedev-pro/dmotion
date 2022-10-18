@@ -75,6 +75,10 @@ namespace DMotion
         {
             Assert.IsTrue(thresholds.IsCreated);
             var startIndex = samplers.IdToIndex(animation.StartSamplerId);
+            
+            if(startIndex == -1)
+                return;
+            
             var endIndex = startIndex + thresholds.Length - 1;
 
             //we assume thresholds are sorted here

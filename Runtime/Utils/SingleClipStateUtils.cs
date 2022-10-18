@@ -57,17 +57,21 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> samplers)
         {
             var samplerIndex = samplers.IdToIndex(animation.StartSamplerId);
-            var sampler = samplers[samplerIndex];
-            sampler.Weight = animation.Weight;
 
-            sampler.PreviousTime = sampler.Time;
-            sampler.Time += dt * animation.Speed;
-            if (animation.Loop)
+            if (samplerIndex >= 0)
             {
-                sampler.LoopToClipTime();
-            }
+                var sampler = samplers[samplerIndex];
+                sampler.Weight = animation.Weight;
 
-            samplers[samplerIndex] = sampler;
+                sampler.PreviousTime = sampler.Time;
+                sampler.Time += dt * animation.Speed;
+                if (animation.Loop)
+                {
+                    sampler.LoopToClipTime();
+                }
+
+                samplers[samplerIndex] = sampler;
+            }
         }
     }
 }
