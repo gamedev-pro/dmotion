@@ -262,5 +262,40 @@ namespace DMotion.Authoring
                 }
             }
         }
+
+        public static void AddAnimatorOwnerComponents(EntityManager dstManager, Entity ownerEntity, Entity entity)
+        {
+            dstManager.AddComponentData(ownerEntity, new AnimatorOwner { AnimatorEntity = entity });
+            dstManager.AddComponentData(entity, new AnimatorEntity { Owner = ownerEntity });
+        }
+
+        public static void AddRootMotionComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,
+            RootMotionMode rootMotionMode)
+        {
+            switch (rootMotionMode)
+            {
+                case RootMotionMode.Disabled:
+                    break;
+                case RootMotionMode.EnabledAutomatic:
+                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
+                    dstManager.AddComponentData(entity, new RootDeltaRotation());
+                    if (ownerEntity != entity)
+                    {
+                        dstManager.AddComponentData(ownerEntity, new TransferRootMotionToOwner());
+                    }
+                    else
+                    {
+                        dstManager.AddComponentData(entity, new ApplyRootMotionToEntity());
+                    }
+
+                    break;
+                case RootMotionMode.EnabledManual:
+                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
+                    dstManager.AddComponentData(entity, new RootDeltaRotation());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 }
