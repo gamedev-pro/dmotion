@@ -2,7 +2,6 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEditor.Experimental.Rendering;
 using UnityEngine.Assertions;
 
 namespace DMotion
