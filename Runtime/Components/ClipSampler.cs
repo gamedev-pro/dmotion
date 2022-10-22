@@ -32,6 +32,8 @@ namespace DMotion
 
         internal ref SkeletonClip Clip => ref Clips.Value.clips[ClipIndex];
 
+        internal float Duration => Clip.duration;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void LoopToClipTime()
         {

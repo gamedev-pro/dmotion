@@ -22,7 +22,7 @@ namespace DMotion.Editor
 
         protected override EdgeControl CreateEdgeControl()
         {
-            return new TransitionEdgeControl()
+            return new TransitionEdgeControl
             {
                 Edge = this,
                 capRadius = 4f,

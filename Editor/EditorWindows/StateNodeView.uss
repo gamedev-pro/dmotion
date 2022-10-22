@@ -28,7 +28,7 @@
 }
 
 .activestate {
-    background-color: rgb(56, 56, 56);
+    background-color: rgb(60, 144, 18);
 }
 
 #input {
@@ -173,6 +173,16 @@
     height: 100%;
 }
 
-#title {
-    position: relative;
+#timeline-bar {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 1px;
+    height: 10px;
+    visibility: visible;
+    display: flex;
 }

@@ -16,11 +16,17 @@ namespace DMotion.Editor
         {
             return proxy.World.EntityManager.GetComponentData<T>(proxy.Entity);
         }
-        
+
         internal static T GetManagedComponent<T>(this EntitySelectionProxy proxy)
             where T : class, IComponentData
         {
             return proxy.World.EntityManager.GetComponentData<T>(proxy.Entity);
+        }
+
+        internal static DynamicBuffer<T> GetBuffer<T>(this EntitySelectionProxy proxy)
+            where T : struct, IBufferElementData
+        {
+            return proxy.World.EntityManager.GetBuffer<T>(proxy.Entity);
         }
     }
 }

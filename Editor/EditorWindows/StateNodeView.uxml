@@ -1,12 +1,13 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <Style src="project://database/Packages/com.gamedevpro.dmotion/Editor/EditorWindows/StateNodeView.uss?fileID=7433441132597879392&amp;guid=df3497812e79b034e9d358f24448549f&amp;type=3#StateNodeView" />
     <ui:VisualElement name="node-border" style="justify-content: center;">
-        <ui:VisualElement name="contents" style="flex-direction: row;">
+        <ui:VisualElement name="contents" style="flex-direction: column;">
             <ui:VisualElement name="input" />
             <ui:VisualElement name="title" picking-mode="Ignore">
                 <ui:Label name="title-label" text="RootNode" picking-mode="Ignore" class="unity-text-element unity-label" />
             </ui:VisualElement>
             <ui:VisualElement name="output" />
+            <ui:ProgressBar name="timeline-bar" high-value="1" />
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="selection-border" picking-mode="Ignore" />

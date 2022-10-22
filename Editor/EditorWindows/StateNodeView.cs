@@ -56,6 +56,7 @@ namespace DMotion.Editor
         internal static AnimationStateStyle Normal => new() { ClassName = "normalstate" };
         internal static AnimationStateStyle Active => new() { ClassName = "activestate" };
 
+
         internal static IEnumerable<AnimationStateStyle> AllStyles
         {
             get
@@ -64,6 +65,21 @@ namespace DMotion.Editor
                 yield return Normal;
                 yield return Active;
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return ClassName.GetHashCode();
+        }
+
+        public static bool operator ==(AnimationStateStyle left, AnimationStateStyle right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(AnimationStateStyle left, AnimationStateStyle right)
+        {
+            return !left.Equals(right);
         }
     }
 
@@ -77,6 +93,7 @@ namespace DMotion.Editor
         public StateMachineAsset StateMachine => model.ParentView.StateMachine;
         public Port input;
         public Port output;
+        private ProgressBar timelineBar;
 
         protected StateNodeView(VisualTreeAsset asset) : base(AssetDatabase.GetAssetPath(asset))
         {
@@ -94,6 +111,8 @@ namespace DMotion.Editor
             view.model = model;
             view.title = view.State.name;
             view.viewDataKey = view.State.StateEditorData.Guid;
+            view.timelineBar = view.Q<ProgressBar>();
+
             view.SetPosition(new Rect(view.State.StateEditorData.GraphPosition, Vector2.one));
 
             view.CreateInputPort();
@@ -101,12 +120,19 @@ namespace DMotion.Editor
 
             view.SetNodeStateStyle(view.GetStateStyle());
 
+
             return view;
         }
 
         internal void UpdateDebug()
         {
-            SetNodeStateStyle(GetStateStyle());
+            var style = GetStateStyle();
+            SetNodeStateStyle(style);
+
+            if (style == AnimationStateStyle.Active)
+            {
+                UpdateTimelineProgressBar();
+            }
         }
 
         internal AnimationStateStyle GetStateStyle()
@@ -114,7 +140,9 @@ namespace DMotion.Editor
             if (Application.isPlaying && SelectedEntity != null && SelectedEntity.Exists)
             {
                 var stateMachine = SelectedEntity.GetComponent<AnimationStateMachine>();
-                if (stateMachine.CurrentState.IsValid)
+                var currentAnimationState = SelectedEntity.GetComponent<AnimationCurrentState>();
+                if (stateMachine.CurrentState.IsValid && stateMachine.CurrentState.AnimationStateId ==
+                    currentAnimationState.AnimationStateId)
                 {
                     var currentState = StateMachine.States[stateMachine.CurrentState.StateIndex];
                     if (currentState == State)
@@ -140,6 +168,9 @@ namespace DMotion.Editor
             }
 
             AddToClassList(stateStyle.ClassName);
+
+            timelineBar.style.display =
+                stateStyle == AnimationStateStyle.Active ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -205,6 +236,35 @@ namespace DMotion.Editor
         {
             base.OnSelected();
             StateSelectedEvent?.Invoke(this);
+        }
+
+        private void UpdateTimelineProgressBar()
+        {
+            var stateMachine = SelectedEntity.GetComponent<AnimationStateMachine>();
+
+            if (!stateMachine.CurrentState.IsValid)
+            {
+                return;
+            }
+
+            var animationStates = SelectedEntity.GetBuffer<AnimationState>();
+            var samplers = SelectedEntity.GetBuffer<ClipSampler>();
+            var animationState = animationStates.GetWithId((byte)stateMachine.CurrentState.AnimationStateId);
+
+            var avgTime = 0.0f;
+            var avgDuration = 0.0f;
+            var startSamplerIndex = samplers.IdToIndex(animationState.StartSamplerId);
+            for (var i = startSamplerIndex; i < startSamplerIndex + animationState.ClipCount; i++)
+            {
+                avgTime += samplers[i].Time;
+                avgDuration += samplers[i].Duration;
+            }
+
+            avgTime /= animationState.ClipCount;
+            avgDuration /= animationState.ClipCount;
+
+            var percent = avgTime / avgDuration;
+            timelineBar.value = percent;
         }
     }
 }
