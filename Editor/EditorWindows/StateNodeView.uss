@@ -178,11 +178,20 @@
     margin-left: 0;
     margin-right: 0;
     margin-top: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     padding-left: 20px;
     padding-right: 20px;
     padding-bottom: 1px;
-    height: 10px;
+    height: 8px;
     visibility: visible;
     display: flex;
+    position: absolute;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    bottom: 0;
 }
