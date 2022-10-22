@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using DMotion.Authoring;
+using Unity.Entities;
+using Unity.Entities.Editor;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -14,6 +17,7 @@ namespace DMotion.Editor
         {
         }
     }
+
     internal class SingleClipStateNodeView : StateNodeView<SingleClipStateAsset>
     {
         public SingleClipStateNodeView(VisualTreeAsset asset) : base(asset)
@@ -33,22 +37,43 @@ namespace DMotion.Editor
     {
         internal AnimationStateMachineEditorView ParentView;
         internal AnimationStateAsset StateAsset;
+        internal EntitySelectionProxy SelectedEntity;
 
-        internal StateNodeViewModel(AnimationStateMachineEditorView parentView, AnimationStateAsset stateAsset)
+        internal StateNodeViewModel(AnimationStateMachineEditorView parentView,
+            AnimationStateAsset stateAsset,
+            EntitySelectionProxy selectedEntity)
         {
             ParentView = parentView;
             StateAsset = stateAsset;
+            SelectedEntity = selectedEntity;
         }
     }
-    
+
+    internal struct AnimationStateStyle
+    {
+        internal string ClassName;
+        internal static AnimationStateStyle Default => new() { ClassName = "defaultstate" };
+        internal static AnimationStateStyle Normal => new() { ClassName = "normalstate" };
+        internal static AnimationStateStyle Active => new() { ClassName = "activestate" };
+
+        internal static IEnumerable<AnimationStateStyle> AllStyles
+        {
+            get
+            {
+                yield return Default;
+                yield return Normal;
+                yield return Active;
+            }
+        }
+    }
+
     internal abstract class StateNodeView : Node
     {
-        internal const string DefaultStateClassName = "defaultstate";
-        internal const string NormalStateClassName = "normalstate";
         protected StateNodeViewModel model;
-        
+
         internal Action<StateNodeView> StateSelectedEvent;
         public AnimationStateAsset State => model.StateAsset;
+        public EntitySelectionProxy SelectedEntity => model.SelectedEntity;
         public StateMachineAsset StateMachine => model.ParentView.StateMachine;
         public Port input;
         public Port output;
@@ -70,38 +95,66 @@ namespace DMotion.Editor
             view.title = view.State.name;
             view.viewDataKey = view.State.StateEditorData.Guid;
             view.SetPosition(new Rect(view.State.StateEditorData.GraphPosition, Vector2.one));
-            
+
             view.CreateInputPort();
             view.CreateOutputPort();
 
-            view.SetDefaultState(view.StateMachine.IsDefaultState(view.State));
-            
+            view.SetNodeStateStyle(view.GetStateStyle());
+
             return view;
         }
-        
-        internal void SetDefaultState(bool isDefault)
+
+        internal void UpdateDebug()
         {
-            RemoveFromClassList(DefaultStateClassName);
-            RemoveFromClassList(NormalStateClassName);
-            if (isDefault)
+            SetNodeStateStyle(GetStateStyle());
+        }
+
+        internal AnimationStateStyle GetStateStyle()
+        {
+            if (Application.isPlaying && SelectedEntity != null && SelectedEntity.Exists)
             {
-                AddToClassList(DefaultStateClassName);
+                var stateMachine = SelectedEntity.GetComponent<AnimationStateMachine>();
+                if (stateMachine.CurrentState.IsValid)
+                {
+                    var currentState = StateMachine.States[stateMachine.CurrentState.StateIndex];
+                    if (currentState == State)
+                    {
+                        return AnimationStateStyle.Active;
+                    }
+                }
             }
-            else
+
+            if (StateMachine.IsDefaultState(State))
             {
-                AddToClassList(NormalStateClassName);
+                return AnimationStateStyle.Default;
             }
+
+            return AnimationStateStyle.Normal;
+        }
+
+        internal void SetNodeStateStyle(in AnimationStateStyle stateStyle)
+        {
+            foreach (var s in AnimationStateStyle.AllStyles)
+            {
+                RemoveFromClassList(s.ClassName);
+            }
+
+            AddToClassList(stateStyle.ClassName);
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction($"Create Transition", OnContextMenuCreateTransition);
-
-            var setDefaultStateMenuStatus = StateMachine.IsDefaultState(State)
+            var status = Application.isPlaying
                 ? DropdownMenuAction.Status.Disabled
                 : DropdownMenuAction.Status.Normal;
+            evt.menu.AppendAction($"Create Transition", OnContextMenuCreateTransition, status);
+
+            var setDefaultStateMenuStatus = StateMachine.IsDefaultState(State) || Application.isPlaying
+                ? DropdownMenuAction.Status.Disabled
+                : DropdownMenuAction.Status.Normal;
+
             evt.menu.AppendAction($"Set As Default State", OnContextMenuSetAsDefaultState, setDefaultStateMenuStatus);
-            
+
             evt.StopPropagation();
         }
 
@@ -110,11 +163,11 @@ namespace DMotion.Editor
             var previousState = model.ParentView.GetViewForState(StateMachine.DefaultState);
             if (previousState != null)
             {
-                previousState.SetDefaultState(false);
+                previousState.SetNodeStateStyle(AnimationStateStyle.Normal);
             }
-            
+
             StateMachine.SetDefaultState(State);
-            SetDefaultState(true);
+            SetNodeStateStyle(AnimationStateStyle.Default);
         }
 
         private void OnContextMenuCreateTransition(DropdownMenuAction obj)
@@ -122,19 +175,21 @@ namespace DMotion.Editor
             //TODO (hack): There should be a better way to create an edge
             var ev = MouseDownEvent.GetPooled(Input.mousePosition, 0, 1, Vector2.zero);
             output.edgeConnector.GetType().GetMethod("OnMouseDown", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(output.edgeConnector, new object[]{ev});
+                .Invoke(output.edgeConnector, new object[] { ev });
         }
-        
+
         protected void CreateInputPort()
         {
-            input = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Input, Port.Capacity.Multi, typeof(bool));
+            input = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Input, Port.Capacity.Multi,
+                typeof(bool));
             input.portName = "";
             inputContainer.Add(input);
         }
 
         protected void CreateOutputPort()
         {
-            output = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Output, Port.Capacity.Multi, typeof(bool));
+            output = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Output, Port.Capacity.Multi,
+                typeof(bool));
             output.portName = "";
             outputContainer.Add(output);
         }

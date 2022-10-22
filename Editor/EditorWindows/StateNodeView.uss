@@ -27,6 +27,10 @@
     background-color: rgb(200, 114, 29);
 }
 
+.activestate {
+    background-color: rgb(56, 56, 56);
+}
+
 #input {
     align-items: center;
     position: absolute;

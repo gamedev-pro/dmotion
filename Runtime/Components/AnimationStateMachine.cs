@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using DMotion.Authoring;
 using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
@@ -52,4 +53,11 @@ namespace DMotion
             get => ref StateMachineBlob.Value.States[CurrentState.StateIndex];
         }
     }
+    
+    #if UNITY_EDITOR || DEBUG
+    internal class AnimationStateMachineDebug : IComponentData
+    {
+        internal StateMachineAsset StateMachineAsset;
+    }
+    #endif
 }

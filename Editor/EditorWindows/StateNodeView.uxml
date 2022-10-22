@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Packages/com.gamedevpro.dmotion-editor/Editor/EditorWindows/StateNodeView.uss?fileID=7433441132597879392&amp;guid=df3497812e79b034e9d358f24448549f&amp;type=3#StateNodeView" />
+    <Style src="project://database/Packages/com.gamedevpro.dmotion/Editor/EditorWindows/StateNodeView.uss?fileID=7433441132597879392&amp;guid=df3497812e79b034e9d358f24448549f&amp;type=3#StateNodeView" />
     <ui:VisualElement name="node-border" style="justify-content: center;">
         <ui:VisualElement name="contents" style="flex-direction: row;">
             <ui:VisualElement name="input" />

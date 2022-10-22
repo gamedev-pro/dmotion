@@ -13,7 +13,9 @@ namespace DMotion.Editor
 
     internal class StateMachineInspectorView : VisualElement
     {
-        public new class UxmlFactory : UxmlFactory<StateMachineInspectorView, UxmlTraits> { }
+        public new class UxmlFactory : UxmlFactory<StateMachineInspectorView, UxmlTraits>
+        {
+        }
 
         private UnityEditor.Editor editor;
         private Vector2 scrollPos;
@@ -23,22 +25,24 @@ namespace DMotion.Editor
             where TModel : struct
         {
             Object.DestroyImmediate(editor);
-            
+
             Clear();
             editor = UnityEditor.Editor.CreateEditor(obj, typeof(TEditor));
-            ((IStateMachineInspector<TModel>) editor).SetModel(model);
-            
+            ((IStateMachineInspector<TModel>)editor).SetModel(model);
+
             var imgui = new IMGUIContainer(() =>
             {
                 if (editor.target != null)
                 {
-                    using (var scope  = new EditorGUILayout.ScrollViewScope(scrollPos))
+                    using (var scope = new EditorGUILayout.ScrollViewScope(scrollPos))
                     {
-                        editor.OnInspectorGUI();
-                        scrollPos = scope.scrollPosition;
-                        editor.serializedObject.ApplyModifiedProperties();
-                        editor.serializedObject.Update();
-                        //
+                        using (new EditorGUI.DisabledScope(Application.isPlaying))
+                        {
+                            editor.OnInspectorGUI();
+                            scrollPos = scope.scrollPosition;
+                            editor.serializedObject.ApplyModifiedProperties();
+                            editor.serializedObject.Update();
+                        }
                     }
                 }
             });

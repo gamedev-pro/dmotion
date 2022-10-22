@@ -261,6 +261,13 @@ namespace DMotion.Authoring
                     }
                 }
             }
+
+#if UNITY_EDITOR || DEBUG
+            dstManager.AddComponentData(entity, new AnimationStateMachineDebug
+            {
+                StateMachineAsset = stateMachineAsset
+            });
+#endif
         }
 
         public static void AddAnimatorOwnerComponents(EntityManager dstManager, Entity ownerEntity, Entity entity)
