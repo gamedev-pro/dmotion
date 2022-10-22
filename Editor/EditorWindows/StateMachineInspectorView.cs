@@ -36,13 +36,10 @@ namespace DMotion.Editor
                 {
                     using (var scope = new EditorGUILayout.ScrollViewScope(scrollPos))
                     {
-                        using (new EditorGUI.DisabledScope(Application.isPlaying))
-                        {
-                            editor.OnInspectorGUI();
-                            scrollPos = scope.scrollPosition;
-                            editor.serializedObject.ApplyModifiedProperties();
-                            editor.serializedObject.Update();
-                        }
+                        editor.OnInspectorGUI();
+                        scrollPos = scope.scrollPosition;
+                        editor.serializedObject.ApplyModifiedProperties();
+                        editor.serializedObject.Update();
                     }
                 }
             });

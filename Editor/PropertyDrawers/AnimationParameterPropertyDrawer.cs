@@ -54,35 +54,41 @@ namespace DMotion.Editor
                     {
                         var parameterIndex = stateMachineAsset.Parameters.OfType<BoolParameterAsset>()
                             .FindIndex(p => parameterAsset == p);
-                        var boolParameter = selectedEntity.GetBuffer<BoolParameter>()[parameterIndex];
-                        EditorGUI.Toggle(rects[1], GUIContent.none, boolParameter.Value);
+                        var boolParameters = selectedEntity.GetBuffer<BoolParameter>();
+                        var boolParameter = boolParameters[parameterIndex];
+                        boolParameter.Value = EditorGUI.Toggle(rects[1], GUIContent.none, boolParameter.Value);
+                        boolParameters[parameterIndex] = boolParameter;
                         break;
                     }
                     case IntParameterAsset:
                     {
                         var parameterIndex = stateMachineAsset.Parameters.OfType<IntParameterAsset>()
                             .FindIndex(p => parameterAsset == p);
-                        var intParameter = selectedEntity.GetBuffer<IntParameter>()[parameterIndex];
+                        var intParameters = selectedEntity.GetBuffer<IntParameter>();
+                        var intParameter = intParameters[parameterIndex];
 
                         if (parameterAsset is EnumParameterAsset enumParameterAsset)
                         {
-                            EditorGUIUtils.GenericEnumPopup(rects[1],
+                            intParameter.Value = EditorGUIUtils.GenericEnumPopup(rects[1],
                                 enumParameterAsset.EnumType.Type,
                                 intParameter.Value);
                         }
                         else
                         {
-                            EditorGUI.IntField(rects[1], GUIContent.none, intParameter.Value);
+                            intParameter.Value = EditorGUI.IntField(rects[1], GUIContent.none, intParameter.Value);
                         }
 
+                        intParameters[parameterIndex] = intParameter;
                         break;
                     }
                     case FloatParameterAsset:
                     {
                         var parameterIndex = stateMachineAsset.Parameters.OfType<FloatParameterAsset>()
                             .FindIndex(p => parameterAsset == p);
-                        var floatParameter = selectedEntity.GetBuffer<BlendParameter>()[parameterIndex];
-                        EditorGUI.FloatField(rects[1], GUIContent.none, floatParameter.Value);
+                        var floatParameters = selectedEntity.GetBuffer<BlendParameter>();
+                        var floatParameter = floatParameters[parameterIndex];
+                        floatParameter.Value = EditorGUI.FloatField(rects[1], GUIContent.none, floatParameter.Value);
+                        floatParameters[parameterIndex] = floatParameter;
                         break;
                     }
                     default:
