@@ -85,7 +85,7 @@ namespace DMotion.Editor
                 {
                     const float arrowHalfHeight = 8f;
                     const float arrowHalfWidth = 7f;
-                    var arrowOffset = Edge.TransitionCount > 1 ? arrowHalfHeight * 2 : 0;
+                    var arrowOffset = Edge.Model.TransitionCount > 1 ? arrowHalfHeight * 2 : 0;
                     for (var i = 0; i < 3; i++)
                     {
                         var arrowIndex = 4 + 3 * i;
@@ -104,7 +104,7 @@ namespace DMotion.Editor
 
             for (var i = 0; i < vertices.Length; i++)
             {
-                vertices[i].tint = inputColor;
+                vertices[i].tint = Edge.defaultColor;
             }
 
             var mwd = mgc.Allocate(vertices.Length, indices.Length);

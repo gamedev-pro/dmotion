@@ -46,6 +46,11 @@ namespace DMotion
         internal BlobAssetReference<ClipEventsBlob> ClipEventsBlob;
         internal BlobAssetReference<StateMachineBlob> StateMachineBlob;
         internal StateMachineStateRef CurrentState;
+        
+        //for now we don't use PreviousState for anything other than debugging
+        #if UNITY_EDITOR || DEBUG
+        internal StateMachineStateRef PreviousState;
+        #endif
 
         internal ref AnimationStateBlob CurrentStateBlob
         {

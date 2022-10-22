@@ -114,6 +114,10 @@ namespace DMotion
                 if (shouldStartTransition)
                 {
                     ref var transition = ref stateMachine.CurrentStateBlob.Transitions[transitionIndex];
+
+#if UNITY_EDITOR || DEBUG
+                    stateMachine.PreviousState = stateMachine.CurrentState;
+#endif
                     stateMachine.CurrentState = CreateState(
                         transition.ToStateIndex,
                         stateMachine.StateMachineBlob,

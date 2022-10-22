@@ -153,13 +153,20 @@ namespace DMotion.Editor
                                nap.node != startPort.node)).ToList();
         }
 
+        #if UNITY_EDITOR || DEBUG
         internal void UpdateDebug()
         {
             foreach (var stateView in stateToView.Values)
             {
                 stateView.UpdateDebug();
             }
+
+            foreach (var transitions in transitionToEdgeView.Values)
+            {
+                transitions.UpdateDebug();
+            }
         }
+        #endif
 
         internal void PopulateView(in StateMachineEditorViewModel newModel)
         {
@@ -201,7 +208,7 @@ namespace DMotion.Editor
             var transitionPair = new TransitionPair(state, outTransitionIndex);
             if (transitionToEdgeView.TryGetValue(transitionPair, out var existingEdge))
             {
-                existingEdge.TransitionCount++;
+                existingEdge.Model.TransitionCount++;
                 existingEdge.MarkDirtyRepaint();
             }
             else
@@ -209,7 +216,12 @@ namespace DMotion.Editor
                 var fromStateView = GetViewForState(transitionPair.FromState);
                 var toStateView = GetViewForState(transitionPair.ToState);
                 var edge = fromStateView.output.ConnectTo<TransitionEdge>(toStateView.input);
-                edge.TransitionCount = 1;
+                edge.Model = new TransitionEdgeModel()
+                {
+                    TransitionCount = 1,
+                    StateMachineAsset = model.StateMachineAsset,
+                    SelectedEntity = model.SelectedEntity
+                };
                 AddElement(edge);
                 transitionToEdgeView.Add(transitionPair, edge);
 
