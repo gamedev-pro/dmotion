@@ -8,7 +8,16 @@ namespace DMotion
     {
         public static int FindIndex<T>(this IEnumerable<T> source, Predicate<T> predicate)
         {
-            return source.ToList().FindIndex(predicate);
+            var i = 0;
+            foreach (var e in source)
+            {
+                if (predicate(e))
+                {
+                    return i;
+                }
+                i++;
+            }
+            return -1;
         }
     }
 }
