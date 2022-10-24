@@ -153,7 +153,7 @@ namespace DMotion.Editor
         {
             if (EditorApplication.timeSinceStartup > frameAllTime)
             {
-                EditorApplication.update -= WaitAndFrameAll;
+                EditorApplication.update -= DoFrameAll;
                 stateMachineEditorView.FrameAll();
             }
         }
