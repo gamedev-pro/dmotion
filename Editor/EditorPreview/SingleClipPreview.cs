@@ -33,7 +33,7 @@ namespace DMotion.Editor
         }
         public override float SampleTime
         {
-            get => NormalizedSampleTime * Clip.length;
+            get => Clip != null ? NormalizedSampleTime * Clip.length : 0;
         }
         public override float NormalizedSampleTime
         {
