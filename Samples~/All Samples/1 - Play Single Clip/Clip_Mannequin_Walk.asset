@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a970179cc48494a8f754abfb8687537, type: 3}
   m_Name: Clip_Mannequin_Walk
   m_EditorClassIdentifier: 
-  Clip: {fileID: 1827226128182048838, guid: 3750408cc2207164e847885b4cee48ff, type: 3}
+  Clip: {fileID: -3419257869308726280, guid: e85fcd9ca6df94743bdc9cc9c67a5a89, type: 3}
   Events: []
