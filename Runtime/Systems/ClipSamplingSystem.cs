@@ -27,6 +27,38 @@ namespace DMotion
         
         protected override void OnUpdate()
         {
+            new SampleOptimizedBonesJob
+            {
+                Marker = Marker_SampleOptimizedBonesJob
+            }.ScheduleParallel();
+            
+            new SampleNonOptimizedBones
+            {
+                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                Marker = Marker_SampleNonOptimizedBonesJob
+            }.ScheduleParallel();
+            
+            new SampleRootDeltasJob
+            {
+                Marker = Marker_SampleRootDeltasJob
+            }.ScheduleParallel();
+            
+            new ApplyRootMotionToEntityJob
+            {
+                Marker = Marker_ApplyRootMotionToEntityJob
+            }.ScheduleParallel();
+            
+            new TransferRootMotionJob
+            {
+                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
+                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
+                Marker = Marker_TransferRootMotionJob
+            }.ScheduleParallel();
+        }
+
+        //Saving this Update for later (need to implement IJobChunk for all jobs)
+        private void OnUpdate_BK()
+        {
             // new NormalizedSamplersWeights().ScheduleParallel();
             //Sample bones (those only depend on updateFmsHandle)
             var sampleOptimizedHandle = new SampleOptimizedBonesJob
@@ -60,6 +92,7 @@ namespace DMotion
             
             Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle, transferRootMotionHandle);
             Dependency = JobHandle.CombineDependencies(Dependency, applyRootMotionHandle);
+            
         }
     }
 }
