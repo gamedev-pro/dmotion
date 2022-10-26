@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a970179cc48494a8f754abfb8687537, type: 3}
-  m_Name: Clip_Mannequin_Walk
+  m_Name: 1_PlaySingleClip_Walk
   m_EditorClassIdentifier: 
   Clip: {fileID: -3419257869308726280, guid: e85fcd9ca6df94743bdc9cc9c67a5a89, type: 3}
   Events: []

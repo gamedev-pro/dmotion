@@ -204,11 +204,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Owner: {fileID: 881834647}
   Animator: {fileID: 881834648}
-  Clip: {fileID: 11400000, guid: f0ba9cc2066948b4bbf9cbc2a786f127, type: 2}
-  Speed: 1
+  Clip: {fileID: 11400000, guid: c3e64ea8aafab8745a75aa66aef84c12, type: 2}
+  Speed: 0.5
   Loop: 1
   RootMotionMode: 1
-  EnableEvents: 0
+  EnableEvents: 1
 --- !u!114 &881834651
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -222,6 +222,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ConversionMode: 0
+--- !u!114 &881834653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 881834647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74c584c054ea48fdbc419d0076c61a4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1640975380
 PrefabInstance:
   m_ObjectHideFlags: 0
