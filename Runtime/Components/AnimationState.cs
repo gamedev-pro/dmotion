@@ -11,7 +11,7 @@ namespace DMotion
         byte Id { get; set; }
     }
 
-    internal struct AnimationCurrentState : IComponentData
+    public struct AnimationCurrentState : IComponentData
     {
         internal sbyte AnimationStateId;
         internal bool IsValid => AnimationStateId >= 0;

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    internal static class AnimationStateMachineConversionUtils
+    public static class AnimationStateMachineConversionUtils
     {
         public static BlobAssetReference<StateMachineBlob> CreateStateMachineBlob(StateMachineAsset stateMachineAsset,
             Allocator allocator)

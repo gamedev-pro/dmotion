@@ -204,9 +204,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Owner: {fileID: 881834647}
   Animator: {fileID: 881834648}
-  Clip: {fileID: 11400000, guid: f0ba9cc2066948b4bbf9cbc2a786f127, type: 2}
-  Speed: 1
-  Loop: 1
+  Clip:
+    Clip: {fileID: 11400000, guid: f0ba9cc2066948b4bbf9cbc2a786f127, type: 2}
+    Speed: 1
+    Loop: 1
   RootMotionMode: 1
   EnableEvents: 0
 --- !u!114 &881834651
