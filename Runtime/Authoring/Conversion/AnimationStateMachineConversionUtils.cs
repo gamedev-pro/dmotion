@@ -270,6 +270,28 @@ namespace DMotion.Authoring
 #endif
         }
 
+        public static void AddSingleClipStateComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,
+            bool enableEvents = true, RootMotionMode rootMotionMode = RootMotionMode.Disabled)
+        {
+            AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
+            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
+
+            dstManager.AddBuffer<SingleClipState>(entity);
+
+            if (enableEvents)
+            {
+                dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
+            }
+
+            if (ownerEntity != entity)
+            {
+                AnimationStateMachineConversionUtils.AddAnimatorOwnerComponents(dstManager, ownerEntity, entity);
+            }
+
+            AnimationStateMachineConversionUtils.AddRootMotionComponents(dstManager, ownerEntity, entity,
+                rootMotionMode);
+        }
+
         public static void AddAnimatorOwnerComponents(EntityManager dstManager, Entity ownerEntity, Entity entity)
         {
             dstManager.AddComponentData(ownerEntity, new AnimatorOwner { AnimatorEntity = entity });

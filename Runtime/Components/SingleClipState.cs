@@ -6,8 +6,8 @@ using Unity.Entities;
 namespace DMotion
 {
     [BurstCompile]
-    internal struct SingleClipState : IBufferElementData
+    public struct SingleClipState : IBufferElementData
     {
-        internal byte AnimationStateId;
+        public byte AnimationStateId;
     }
 }

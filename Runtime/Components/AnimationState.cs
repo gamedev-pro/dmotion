@@ -39,7 +39,7 @@ namespace DMotion
         }
     }
 
-    internal struct AnimationStateTransitionRequest : IComponentData
+    public struct AnimationStateTransitionRequest : IComponentData
     {
         internal sbyte AnimationStateId;
         internal float TransitionDuration;
@@ -59,7 +59,7 @@ namespace DMotion
     }
 
     [BurstCompile]
-    internal struct AnimationState : IBufferElementData, IElementWithId
+    public struct AnimationState : IBufferElementData, IElementWithId
     {
         public byte Id { get; set; }
         internal float Time;

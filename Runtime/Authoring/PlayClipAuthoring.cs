@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
 using Unity.Entities;
@@ -7,62 +9,89 @@ using UnityEngine.Assertions;
 
 namespace DMotion.Authoring
 {
-    public class PlayClipAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
+    [Serializable]
+    public struct SingleClipRefConvertData
     {
-        public GameObject Owner;
-        public Animator Animator;
         public AnimationClipAsset Clip;
-        public float Speed = 1;
-        public bool Loop = true;
+        public float Speed;
+        public bool Loop;
+    }
 
-        public RootMotionMode RootMotionMode;
-        public bool EnableEvents = true;
+    public struct SingleClipRefsConverter
+    {
+        public Animator Animator;
+        public SingleClipRefConvertData[] Clips;
 
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsBlobHandle;
         private SmartBlobberHandle<ClipEventsBlob> clipEventsBlobHandle;
 
+        public SingleClipRefsConverter(Animator animator, SingleClipRefConvertData[] clips)
+        {
+            Animator = animator;
+            Clips = clips ?? Array.Empty<SingleClipRefConvertData>();
+            clipsBlobHandle = default;
+            clipEventsBlobHandle = default;
+        }
+
+        public IEnumerable<SingleClipRef> ConvertClips()
+        {
+            if (clipsBlobHandle.IsValid && clipEventsBlobHandle.IsValid)
+            {
+                var clipsBlob = clipsBlobHandle.Resolve();
+                var clipEventsBlob = clipEventsBlobHandle.Resolve();
+
+                for (int i = 0; i < clipsBlob.Value.clips.Length; i++)
+                {
+                    yield return new SingleClipRef
+                    {
+                        Clips = clipsBlob,
+                        ClipEvents = clipEventsBlob,
+                        ClipIndex = (ushort)i,
+                        Speed = Clips[i].Speed,
+                        Loop = Clips[i].Loop
+                    };
+                }
+            }
+        }
+
+        public void RequestBlobAssets(GameObjectConversionSystem conversionSystem)
+        {
+            var validClips = Clips.Select(c => c.Clip).Where(c => c != null);
+            clipsBlobHandle = conversionSystem.RequestClipsBlob(Animator, validClips);
+            clipEventsBlobHandle =
+                conversionSystem.RequestClipEventsBlob(Animator.gameObject, validClips);
+        }
+    }
+
+    public class PlayClipAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
+    {
+        public GameObject Owner;
+        public Animator Animator;
+        public SingleClipRefConvertData Clip;
+
+        public RootMotionMode RootMotionMode;
+        public bool EnableEvents = true;
+
+        private SingleClipRefsConverter singleClipsConverter;
+
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            var clipsBlob = clipsBlobHandle.Resolve();
-            var clipEventsBlob = clipEventsBlobHandle.Resolve();
-
-            AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
-            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
-
-            var singleClips = dstManager.AddBuffer<SingleClipState>(entity);
-            var animationStates = dstManager.GetBuffer<AnimationState>(entity);
-            var clipSamplers = dstManager.GetBuffer<ClipSampler>(entity);
-            var singleClipState = SingleClipStateUtils.New(0, Speed, Loop, clipsBlob, clipEventsBlob, ref singleClips,
-                ref animationStates,
-                ref clipSamplers);
-
-            dstManager.SetComponentData(entity,
-                new AnimationStateTransitionRequest
-                {
-                    AnimationStateId = (sbyte)singleClipState.AnimationStateId,
-                    TransitionDuration = 0
-                });
-
-            if (EnableEvents)
-            {
-                dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
-            }
-
             var ownerEntity = gameObject != Owner ? conversionSystem.GetPrimaryEntity(Owner) : entity;
-            if (ownerEntity != entity)
+            AnimationStateMachineConversionUtils.AddSingleClipStateComponents(dstManager, ownerEntity, entity,
+                EnableEvents, RootMotionMode);
+            var singleClipRef = singleClipsConverter.ConvertClips().FirstOrDefault();
+            if (singleClipRef.IsValid)
             {
-                AnimationStateMachineConversionUtils.AddAnimatorOwnerComponents(dstManager, ownerEntity, entity);
+                singleClipRef.PlaySingleClip(dstManager, entity);
             }
-
-            AnimationStateMachineConversionUtils.AddRootMotionComponents(dstManager, ownerEntity, entity,
-                RootMotionMode);
         }
 
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager,
             GameObjectConversionSystem conversionSystem)
         {
-            clipsBlobHandle = conversionSystem.RequestClipsBlob(Animator, Clip);
-            clipEventsBlobHandle = conversionSystem.RequestClipEventsBlob(Animator.gameObject, Clip);
+            Assert.IsNotNull(Clip.Clip, $"Trying to play null clip ({gameObject.name})");
+            singleClipsConverter = new SingleClipRefsConverter(Animator, new[] { Clip });
+            singleClipsConverter.RequestBlobAssets(conversionSystem);
         }
     }
 }
