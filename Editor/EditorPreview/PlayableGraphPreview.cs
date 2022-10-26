@@ -16,12 +16,13 @@ namespace DMotion.Editor
         private SkinnedMeshRenderer skinnedMeshRenderer;
         private Mesh previewMesh;
         private PlayableGraph playableGraph;
+
         public GameObject GameObject
         {
             get => gameObject;
             set => SetGameObjectPreview(value);
         }
-        
+
         protected abstract PlayableGraph BuildGraph();
         protected abstract IEnumerable<AnimationClip> Clips { get; }
         public abstract float SampleTime { get; }
@@ -39,12 +40,14 @@ namespace DMotion.Editor
             AnimationMode.StartAnimationMode();
             RefreshPreviewObjects();
         }
+
         private void SetGameObjectPreview(GameObject newValue)
         {
             if (gameObject == newValue)
             {
                 return;
             }
+
             gameObject = newValue;
             if (gameObject != null)
             {
@@ -59,10 +62,12 @@ namespace DMotion.Editor
                 DestroyPreviewInstance();
             }
         }
+
         private bool IsValidGameObject(GameObject obj)
         {
             return obj.GetComponentInChildren<Animator>() != null;
         }
+
         private void DestroyPreviewInstance()
         {
             if (skinnedMeshRenderer != null)
@@ -85,9 +90,9 @@ namespace DMotion.Editor
             DestroyPreviewInstance();
 
             var instance = Object.Instantiate(template, Vector3.zero, Quaternion.identity);
-            
+
             AnimatorUtility.DeoptimizeTransformHierarchy(instance);
-            
+
             instance.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild | HideFlags.HideInHierarchy |
                                  HideFlags.HideInInspector | HideFlags.NotEditable;
             // leaving this here for debug purposes
@@ -95,6 +100,10 @@ namespace DMotion.Editor
             animator = instance.GetComponentInChildren<Animator>();
             skinnedMeshRenderer = instance.GetComponentInChildren<SkinnedMeshRenderer>();
             instance.SetActive(false);
+
+            //Make sure mesh is alined to view
+            skinnedMeshRenderer.transform.up = Vector3.up;
+            skinnedMeshRenderer.transform.forward = Vector3.forward;
 
             previewMesh = new Mesh();
 
@@ -104,7 +113,7 @@ namespace DMotion.Editor
             }
 
             playableGraph = BuildGraph();
-            
+
             CreatePreviewUtility();
 
             return true;
@@ -127,8 +136,12 @@ namespace DMotion.Editor
             lookAtOffset = Vector3.up * skinnedMeshRenderer.bounds.size.y / 2;
             camDistance = 10;
             camEuler = new Vector2(45, 30);
+
+            isMouseDrag = false;
+            lastMousePosition = Vector2.zero;
             HandleCamera(true);
         }
+
         public void RefreshPreviewObjects()
         {
             if (gameObject != null)
@@ -160,7 +173,7 @@ namespace DMotion.Editor
             previewRenderUtility?.Cleanup();
             DestroyPreviewInstance();
         }
-        
+
         private bool TryFindSkeletonFromClip(AnimationClip Clip, out GameObject armatureGo)
         {
             var path = AssetDatabase.GetAssetPath(Clip);
@@ -180,7 +193,7 @@ namespace DMotion.Editor
             armatureGo = null;
             return false;
         }
-        
+
         public void DrawPreview(Rect r, GUIStyle background)
         {
             if (skinnedMeshRenderer != null && playableGraph.IsValid())
@@ -213,6 +226,7 @@ namespace DMotion.Editor
             {
                 return;
             }
+
             // must set hotControl or MouseUp event will not be detected outside window
             int controlId = GUIUtility.GetControlID(FocusType.Passive);
             if (Event.current.GetTypeForControl(controlId) == EventType.MouseDown)
@@ -238,7 +252,7 @@ namespace DMotion.Editor
                 camEuler.y = Mathf.Clamp(camEuler.y, -179, -1); // -1 to avoid perpendicular angles
 
                 previewRenderUtility.camera.transform.position =
-                    Quaternion.Euler(-camEuler.y, camEuler.x, 0) * (Vector3.up * camDistance -camPivot) + camPivot;
+                    Quaternion.Euler(-camEuler.y, camEuler.x, 0) * (Vector3.up * camDistance - camPivot) + camPivot;
                 previewRenderUtility.camera.transform.LookAt(camPivot + lookAtOffset);
 
                 // matcap feel
@@ -250,13 +264,15 @@ namespace DMotion.Editor
 
             // Undocumented feature that wraps the cursor around the screen edges by Screen.currentResolution minus 20
             if (isMouseDown) EditorGUIUtility.SetWantsMouseJumping(1);
-            if (isMouseUp) {
+            if (isMouseUp)
+            {
                 EditorGUIUtility.SetWantsMouseJumping(0);
                 isMouseDrag = false;
             }
 
             // store lastMousePosition starting with mouseDown to prevent wrong initial delta
-            if (isMouseDown || isMouseDrag) {
+            if (isMouseDown || isMouseDrag)
+            {
                 lastMousePosition = Event.current.mousePosition;
             }
         }
