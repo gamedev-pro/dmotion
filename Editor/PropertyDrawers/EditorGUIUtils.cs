@@ -16,7 +16,8 @@ namespace DMotion.Editor
             if (enumType is { IsEnum: true })
             {
                 var enumValue = (Enum) Enum.GetValues(enumType).GetValue(current);
-                return (int) (object)EditorGUI.EnumPopup(r, label, enumValue);
+                var enumObj =(object)EditorGUI.EnumPopup(r, label, enumValue);
+                return Convert.ToInt32(enumObj);
             }
             else
             {

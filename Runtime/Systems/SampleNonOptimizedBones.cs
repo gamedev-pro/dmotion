@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Profiling;
 using Unity.Transforms;
 
@@ -32,7 +33,7 @@ namespace DMotion
                     boneIndex.index, ref firstSampler.Clip,
                     firstSampler.Time,
                     firstSampler.Weight);
-                
+
                 for (var i = firstSamplerIndex + 1; i < samplers.Length; i++)
                 {
                     var sampler = samplers[i];
@@ -43,7 +44,12 @@ namespace DMotion
                             sampler.Time, sampler.Weight);
                     }
                 }
-                
+
+                if (samplers.Length - firstSamplerIndex > 1)
+                {
+                    bone.rotation = math.normalize(bone.rotation);
+                }
+
                 translation.Value = bone.translation;
                 rotation.Value = bone.rotation;
                 scale.Value = bone.scale;

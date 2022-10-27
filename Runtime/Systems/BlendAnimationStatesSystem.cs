@@ -103,11 +103,6 @@ namespace DMotion
                                 animationStates[i] = animationState;
                             }
                         }
-
-                        for (var i = 0; i < animationStates.Length; i++)
-                        {
-                            var animationState = animationStates[i];
-                        }
                     }
                 }
             }
