@@ -41,13 +41,9 @@ namespace DMotion.Editor
             StateMachineAsset stateMachineAsset)
         {
             var selectedEntity = (EntitySelectionProxy)Selection.activeObject;
-            var rects = position.HorizontalLayout(0.7f, 0.3f).ToArray();
-
-            //label
-            EditorGUI.LabelField(rects[0], parameterAsset.name);
-
             //value
             {
+                var label = new GUIContent(parameterAsset.name);
                 switch (parameterAsset)
                 {
                     case BoolParameterAsset:
@@ -56,7 +52,7 @@ namespace DMotion.Editor
                             .FindIndex(p => parameterAsset == p);
                         var boolParameters = selectedEntity.GetBuffer<BoolParameter>();
                         var boolParameter = boolParameters[parameterIndex];
-                        boolParameter.Value = EditorGUI.Toggle(rects[1], GUIContent.none, boolParameter.Value);
+                        boolParameter.Value = EditorGUI.Toggle(position, label, boolParameter.Value);
                         boolParameters[parameterIndex] = boolParameter;
                         break;
                     }
@@ -69,13 +65,13 @@ namespace DMotion.Editor
 
                         if (parameterAsset is EnumParameterAsset enumParameterAsset)
                         {
-                            intParameter.Value = EditorGUIUtils.GenericEnumPopup(rects[1],
+                            intParameter.Value = EditorGUIUtils.GenericEnumPopup(position,
                                 enumParameterAsset.EnumType.Type,
                                 intParameter.Value);
                         }
                         else
                         {
-                            intParameter.Value = EditorGUI.IntField(rects[1], GUIContent.none, intParameter.Value);
+                            intParameter.Value = EditorGUI.IntField(position, label, intParameter.Value);
                         }
 
                         intParameters[parameterIndex] = intParameter;
@@ -87,7 +83,7 @@ namespace DMotion.Editor
                             .FindIndex(p => parameterAsset == p);
                         var floatParameters = selectedEntity.GetBuffer<BlendParameter>();
                         var floatParameter = floatParameters[parameterIndex];
-                        floatParameter.Value = EditorGUI.FloatField(rects[1], GUIContent.none, floatParameter.Value);
+                        floatParameter.Value = EditorGUI.FloatField(position, label, floatParameter.Value);
                         floatParameters[parameterIndex] = floatParameter;
                         break;
                     }
