@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f22b96b7574545b7b931aa33424917be, type: 3}
-  m_Name: 2.2_StateMachine_Transitions
+  m_Name: 2.2_StateMachine_BlendTree1D
   m_EditorClassIdentifier: 
   DefaultState: {fileID: 4227384749368419757}
   States:

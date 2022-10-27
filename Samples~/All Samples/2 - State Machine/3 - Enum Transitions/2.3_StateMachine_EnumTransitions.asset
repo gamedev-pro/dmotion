@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-926090660250476374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
+  m_Name: Idle - Alert
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: 2038082117990262377}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.6
+    Conditions:
+    - Parameter: {fileID: 955117716276792756}
+      ComparisonValue: 2
+      ComparisonMode: 0
+  - ToState: {fileID: 5074063964239988569}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.6
+    Conditions:
+    - Parameter: {fileID: 955117716276792756}
+      ComparisonValue: 0
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 560.75006, y: -104.00001}
+    Guid: 51cc7c8b9b3b861469985aad3c28714f
+  Clip: {fileID: 11400000, guid: 14f7df6bf7947de42803bb3d53f0d8a9, type: 2}
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22b96b7574545b7b931aa33424917be, type: 3}
+  m_Name: 2.3_StateMachine_EnumTransitions
+  m_EditorClassIdentifier: 
+  DefaultState: {fileID: 5074063964239988569}
+  States:
+  - {fileID: 5074063964239988569}
+  - {fileID: -926090660250476374}
+  - {fileID: 2038082117990262377}
+  Parameters:
+  - {fileID: 955117716276792756}
+--- !u!114 &955117716276792756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dedf630c4bbf4fc39cb1d1b528eb9a91, type: 3}
+  m_Name: IdleMode
+  m_EditorClassIdentifier: 
+  EnumType:
+    AssemblyQualifiedTypeName: DMotion.Samples.EnumTransitions.IdleMode, DMotion.Samples.StateMachine.EnumTransitions,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+--- !u!114 &2038082117990262377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
+  m_Name: Idle - Combat
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: 5074063964239988569}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.6
+    Conditions:
+    - Parameter: {fileID: 955117716276792756}
+      ComparisonValue: 0
+      ComparisonMode: 0
+  - ToState: {fileID: -926090660250476374}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.6
+    Conditions:
+    - Parameter: {fileID: 955117716276792756}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 451.2501, y: 32.90565}
+    Guid: 51ce7249a94ebf24a89e30f39ad2d9df
+  Clip: {fileID: 11400000, guid: b898797bccebb7c4faea3f5915a5678c, type: 2}
+--- !u!114 &5074063964239988569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
+  m_Name: Idle - Normal
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: -926090660250476374}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.6
+    Conditions:
+    - Parameter: {fileID: 955117716276792756}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  - ToState: {fileID: 2038082117990262377}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.6
+    Conditions:
+    - Parameter: {fileID: 955117716276792756}
+      ComparisonValue: 2
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 320.60004, y: -104}
+    Guid: ada2cda3ae304084683a8135d1e4612d
+  Clip: {fileID: 11400000, guid: dcfc7908ef1588d4ebbfa4550dca81c4, type: 2}
