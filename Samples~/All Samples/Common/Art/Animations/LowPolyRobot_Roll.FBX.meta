@@ -22,7 +22,17 @@ ModelImporter:
     rigImportErrors: 
     rigImportWarnings: 
     animationImportErrors: 
-    animationImportWarnings: 
+    animationImportWarnings: "\nClip 'Roll' has import animation warnings that might
+      lower retargeting quality:\n\t'lpBip Spine1' has scale animation that will
+      be discarded.\n\t'lpBip Neck' has scale animation that will be discarded.\n\t'lpBip
+      Head' has scale animation that will be discarded.\n\t'lpBip L UpperArm' has
+      scale animation that will be discarded.\n\t'lpBip L Forearm' has scale animation
+      that will be discarded.\n\t'lpBip L Hand' has scale animation that will be
+      discarded.\n\t'lpBip R UpperArm' has scale animation that will be discarded.\n\t'lpBip
+      R Forearm' has scale animation that will be discarded.\n\t'lpBip R Hand' has
+      scale animation that will be discarded.\n\t'lpBip L Calf' has scale animation
+      that will be discarded.\n\t'lpBip R Thigh' has scale animation that will be
+      discarded.\n\t'lpBip R Calf' has scale animation that will be discarded.\n"
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -34,7 +44,36 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     extraUserProperties: []
-    clipAnimations: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Roll
+      takeName: Roll
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     isReadable: 1
   meshes:
     lODScreenPercentages: []
