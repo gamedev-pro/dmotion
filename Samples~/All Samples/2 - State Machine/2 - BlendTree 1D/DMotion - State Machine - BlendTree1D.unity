@@ -190,26 +190,6 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: e85fcd9ca6df94743bdc9cc9c67a5a89, type: 3}
   m_PrefabInstance: {fileID: 881834646}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &881834649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 881834647}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5572a3c786084aa19c72e99d5d77cce6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Owner: {fileID: 881834647}
-  Animator: {fileID: 881834648}
-  Clip:
-    Clip: {fileID: 11400000, guid: c3e64ea8aafab8745a75aa66aef84c12, type: 2}
-    Speed: 0.5
-    Loop: 1
-  RootMotionMode: 1
-  EnableEvents: 1
 --- !u!114 &881834651
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -223,7 +203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ConversionMode: 0
---- !u!114 &881834653
+--- !u!114 &881834652
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -232,9 +212,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 881834647}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74c584c054ea48fdbc419d0076c61a4a, type: 3}
+  m_Script: {fileID: 11500000, guid: e9ddb14f77574516a59bb0c43e3a84c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Owner: {fileID: 881834647}
+  Animator: {fileID: 881834648}
+  StateMachineAsset: {fileID: 11400000, guid: 023bf56ec5100ad42bf46df253be423d, type: 2}
+  RootMotionMode: 1
+  EnableEvents: 1
 --- !u!1001 &1640975380
 PrefabInstance:
   m_ObjectHideFlags: 0

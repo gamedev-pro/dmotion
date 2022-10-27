@@ -9,6 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef7a996f72064b84a3b27780910c27fb, type: 3}
-  m_Name: EV_Footstep
+  m_Script: {fileID: 11500000, guid: 3a970179cc48494a8f754abfb8687537, type: 3}
+  m_Name: 2.2_PlayClipsThroughCode_Idle
   m_EditorClassIdentifier: 
+  Clip: {fileID: 1245882690682072010, guid: e3cec318443d8254bb24a5495ce1427d, type: 3}
+  Events: []
