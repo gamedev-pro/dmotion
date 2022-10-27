@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7154915811720323386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
+  m_Name: Run
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 0.7
+  OutTransitions:
+  - ToState: {fileID: -520659212914956497}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.3
+    Conditions:
+    - Parameter: {fileID: 1350630604657834093}
+      ComparisonValue: 0
+      ComparisonMode: 1
+  StateEditorData:
+    GraphPosition: {x: 486.21912, y: -168.00003}
+    Guid: 8dabe05c600200b44ba61a333aa70679
+  Clip: {fileID: 11400000, guid: 7cefea298a3b84e44b32cc3f0008b12d, type: 2}
+--- !u!114 &-520659212914956497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a657166d644c459a151994885f8ecd, type: 3}
+  m_Name: Walk
+  m_EditorClassIdentifier: 
+  Loop: 1
+  Speed: 1
+  OutTransitions:
+  - ToState: {fileID: -7154915811720323386}
+    HasEndTime: 0
+    EndTime: 0
+    TransitionDuration: 0.3
+    Conditions:
+    - Parameter: {fileID: 1350630604657834093}
+      ComparisonValue: 1
+      ComparisonMode: 0
+  StateEditorData:
+    GraphPosition: {x: 207.58226, y: -167.62213}
+    Guid: df035bcd8685bd34b8d59da40bf70d4f
+  Clip: {fileID: 11400000, guid: f1d77aaf6c2287742af55a6cdc80819b, type: 2}
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22b96b7574545b7b931aa33424917be, type: 3}
+  m_Name: 2.1_StateMachine_Transitions
+  m_EditorClassIdentifier: 
+  DefaultState: {fileID: -520659212914956497}
+  States:
+  - {fileID: -520659212914956497}
+  - {fileID: -7154915811720323386}
+  Parameters:
+  - {fileID: 1350630604657834093}
+--- !u!114 &1350630604657834093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf49d2668cb4e4e8a67a3039a2ecc63, type: 3}
+  m_Name: IsRunning
+  m_EditorClassIdentifier: 

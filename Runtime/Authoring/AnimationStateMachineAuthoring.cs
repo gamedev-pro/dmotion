@@ -78,5 +78,18 @@ namespace DMotion.Authoring
                 }
             }
         }
+
+        private void Reset()
+        {
+            if (Animator == null)
+            {
+                Animator = GetComponent<Animator>();
+            }
+
+            if (Animator != null && Owner == null)
+            {
+                Owner = Animator.gameObject;
+            }
+        }
     }
 }
