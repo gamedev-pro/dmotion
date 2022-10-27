@@ -26,6 +26,7 @@ namespace DMotion
     {
         internal BlobArray<int> SortedClipIndexes;
         internal BlobArray<float> SortedClipThresholds;
+        internal BlobArray<float> SortedClipSpeeds;
         internal ushort BlendParameterIndex;
     }
 }

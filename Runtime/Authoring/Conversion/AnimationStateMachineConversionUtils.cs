@@ -80,7 +80,8 @@ namespace DMotion.Authoring
                             linearBlendState.ClipsWithThresholds[blendClipIndex] = new ClipIndexWithThreshold
                             {
                                 ClipIndex = clipIndex,
-                                Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold
+                                Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold,
+                                Speed = linearBlendStateAsset.BlendClips[blendClipIndex].Speed
                             };
                             clipIndex++;
                         }

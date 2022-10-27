@@ -162,7 +162,7 @@ namespace DMotion.Tests
             var blendParams = manager.GetBuffer<BlendParameter>(entity);
             LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(
                 linearBlendState, blendParams,
-                out var blendRatio, out var thresholds);
+                out var blendRatio, out var thresholds, out _);
             LinearBlendStateUtils.FindActiveClipIndexes(blendRatio, thresholds, out firstClipIndex,
                 out secondClipIndex);
             var startIndex =

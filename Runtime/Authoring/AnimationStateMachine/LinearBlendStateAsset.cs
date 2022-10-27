@@ -10,6 +10,7 @@ namespace DMotion.Authoring
     {
         public AnimationClipAsset Clip;
         public float Threshold;
+        public float Speed;
     }
     
     public class LinearBlendStateAsset : AnimationStateAsset

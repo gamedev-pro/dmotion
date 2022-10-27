@@ -21,12 +21,13 @@ namespace DMotion
                 {
                     var linearBlendState = linearBlendStates[i];
                     LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(linearBlendState,
-                        blendParameters, out var blendRatio, out var thresholds);
+                        blendParameters, out var blendRatio, out var thresholds, out var speeds);
 
                     LinearBlendStateUtils.UpdateSamplers(
                         DeltaTime,
                         blendRatio,
                         thresholds,
+                        speeds,
                         animationState,
                         ref clipSamplers);
                 }
