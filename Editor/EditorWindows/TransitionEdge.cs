@@ -26,7 +26,6 @@ namespace DMotion.Editor
             AddToClassList("transition");
         }
 
-        #if UNITY_EDITOR || DEBUG
         public void UpdateView()
         {
             const string activeTransitionClassName = "active-transition";
@@ -51,7 +50,6 @@ namespace DMotion.Editor
                 }
             }
         }
-        #endif
 
         public override void OnSelected()
         {
