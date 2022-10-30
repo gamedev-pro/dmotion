@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace DMotion
 {
     [BurstCompile]
-    internal partial struct UpdateLinearBlendStateMachineStatesJob
+    internal partial struct UpdateLinearBlendStateMachineStatesJob : IJobEntity
     {
         internal float DeltaTime;
 
@@ -36,7 +36,7 @@ namespace DMotion
     }
 
     [BurstCompile]
-    internal partial struct CleanLinearBlendStatesJob
+    internal partial struct CleanLinearBlendStatesJob : IJobEntity
     {
         internal void Execute(
             ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
