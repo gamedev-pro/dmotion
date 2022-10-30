@@ -23,13 +23,6 @@ namespace DMotion
                 ref DynamicBuffer<AnimationState> animationStates
             )
             {
-                for (var i = 0; i < animationStates.Length; i++)
-                {
-                    var animationState = animationStates[i];
-                    animationState.Time += DeltaTime * animationState.Speed;
-                    animationStates[i] = animationState;
-                }
-
                 //Check for new transition
                 if (transitionRequest.IsValid)
                 {
@@ -43,7 +36,7 @@ namespace DMotion
                             AnimationStateId = transitionRequest.AnimationStateId,
                             TransitionDuration = transitionDuration,
                         };
-                        
+
                         //reset toState time
                         var toState = animationStates[newToStateIndex];
                         toState.Time = 0;
@@ -53,8 +46,17 @@ namespace DMotion
                     transitionRequest = AnimationStateTransitionRequest.Null;
                 }
 
-                var toAnimationStateIndex = animationStates.IdToIndex((byte)animationStateTransition.AnimationStateId);
+                //Update states
+                {
+                    for (var i = 0; i < animationStates.Length; i++)
+                    {
+                        var animationState = animationStates[i];
+                        animationState.Time += DeltaTime * animationState.Speed;
+                        animationStates[i] = animationState;
+                    }
+                }
 
+                var toAnimationStateIndex = animationStates.IdToIndex((byte)animationStateTransition.AnimationStateId);
 
                 //Execute blend
                 if (toAnimationStateIndex >= 0)

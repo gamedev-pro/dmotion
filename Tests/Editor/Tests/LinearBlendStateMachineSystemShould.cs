@@ -1,20 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Management.Instrumentation;
+﻿using System.Linq;
 using DMotion.Authoring;
 using NUnit.Framework;
 using Unity.Entities;
-using UnityEngine;
 
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(BlendAnimationStatesSystem), typeof(UpdateAnimationStatesSystem))]
     public class LinearBlendStateMachineSystemShould : ECSTestsFixture
     {
-        [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
-        private AnimationStateMachineAuthoring stateMachinePrefab;
-
-        private Entity stateMachineEntityPrefab;
+        private static readonly float[] thresholds = { 0.0f, 0.5f, 0.8f };
 
         [Test]
         public void Update_All_Samplers()
@@ -23,9 +17,11 @@ namespace DMotion.Tests
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
             AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
 
-            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, linearBlendState.AnimationStateId);
+            var animationState =
+                AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, linearBlendState.AnimationStateId);
             var startSamplerIndex =
-                ClipSamplerTestUtils.AnimationStateStartSamplerIdToIndex(manager, entity, linearBlendState.AnimationStateId);
+                ClipSamplerTestUtils.AnimationStateStartSamplerIdToIndex(manager, entity,
+                    linearBlendState.AnimationStateId);
 
             var samplerIndexes = Enumerable.Range(startSamplerIndex, animationState.ClipCount).ToArray();
 
@@ -51,17 +47,42 @@ namespace DMotion.Tests
         }
 
         [Test]
+        public void BlendBetweenTwoClips()
+        {
+            var entity = CreateLinearBlendEntity();
+            var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
+
+            //set our blend parameter after the first clip, but closer to the first clip
+            var blendParameterValue = thresholds[0] + (thresholds[1] - thresholds[0]) * 0.2f;
+            AnimationStateTestUtils.SetBlendParameter(linearBlendState, manager, entity, blendParameterValue);
+
+            UpdateWorld();
+
+            var allSamplers =
+                ClipSamplerTestUtils.GetAllSamplersForAnimationState(manager, entity,
+                    linearBlendState.AnimationStateId).ToArray();
+            
+            Assert.Greater(allSamplers[0].Weight, 0);
+            Assert.Greater(allSamplers[1].Weight, 0);
+            Assert.Zero(allSamplers[2].Weight);
+            //expect first clip weight to be greater since we are closer to it
+            Assert.Greater(allSamplers[0].Weight, allSamplers[1].Weight);
+        }
+        
+        [Test]
         public void Keep_WeightSum_EqualOne()
         {
             var entity = CreateLinearBlendEntity();
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
             AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
-            AnimationStateTestUtils.SetBlendParameter(linearBlendState, manager, entity, 0.1f);
+            AnimationStateTestUtils.SetBlendParameter(linearBlendState, manager, entity, thresholds[0] + 0.1f);
 
             UpdateWorld();
 
             var allSamplers =
-                ClipSamplerTestUtils.GetAllSamplersForAnimationState(manager, entity, linearBlendState.AnimationStateId);
+                ClipSamplerTestUtils.GetAllSamplersForAnimationState(manager, entity,
+                    linearBlendState.AnimationStateId);
 
             var sumWeight = allSamplers.Sum(s => s.Weight);
             Assert.AreEqual(1, sumWeight);
@@ -94,22 +115,24 @@ namespace DMotion.Tests
             var linearBlendState = AnimationStateTestUtils.CreateLinearBlendForStateMachine(0, manager, entity);
             AnimationStateTestUtils.SetCurrentState(manager, entity, linearBlendState.AnimationStateId);
 
-            var animationState = AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, linearBlendState.AnimationStateId);
+            var animationState =
+                AnimationStateTestUtils.GetAnimationStateFromEntity(manager, entity, linearBlendState.AnimationStateId);
             var startSamplerIndex =
-                ClipSamplerTestUtils.AnimationStateStartSamplerIdToIndex(manager, entity, linearBlendState.AnimationStateId);
+                ClipSamplerTestUtils.AnimationStateStartSamplerIdToIndex(manager, entity,
+                    linearBlendState.AnimationStateId);
 
             var samplerIndexes = Enumerable.Range(startSamplerIndex, animationState.ClipCount).ToArray();
-            
+
             foreach (var i in samplerIndexes)
             {
                 var samplers = manager.GetBuffer<ClipSampler>(entity);
                 var sampler = samplers[i];
-                
+
                 //We need to set Time = duration to guarantee clip will loop on next frame
                 sampler.Time = sampler.Clip.duration;
                 sampler.PreviousTime = sampler.Time - 0.1f;
                 samplers[i] = sampler;
-                
+
                 UpdateWorld();
 
                 var updatedSamplers = manager.GetBuffer<ClipSampler>(entity);
@@ -134,7 +157,8 @@ namespace DMotion.Tests
             Assert.AreEqual(1, linearBlendStates.Length);
 
             const float transitionDuration = 0.2f;
-            AnimationStateTestUtils.RequestTransitionTo(manager, entity, anotherState.AnimationStateId, transitionDuration);
+            AnimationStateTestUtils.RequestTransitionTo(manager, entity, anotherState.AnimationStateId,
+                transitionDuration);
 
             UpdateWorld();
 
@@ -151,7 +175,27 @@ namespace DMotion.Tests
 
         private Entity CreateLinearBlendEntity()
         {
-            var entity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            var stateMachineBuilder = AnimationStateMachineAssetBuilder.New();
+            var linearBlendState = stateMachineBuilder.AddState<LinearBlendStateAsset>();
+            
+            linearBlendState.BlendParameter = stateMachineBuilder.AddParameter<FloatParameterAsset>("blend");
+            linearBlendState.BlendClips = new []
+            {
+                new ClipWithThreshold { Clip = null, Speed = 1, Threshold = thresholds[0] },
+                new ClipWithThreshold { Clip = null, Speed = 1, Threshold = thresholds[1] },
+                new ClipWithThreshold { Clip = null, Speed = 1, Threshold = thresholds[2] }
+            };
+
+            var stateMachineAsset = stateMachineBuilder.Build();
+
+            var stateMachineBlob =
+                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset,
+                    world.UpdateAllocator.ToAllocator);
+
+            var clipsBlob = AnimationStateTestUtils.CreateFakeSkeletonClipSetBlob(3);
+            
+            var entity = manager.CreateStateMachineEntity(stateMachineAsset, stateMachineBlob, clipsBlob, BlobAssetReference<ClipEventsBlob>.Null);
+            
             Assert.IsTrue(manager.HasComponent<LinearBlendStateMachineState>(entity));
             Assert.IsTrue(manager.HasComponent<BlendParameter>(entity));
             return entity;

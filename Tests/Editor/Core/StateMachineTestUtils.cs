@@ -10,19 +10,21 @@ namespace DMotion.Tests
         public static Entity CreateStateMachineEntity(this EntityManager manager, StateMachineAsset stateMachineAsset,
             BlobAssetReference<StateMachineBlob> stateMachineBlob)
         {
+            return CreateStateMachineEntity(manager, stateMachineAsset, stateMachineBlob,
+                BlobAssetReference<SkeletonClipSetBlob>.Null, BlobAssetReference<ClipEventsBlob>.Null);
+        }
+        
+        public static Entity CreateStateMachineEntity(this EntityManager manager, StateMachineAsset stateMachineAsset,
+            BlobAssetReference<StateMachineBlob> stateMachineBlob,
+            BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            BlobAssetReference<ClipEventsBlob> eventsBlob)
+        {
             var entity = manager.CreateEntity();
             AnimationStateMachineConversionUtils.AddStateMachineSystemComponents(manager, entity, stateMachineAsset,
                 stateMachineBlob,
-                BlobAssetReference<SkeletonClipSetBlob>.Null, BlobAssetReference<ClipEventsBlob>.Null);
+                clipsBlob, eventsBlob);
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(manager, entity);
             return entity;
-        }
-
-        public static Entity InstantiateStateMachineEntity(this EntityManager manager, Entity prefab)
-        {
-            var newEntity = manager.Instantiate(prefab);
-            Assert.IsTrue(manager.HasComponent<AnimationStateMachine>(newEntity));
-            return newEntity;
         }
 
         public static bool ShouldStateMachineBeActive(EntityManager manager, Entity entity)

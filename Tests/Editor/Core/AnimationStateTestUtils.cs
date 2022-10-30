@@ -192,6 +192,7 @@ namespace DMotion.Tests
         }
 
         internal static SingleClipState CreateSingleClipState(EntityManager manager, Entity entity,
+            BlobAssetReference<ClipEventsBlob> clipEvents,
             float speed = 1.0f,
             bool loop = false,
             ushort clipIndex = 0)
@@ -205,11 +206,20 @@ namespace DMotion.Tests
             return SingleClipStateUtils.New(
                 clipIndex, speed, loop,
                 clipsBlob,
-                BlobAssetReference<ClipEventsBlob>.Null,
+                clipEvents,
                 ref singleClips,
                 ref animationStates,
                 ref samplers
             );
+        }
+
+        internal static SingleClipState CreateSingleClipState(EntityManager manager, Entity entity,
+            float speed = 1.0f,
+            bool loop = false,
+            ushort clipIndex = 0)
+        {
+            return CreateSingleClipState(manager, entity, BlobAssetReference<ClipEventsBlob>.Null, speed, loop,
+                clipIndex);
         }
 
         internal static BlobAssetReference<SkeletonClipSetBlob> CreateFakeSkeletonClipSetBlob(int clipCount)
