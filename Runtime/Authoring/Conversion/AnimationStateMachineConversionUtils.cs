@@ -203,11 +203,12 @@ namespace DMotion.Authoring
             dstManager.AddComponentData(entity, AnimationStateTransition.Null);
             dstManager.AddComponentData(entity, AnimationStateTransitionRequest.Null);
             dstManager.AddComponentData(entity, AnimationCurrentState.Null);
+            dstManager.AddComponentData(entity, AnimationPreserveState.Null);
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
         }
 
-        internal static void AddOneShotSystemComponents(EntityManager dstManager, Entity entity)
+        public static void AddOneShotSystemComponents(EntityManager dstManager, Entity entity)
         {
             dstManager.AddComponentData(entity, PlayOneShotRequest.Null);
             dstManager.AddComponentData(entity, OneShotState.Null);
@@ -230,7 +231,6 @@ namespace DMotion.Authoring
                 };
 
                 dstManager.AddComponentData(entity, stateMachine);
-                dstManager.AddComponentData(entity, AnimationStateMachineTransitionRequest.Null);
 
                 dstManager.AddBuffer<SingleClipState>(entity);
                 dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
@@ -275,7 +275,6 @@ namespace DMotion.Authoring
             bool enableEvents = true, RootMotionMode rootMotionMode = RootMotionMode.Disabled)
         {
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
-            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
 
             dstManager.AddBuffer<SingleClipState>(entity);
 

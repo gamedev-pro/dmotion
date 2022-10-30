@@ -1,6 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
+using UnityEngine.Assertions;
 
 namespace DMotion
 {
@@ -12,14 +13,14 @@ namespace DMotion
         internal partial struct PlayOneShotJob : IJobEntity
         {
             internal void Execute(
-                ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
                 ref AnimationStateTransitionRequest animationStateTransitionRequest,
+                ref AnimationPreserveState animationPreserveState,
                 ref PlayOneShotRequest playOneShot,
                 ref OneShotState oneShotState,
                 ref DynamicBuffer<SingleClipState> singleClipStates,
                 ref DynamicBuffer<AnimationState> animationStates,
                 ref DynamicBuffer<ClipSampler> clipSamplers,
-                in AnimationCurrentState animationTransition
+                in AnimationCurrentState animationCurrentState
             )
             {
                 //Evaluate requested one shot
@@ -36,7 +37,8 @@ namespace DMotion
                             ref animationStates,
                             ref clipSamplers);
 
-                        animationStateTransitionRequest = AnimationStateTransitionRequest.New(singleClipAnimationState.AnimationStateId,
+                        animationStateTransitionRequest = AnimationStateTransitionRequest.New(
+                            singleClipAnimationState.AnimationStateId,
                             playOneShot.TransitionDuration);
 
                         var animationState = animationStates.GetWithId(singleClipAnimationState.AnimationStateId);
@@ -44,22 +46,36 @@ namespace DMotion
 
                         var endTime = playOneShot.EndTime * playOneShotClip.Clip.duration;
                         var blendOutDuration = playOneShot.TransitionDuration;
-                        oneShotState = OneShotState.New(singleClipAnimationState.AnimationStateId,endTime, blendOutDuration);
 
+                        oneShotState = OneShotState.New(singleClipAnimationState.AnimationStateId, endTime,
+                            blendOutDuration);
                         playOneShot = PlayOneShotRequest.Null;
+
+                        if (!animationPreserveState.IsValid)
+                        {
+                            animationPreserveState.AnimationStateId = animationCurrentState.AnimationStateId;
+                        }
                     }
                 }
 
                 //Evaluate one shot end
                 {
-                    if (oneShotState.IsValid && oneShotState.AnimationStateId == animationTransition.AnimationStateId)
+                    if (oneShotState.IsValid && oneShotState.AnimationStateId == animationCurrentState.AnimationStateId)
                     {
                         var oneShotAnimationState = animationStates.GetWithId((byte)oneShotState.AnimationStateId);
 
                         //request transition back to state machine if we're done
                         if (oneShotAnimationState.Time >= oneShotState.EndTime)
                         {
-                            stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.New(oneShotState.BlendOutDuration);
+                            Assert.IsTrue(animationPreserveState.IsValid,
+                                "PlayOneShot: Preserve state is invalid while trying to return to previous animation state");
+                            if (animationPreserveState.IsValid)
+                            {
+                                animationStateTransitionRequest = AnimationStateTransitionRequest.New(
+                                    (byte)animationPreserveState.AnimationStateId, oneShotState.BlendOutDuration);
+                                animationPreserveState = AnimationPreserveState.Null;
+                            }
+
                             oneShotState = OneShotState.Null;
                         }
                     }

@@ -1,4 +1,5 @@
 ﻿using Latios.Kinemation;
+using Unity.Assertions;
 using Unity.Entities;
 
 namespace DMotion
@@ -16,6 +17,16 @@ namespace DMotion
 
             animationStateTransitionRequest.AnimationStateId = (sbyte)singleClipState.AnimationStateId;
             animationStateTransitionRequest.TransitionDuration = transitionDuration;
+        }
+
+        public static void PlaySingleClipOneShot(this SingleClipRef singleClipRef,
+            ref PlayOneShotRequest playOneShotRequest,
+            float transitionDuration = 0.15f, float normalizedEndTime = 0.8f)
+        {
+            Assert.IsTrue(normalizedEndTime is >= 0 and <= 1, "Normalized End Time must be within 0 and 1");
+            
+            playOneShotRequest = PlayOneShotRequest.New(singleClipRef.Clips, singleClipRef.ClipEvents,
+                singleClipRef.ClipIndex, transitionDuration, normalizedEndTime, singleClipRef.Speed);
         }
 
 

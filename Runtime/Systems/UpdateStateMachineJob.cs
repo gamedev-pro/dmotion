@@ -4,7 +4,6 @@ using Latios.Kinemation;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Profiling;
-using UnityEngine;
 
 namespace DMotion
 {
@@ -15,7 +14,6 @@ namespace DMotion
 
         internal void Execute(
             ref AnimationStateMachine stateMachine,
-            ref AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
             ref AnimationStateTransitionRequest animationStateTransitionRequest,
             ref DynamicBuffer<SingleClipState> singleClipStates,
             ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
@@ -30,8 +28,7 @@ namespace DMotion
             using var scope = Marker.Auto();
             ref var stateMachineBlob = ref stateMachine.StateMachineBlob.Value;
 
-            if (!ShouldStateMachineBeActive(animationCurrentState, animationStateTransition,
-                    stateMachineTransitionRequest, stateMachine.CurrentState))
+            if (!ShouldStateMachineBeActive(animationCurrentState, animationStateTransition, stateMachine.CurrentState))
             {
                 return;
             }
@@ -55,46 +52,6 @@ namespace DMotion
                         AnimationStateId = stateMachine.CurrentState.AnimationStateId,
                         TransitionDuration = 0
                     };
-
-                    //We already started a transition to a new state 
-                    stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
-                }
-            }
-
-            //Evaluate if we should transition into the state machine
-            {
-                if (stateMachineTransitionRequest.IsRequested)
-                {
-                    var isCurrentStateActive = animationCurrentState.AnimationStateId ==
-                                               stateMachine.CurrentState.AnimationStateId;
-                    // we're already playing our current state
-                    if (!isCurrentStateActive)
-                    {
-                        var isCurrentStateAnimationStateAlive =
-                            animationStates.ExistsWithId((byte)stateMachine.CurrentState.AnimationStateId);
-
-                        if (!isCurrentStateAnimationStateAlive)
-                        {
-                            //create a new animationState state for us to transition to
-                            stateMachine.CurrentState = CreateState(
-                                (short)stateMachine.CurrentState.StateIndex,
-                                stateMachine.StateMachineBlob,
-                                stateMachine.ClipsBlob,
-                                stateMachine.ClipEventsBlob,
-                                ref singleClipStates,
-                                ref linearBlendStates,
-                                ref animationStates,
-                                ref clipSamplers);
-                        }
-
-                        animationStateTransitionRequest = new AnimationStateTransitionRequest
-                        {
-                            AnimationStateId = stateMachine.CurrentState.AnimationStateId,
-                            TransitionDuration = stateMachineTransitionRequest.TransitionDuration
-                        };
-                    }
-
-                    stateMachineTransitionRequest = AnimationStateMachineTransitionRequest.Null;
                 }
             }
 
@@ -139,11 +96,9 @@ namespace DMotion
 
         public static bool ShouldStateMachineBeActive(in AnimationCurrentState animationCurrentState,
             in AnimationStateTransition animationStateTransition,
-            in AnimationStateMachineTransitionRequest stateMachineTransitionRequest,
             in StateMachineStateRef currentState)
         {
             return !animationCurrentState.IsValid ||
-                   stateMachineTransitionRequest.IsRequested ||
                    (
                        currentState.IsValid && animationCurrentState.IsValid &&
                        animationCurrentState.AnimationStateId ==

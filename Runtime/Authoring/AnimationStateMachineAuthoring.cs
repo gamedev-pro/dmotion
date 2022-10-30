@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
@@ -37,7 +36,6 @@ namespace DMotion.Authoring
                 clipsBlob,
                 clipEventsBlob);
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
-            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
 
             if (EnableEvents && StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
             {

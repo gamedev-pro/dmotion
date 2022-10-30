@@ -17,6 +17,15 @@ namespace DMotion
 
         public static PlayOneShotRequest Null => new PlayOneShotRequest() { ClipIndex = -1 };
 
+        public static PlayOneShotRequest New(BlobAssetReference<SkeletonClipSetBlob> clips,
+            BlobAssetReference<ClipEventsBlob> clipEvents, int clipIndex,
+            float transitionDuration = 0.15f,
+            float endTime = 0.8f,
+            float speed = 1)
+        {
+            return new PlayOneShotRequest(clips, clipEvents, clipIndex, transitionDuration, endTime, speed);
+        }
+
         public PlayOneShotRequest(BlobAssetReference<SkeletonClipSetBlob> clips,
             BlobAssetReference<ClipEventsBlob> clipEvents, int clipIndex,
             float transitionDuration = 0.15f,

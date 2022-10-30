@@ -32,21 +32,6 @@ namespace DMotion.Tests
         }
         
         [Test]
-        public void Be_Active_When_StateMachineTransitionIsRequested()
-        {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            var singleState = AnimationStateTestUtils.CreateSingleClipState(manager, newEntity);
-            AnimationStateTestUtils.SetCurrentState(manager, newEntity, singleState.AnimationStateId);
-            UpdateWorld();
-            AnimationStateTestUtils.AssertCurrentState(manager, newEntity, singleState.AnimationStateId);
-            
-            StateMachineTestUtils.RequestTransitionToStateMachine(manager, newEntity);
-            
-            var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, newEntity);
-            Assert.IsTrue(shouldBeActive, "Expected state machine should be active if state machine transition is requested");
-        }
-        
-        [Test]
         public void Be_Active_When_CurrentStateMachineState_Is_CurrentAnimationState()
         {
             var entity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
@@ -55,13 +40,12 @@ namespace DMotion.Tests
             Assert.IsTrue(currentState.IsValid);
             AnimationStateTestUtils.SetCurrentState(manager, entity, (byte)currentState.AnimationStateId);
             
-            manager.SetComponentData(entity, AnimationStateMachineTransitionRequest.Null);
-            
             AnimationStateTestUtils.AssertCurrentState(manager, entity, (byte)currentState.AnimationStateId);
             
             var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, entity);
             Assert.IsTrue(shouldBeActive, "Expected state machine should be active if Current State Machine State is current Animation State");
         }
+        
         [Test]
         public void Be_Active_When_CurrentStateMachineState_Is_AnimationStateTransition()
         {
@@ -76,8 +60,6 @@ namespace DMotion.Tests
 
             AnimationStateTestUtils.SetAnimationStateTransition(manager, entity, (byte)currentState.AnimationStateId);
             AnimationStateTestUtils.AssertOnGoingTransition(manager, entity, (byte)currentState.AnimationStateId);
-            
-            manager.SetComponentData(entity, AnimationStateMachineTransitionRequest.Null);
             
             var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, entity);
             Assert.IsTrue(shouldBeActive, "Expected state machine should be active if Current State Machine State is Animation State Transition");

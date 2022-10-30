@@ -1,4 +1,5 @@
-﻿using Latios.Kinemation;
+﻿using DMotion.Authoring;
+using Latios.Kinemation;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
@@ -65,9 +66,7 @@ namespace DMotion.Tests
                 typeof(AnimationState),
                 typeof(ClipSampler));
 
-            manager.AddComponentData(newEntity, AnimationCurrentState.Null);
-            manager.AddComponentData(newEntity, AnimationStateTransitionRequest.Null);
-            manager.AddComponentData(newEntity, AnimationStateTransition.Null);
+            AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(manager, newEntity);
             return newEntity;
         }
 

@@ -57,6 +57,13 @@ namespace DMotion
             };
         }
     }
+    
+    internal struct AnimationPreserveState : IComponentData
+    {
+        internal sbyte AnimationStateId;
+        internal static AnimationPreserveState Null => new () { AnimationStateId = -1 };
+        internal bool IsValid => AnimationStateId >= 0;
+    }
 
     [BurstCompile]
     public struct AnimationState : IBufferElementData, IElementWithId
