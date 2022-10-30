@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
@@ -48,6 +49,11 @@ namespace DMotion.Editor
             }
 
             stateMachineAsset.States.Remove(stateAsset);
+            if (stateMachineAsset.DefaultState == stateAsset)
+            {
+                stateMachineAsset.DefaultState = stateMachineAsset.States.FirstOrDefault();
+            }
+            
             AssetDatabase.RemoveObjectFromAsset(stateAsset);
             AssetDatabase.SaveAssets();
         }

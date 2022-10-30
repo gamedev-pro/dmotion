@@ -124,6 +124,7 @@ namespace DMotion.Editor
         private void DeleteState(AnimationStateAsset state)
         {
             model.StateMachineAsset.DeleteState(state);
+            UpdateView();
         }
 
         private void DeleteAllOutTransitions(AnimationStateAsset fromState, AnimationStateAsset toState)
@@ -153,20 +154,18 @@ namespace DMotion.Editor
                                nap.node != startPort.node)).ToList();
         }
 
-        #if UNITY_EDITOR || DEBUG
-        internal void UpdateDebug()
+        internal void UpdateView()
         {
             foreach (var stateView in stateToView.Values)
             {
-                stateView.UpdateDebug();
+                stateView.UpdateView();
             }
 
             foreach (var transitions in transitionToEdgeView.Values)
             {
-                transitions.UpdateDebug();
+                transitions.UpdateView();
             }
         }
-        #endif
 
         internal void PopulateView(in StateMachineEditorViewModel newModel)
         {

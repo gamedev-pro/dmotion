@@ -125,7 +125,7 @@ namespace DMotion.Editor
         }
 
         #if UNITY_EDITOR || DEBUG
-        internal void UpdateDebug()
+        internal void UpdateView()
         {
             var style = GetStateStyle();
             SetNodeStateStyle(style);

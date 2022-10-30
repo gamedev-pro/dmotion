@@ -56,7 +56,7 @@ namespace DMotion.Editor
             switch (stateChange)
             {
                 case PlayModeStateChange.EnteredEditMode:
-                    stateMachineEditorView?.UpdateDebug();
+                    stateMachineEditorView?.UpdateView();
                     break;
                 case PlayModeStateChange.ExitingEditMode:
                     break;
@@ -98,7 +98,7 @@ namespace DMotion.Editor
         {
             if (Application.isPlaying && stateMachineEditorView != null)
             {
-                stateMachineEditorView.UpdateDebug();
+                stateMachineEditorView.UpdateView();
             }
         }
         #endif

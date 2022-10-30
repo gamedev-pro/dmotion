@@ -27,7 +27,7 @@ namespace DMotion.Editor
         }
 
         #if UNITY_EDITOR || DEBUG
-        public void UpdateDebug()
+        public void UpdateView()
         {
             const string activeTransitionClassName = "active-transition";
             RemoveFromClassList(activeTransitionClassName);
