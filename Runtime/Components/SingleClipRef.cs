@@ -11,7 +11,6 @@ namespace DMotion
         internal BlobAssetReference<ClipEventsBlob> ClipEvents;
         public ushort ClipIndex;
         public float Speed;
-        public bool Loop;
 
         public bool IsValid => Clips.IsCreated && ClipEvents.IsCreated && ClipIndex >= 0 &&
                                ClipIndex < Clips.Value.clips.Length && ClipIndex < ClipEvents.Value.ClipEvents.Length;

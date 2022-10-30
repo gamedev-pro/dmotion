@@ -272,7 +272,7 @@ namespace DMotion.Authoring
         }
 
         public static void AddSingleClipStateComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,
-            bool enableEvents = true, RootMotionMode rootMotionMode = RootMotionMode.Disabled)
+            bool enableEvents = true, bool enableSingleClipRequest = true, RootMotionMode rootMotionMode = RootMotionMode.Disabled)
         {
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
 
@@ -281,6 +281,11 @@ namespace DMotion.Authoring
             if (enableEvents)
             {
                 dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
+            }
+
+            if (enableSingleClipRequest)
+            {
+                dstManager.AddComponentData(entity, PlaySingleClipRequest.Null);
             }
 
             if (ownerEntity != entity)

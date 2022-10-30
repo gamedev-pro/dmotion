@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Profiling;
 using Unity.Profiling.LowLevel;
+using UnityEditor;
 using UnityEngine;
 
 namespace DMotion
@@ -20,6 +21,7 @@ namespace DMotion
             in OptimizedSkeletonHierarchyBlobReference hierarchyRef)
         {
             using var scope = Marker.Auto();
+
             var blender = new BufferPoseBlender(boneToRootBuffer);
             var activeSamplerCount = 0;
 
@@ -39,7 +41,10 @@ namespace DMotion
                 blender.NormalizeRotations();
             }
 
-            blender.ApplyBoneHierarchyAndFinish(hierarchyRef.blob);
+            if (activeSamplerCount > 0)
+            {
+                blender.ApplyBoneHierarchyAndFinish(hierarchyRef.blob);
+            }
         }
     }
 }
