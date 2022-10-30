@@ -223,9 +223,10 @@ MonoBehaviour:
   Clip:
     Clip: {fileID: 11400000, guid: 3e6ea433b9b51184fb6137ca9705fe09, type: 2}
     Speed: 1
-    Loop: 1
+  Loop: 1
   RootMotionMode: 1
   EnableEvents: 0
+  EnableSingleClipRequests: 1
 --- !u!114 &881834653
 MonoBehaviour:
   m_ObjectHideFlags: 0

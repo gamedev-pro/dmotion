@@ -18,23 +18,20 @@ namespace DMotion.Samples.PlayClipsThroughCode
             var playWalk = Input.GetKeyDown(KeyCode.Alpha1);
             var playRun = Input.GetKeyDown(KeyCode.Alpha2);
 
-            Entities.ForEach((ref AnimationStateTransitionRequest transitionRequest,
-                ref DynamicBuffer<SingleClipState> singleClips,
-                ref DynamicBuffer<AnimationState> animationStates, ref DynamicBuffer<ClipSampler> clipSamplers,
-                in AnimationCurrentState animationCurrentState,
+            Entities.ForEach((ref PlaySingleClipRequest playSingleClipRequest,
                 in PlayClipsThroughCodeComponent playClipsComponent) =>
             {
-                if (playWalk && !playClipsComponent.WalkClip.IsPlayingOrTransitioningTo(transitionRequest,
-                        animationCurrentState, animationStates, clipSamplers))
+                if (playWalk)
                 {
-                    playClipsComponent.WalkClip.PlaySingleClip(ref transitionRequest, ref singleClips,
-                        ref animationStates, ref clipSamplers, playClipsComponent.TransitionDuration);
+                    playSingleClipRequest = PlaySingleClipRequest.New(playClipsComponent.WalkClip,
+                        loop: true,
+                        playClipsComponent.TransitionDuration);
                 }
-                else if (playRun && !playClipsComponent.RunClip.IsPlayingOrTransitioningTo(transitionRequest,
-                             animationCurrentState, animationStates, clipSamplers))
+                else if (playRun)
                 {
-                    playClipsComponent.RunClip.PlaySingleClip(ref transitionRequest, ref singleClips,
-                        ref animationStates, ref clipSamplers, playClipsComponent.TransitionDuration);
+                    playSingleClipRequest = PlaySingleClipRequest.New(playClipsComponent.RunClip,
+                        loop: true,
+                        playClipsComponent.TransitionDuration);
                 }
             }).Schedule();
         }

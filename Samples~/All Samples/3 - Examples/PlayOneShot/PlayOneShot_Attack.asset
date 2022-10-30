@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a970179cc48494a8f754abfb8687537, type: 3}
-  m_Name: 2.1_StateMachineTransitions_Run
+  m_Name: PlayOneShot_Attack
   m_EditorClassIdentifier: 
-  Clip: {fileID: 5522812681064789136, guid: 6f3b8471d829b62429b3bc71f2c69d6c, type: 3}
+  Clip: {fileID: 2368837715004003463, guid: df126139b8eb5a14fbef22bb0fcee454, type: 3}
   Events: []

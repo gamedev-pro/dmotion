@@ -29,7 +29,7 @@ namespace DMotion.Samples.PlayClipsThroughCode
             //Add single clip state components
             var ownerEntity = gameObject != Owner ? conversionSystem.GetPrimaryEntity(Owner) : entity;
             AnimationStateMachineConversionUtils.AddSingleClipStateComponents(dstManager, ownerEntity, entity,
-                EnableEvents, RootMotionMode);
+                EnableEvents, true, RootMotionMode);
 
             //Setup single clip refs
             var clips = singleClipsConverter.ConvertClips().ToArray();

@@ -18,7 +18,7 @@ MonoBehaviour:
   - ToState: {fileID: 2038082117990262377}
     HasEndTime: 0
     EndTime: 0
-    TransitionDuration: 0.6
+    TransitionDuration: 0.3
     Conditions:
     - Parameter: {fileID: 955117716276792756}
       ComparisonValue: 2
@@ -26,7 +26,7 @@ MonoBehaviour:
   - ToState: {fileID: 5074063964239988569}
     HasEndTime: 0
     EndTime: 0
-    TransitionDuration: 0.6
+    TransitionDuration: 0.3
     Conditions:
     - Parameter: {fileID: 955117716276792756}
       ComparisonValue: 0
@@ -87,7 +87,7 @@ MonoBehaviour:
   - ToState: {fileID: 5074063964239988569}
     HasEndTime: 0
     EndTime: 0
-    TransitionDuration: 0.6
+    TransitionDuration: 0.3
     Conditions:
     - Parameter: {fileID: 955117716276792756}
       ComparisonValue: 0
@@ -95,7 +95,7 @@ MonoBehaviour:
   - ToState: {fileID: -926090660250476374}
     HasEndTime: 0
     EndTime: 0
-    TransitionDuration: 0.6
+    TransitionDuration: 0.3
     Conditions:
     - Parameter: {fileID: 955117716276792756}
       ComparisonValue: 1
@@ -122,7 +122,7 @@ MonoBehaviour:
   - ToState: {fileID: -926090660250476374}
     HasEndTime: 0
     EndTime: 0
-    TransitionDuration: 0.6
+    TransitionDuration: 0.3
     Conditions:
     - Parameter: {fileID: 955117716276792756}
       ComparisonValue: 1
@@ -130,7 +130,7 @@ MonoBehaviour:
   - ToState: {fileID: 2038082117990262377}
     HasEndTime: 0
     EndTime: 0
-    TransitionDuration: 0.6
+    TransitionDuration: 0.3
     Conditions:
     - Parameter: {fileID: 955117716276792756}
       ComparisonValue: 2
