@@ -179,9 +179,16 @@ namespace DMotion.Editor
             var path = AssetDatabase.GetAssetPath(Clip);
             var owner = AssetDatabase.LoadMainAssetAtPath(path);
             var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(owner)) as ModelImporter;
-            if (importer != null && importer.sourceAvatar != null)
+
+            var avatar = importer != null ? importer.sourceAvatar : null;
+            if (avatar == null && owner is GameObject ownerGo && ownerGo.TryGetComponent<Animator>(out var anim))
             {
-                var avatarPath = AssetDatabase.GetAssetPath(importer.sourceAvatar);
+                avatar = anim.avatar;
+            }
+            
+            if (avatar != null)
+            {
+                var avatarPath = AssetDatabase.GetAssetPath(avatar);
                 var avatarOwner = AssetDatabase.LoadMainAssetAtPath(avatarPath);
                 if (avatarOwner is GameObject go)
                 {
