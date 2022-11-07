@@ -8,12 +8,19 @@ using UnityEngine.Assertions;
 
 namespace DMotion.Samples.PlayClipsThroughCode
 {
+    public struct PlayClipsThroughCodeComponent : IComponentData
+    {
+        public SingleClipRef WalkClip;
+        public SingleClipRef RunClip;
+        public float TransitionDuration;
+    }
+
     public class PlayClipsThroughCodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
     {
         public GameObject Owner;
         public Animator Animator;
-        public SingleClipRefConvertData WalkClip;
-        public SingleClipRefConvertData RunClip;
+        public SingleClipRefConvertData WalkClip = SingleClipRefConvertData.Default;
+        public SingleClipRefConvertData RunClip = SingleClipRefConvertData.Default;
         public float TransitionDuration = 0.15f;
 
         public RootMotionMode RootMotionMode;
@@ -23,7 +30,7 @@ namespace DMotion.Samples.PlayClipsThroughCode
 
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            //create this sample's system
+            //create this sample's system (only required because we're manually creating the system)
             DMotionSamplesUtils.AddSytemToPlayerUpdate<PlayClipsThroughCodeSystem>(dstManager);
 
             //Add single clip state components
@@ -35,8 +42,7 @@ namespace DMotion.Samples.PlayClipsThroughCode
             var clips = singleClipsConverter.ConvertClips().ToArray();
             if (clips.Length == 2)
             {
-                dstManager.AddComponentData(entity,
-                    new PlayClipsThroughCodeComponent
+                dstManager.AddComponentData(entity, new PlayClipsThroughCodeComponent
                     {
                         WalkClip = clips[0],
                         RunClip = clips[1],

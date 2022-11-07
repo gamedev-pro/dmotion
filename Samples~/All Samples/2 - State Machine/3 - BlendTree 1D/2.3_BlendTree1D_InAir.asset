@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a970179cc48494a8f754abfb8687537, type: 3}
-  m_Name: 2.3_EnumTransitions_Idle_Normal
+  m_Name: 2
   m_EditorClassIdentifier: 
-  Clip: {fileID: 1245882690682072010, guid: e3cec318443d8254bb24a5495ce1427d, type: 3}
+  Clip: {fileID: -8803334760673496284, guid: 570f48872f8a46346ba1e2a40045391f, type: 3}
   Events: []

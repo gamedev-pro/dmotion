@@ -58,7 +58,7 @@ namespace DMotion
             return ((FixedString64Bytes) name).GetHashCode();
         }
 
-        public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash, TValue value)
+        public static void SetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash, TValue value)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
         {
@@ -70,14 +70,14 @@ namespace DMotion
                 parameters[index] = p;
             }
         }
-
-        public static void SetParameter<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
+        
+        public static void SetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
             FixedString64Bytes name, TValue value)
             where TBuffer : struct, IStateMachineParameter<TValue>
             where TValue : struct
         {
             var hash = name.GetHashCode();
-            parameters.SetParameter(hash, value);
+            parameters.SetValue(hash, value);
         }
 
         public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash,
@@ -104,6 +104,22 @@ namespace DMotion
             var hash = name.GetHashCode();
             return parameters.TryGetValue(hash, out value);
         }
+        
+        public static TValue GetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash)
+            where TBuffer : struct, IStateMachineParameter<TValue>
+            where TValue : struct
+        {
+            parameters.TryGetValue<TBuffer, TValue>(hash, out var value);
+            return value;
+        }
+        
+        // public static TValue GetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString64Bytes name)
+        //     where TBuffer : struct, IStateMachineParameter<TValue>
+        //     where TValue : struct
+        // {
+        //     var hash = name.GetHashCode();
+        //     return parameters.GetValue<TBuffer, TValue>(hash);
+        // }
 
         public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
             int hash)

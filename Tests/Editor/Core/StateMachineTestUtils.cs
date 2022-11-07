@@ -75,7 +75,7 @@ namespace DMotion.Tests
             Assert.IsTrue(manager.HasComponent<TBuffer>(entity));
             var parameters = manager.GetBuffer<TBuffer>(entity);
             Assert.IsTrue(parameters.Length > 0);
-            parameters.SetParameter(hash, newValue);
+            parameters.SetValue(hash, newValue);
         }
     }
 }
