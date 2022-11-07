@@ -53,7 +53,7 @@ DMotion requires [URP](https://docs.unity3d.com/Packages/com.unity.render-pipeli
 
 ## Getting Started
 
-DMotion contains several samples and documentation to get you started. You can check out the [documentation here](Documentation~/GettingStarted_1_Setup.md).
+DMotion contains several samples and documentation to get you started. You can check out the [documentation here](https://github.com/gamedev-pro/dmotion/wiki/1.1-Getting-Started:-The-Basics).
 
 ## Support and Contributing
 
