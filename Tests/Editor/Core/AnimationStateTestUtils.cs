@@ -1,4 +1,5 @@
-﻿using Latios.Kinemation;
+﻿using DMotion.Authoring;
+using Latios.Kinemation;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
@@ -65,9 +66,7 @@ namespace DMotion.Tests
                 typeof(AnimationState),
                 typeof(ClipSampler));
 
-            manager.AddComponentData(newEntity, AnimationCurrentState.Null);
-            manager.AddComponentData(newEntity, AnimationStateTransitionRequest.Null);
-            manager.AddComponentData(newEntity, AnimationStateTransition.Null);
+            AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(manager, newEntity);
             return newEntity;
         }
 
@@ -162,7 +161,7 @@ namespace DMotion.Tests
             var blendParams = manager.GetBuffer<BlendParameter>(entity);
             LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(
                 linearBlendState, blendParams,
-                out var blendRatio, out var thresholds);
+                out var blendRatio, out var thresholds, out _);
             LinearBlendStateUtils.FindActiveClipIndexes(blendRatio, thresholds, out firstClipIndex,
                 out secondClipIndex);
             var startIndex =
@@ -193,6 +192,7 @@ namespace DMotion.Tests
         }
 
         internal static SingleClipState CreateSingleClipState(EntityManager manager, Entity entity,
+            BlobAssetReference<ClipEventsBlob> clipEvents,
             float speed = 1.0f,
             bool loop = false,
             ushort clipIndex = 0)
@@ -206,11 +206,20 @@ namespace DMotion.Tests
             return SingleClipStateUtils.New(
                 clipIndex, speed, loop,
                 clipsBlob,
-                BlobAssetReference<ClipEventsBlob>.Null,
+                clipEvents,
                 ref singleClips,
                 ref animationStates,
                 ref samplers
             );
+        }
+
+        internal static SingleClipState CreateSingleClipState(EntityManager manager, Entity entity,
+            float speed = 1.0f,
+            bool loop = false,
+            ushort clipIndex = 0)
+        {
+            return CreateSingleClipState(manager, entity, BlobAssetReference<ClipEventsBlob>.Null, speed, loop,
+                clipIndex);
         }
 
         internal static BlobAssetReference<SkeletonClipSetBlob> CreateFakeSkeletonClipSetBlob(int clipCount)

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using DMotion.Authoring;
+using Unity.Entities;
+using Unity.Entities.Editor;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -14,6 +17,7 @@ namespace DMotion.Editor
         {
         }
     }
+
     internal class SingleClipStateNodeView : StateNodeView<SingleClipStateAsset>
     {
         public SingleClipStateNodeView(VisualTreeAsset asset) : base(asset)
@@ -33,25 +37,63 @@ namespace DMotion.Editor
     {
         internal AnimationStateMachineEditorView ParentView;
         internal AnimationStateAsset StateAsset;
+        internal EntitySelectionProxy SelectedEntity;
 
-        internal StateNodeViewModel(AnimationStateMachineEditorView parentView, AnimationStateAsset stateAsset)
+        internal StateNodeViewModel(AnimationStateMachineEditorView parentView,
+            AnimationStateAsset stateAsset,
+            EntitySelectionProxy selectedEntity)
         {
             ParentView = parentView;
             StateAsset = stateAsset;
+            SelectedEntity = selectedEntity;
         }
     }
-    
+
+    internal struct AnimationStateStyle
+    {
+        internal string ClassName;
+        internal static AnimationStateStyle Default => new() { ClassName = "defaultstate" };
+        internal static AnimationStateStyle Normal => new() { ClassName = "normalstate" };
+        internal static AnimationStateStyle Active => new() { ClassName = "activestate" };
+
+
+        internal static IEnumerable<AnimationStateStyle> AllStyles
+        {
+            get
+            {
+                yield return Default;
+                yield return Normal;
+                yield return Active;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return ClassName.GetHashCode();
+        }
+
+        public static bool operator ==(AnimationStateStyle left, AnimationStateStyle right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(AnimationStateStyle left, AnimationStateStyle right)
+        {
+            return !left.Equals(right);
+        }
+    }
+
     internal abstract class StateNodeView : Node
     {
-        internal const string DefaultStateClassName = "defaultstate";
-        internal const string NormalStateClassName = "normalstate";
         protected StateNodeViewModel model;
-        
+
         internal Action<StateNodeView> StateSelectedEvent;
         public AnimationStateAsset State => model.StateAsset;
+        public EntitySelectionProxy SelectedEntity => model.SelectedEntity;
         public StateMachineAsset StateMachine => model.ParentView.StateMachine;
         public Port input;
         public Port output;
+        private ProgressBar timelineBar;
 
         protected StateNodeView(VisualTreeAsset asset) : base(AssetDatabase.GetAssetPath(asset))
         {
@@ -69,39 +111,83 @@ namespace DMotion.Editor
             view.model = model;
             view.title = view.State.name;
             view.viewDataKey = view.State.StateEditorData.Guid;
+            view.timelineBar = view.Q<ProgressBar>();
+
             view.SetPosition(new Rect(view.State.StateEditorData.GraphPosition, Vector2.one));
-            
+
             view.CreateInputPort();
             view.CreateOutputPort();
 
-            view.SetDefaultState(view.StateMachine.IsDefaultState(view.State));
-            
+            view.SetNodeStateStyle(view.GetStateStyle());
+
+
             return view;
         }
-        
-        internal void SetDefaultState(bool isDefault)
+
+        #if UNITY_EDITOR || DEBUG
+        internal void UpdateView()
         {
-            RemoveFromClassList(DefaultStateClassName);
-            RemoveFromClassList(NormalStateClassName);
-            if (isDefault)
+            var style = GetStateStyle();
+            SetNodeStateStyle(style);
+
+            if (style == AnimationStateStyle.Active)
             {
-                AddToClassList(DefaultStateClassName);
+                UpdateTimelineProgressBar();
             }
-            else
+        }
+        #endif
+
+        internal AnimationStateStyle GetStateStyle()
+        {
+            if (Application.isPlaying && SelectedEntity != null && SelectedEntity.Exists)
             {
-                AddToClassList(NormalStateClassName);
+                var stateMachine = SelectedEntity.GetComponent<AnimationStateMachine>();
+                var currentAnimationState = SelectedEntity.GetComponent<AnimationCurrentState>();
+                if (stateMachine.CurrentState.IsValid && stateMachine.CurrentState.AnimationStateId ==
+                    currentAnimationState.AnimationStateId)
+                {
+                    var currentState = StateMachine.States[stateMachine.CurrentState.StateIndex];
+                    if (currentState == State)
+                    {
+                        return AnimationStateStyle.Active;
+                    }
+                }
             }
+
+            if (StateMachine.IsDefaultState(State))
+            {
+                return AnimationStateStyle.Default;
+            }
+
+            return AnimationStateStyle.Normal;
+        }
+
+        internal void SetNodeStateStyle(in AnimationStateStyle stateStyle)
+        {
+            foreach (var s in AnimationStateStyle.AllStyles)
+            {
+                RemoveFromClassList(s.ClassName);
+            }
+
+            AddToClassList(stateStyle.ClassName);
+
+            timelineBar.style.display =
+                stateStyle == AnimationStateStyle.Active ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction($"Create Transition", OnContextMenuCreateTransition);
-
-            var setDefaultStateMenuStatus = StateMachine.IsDefaultState(State)
+            var status = Application.isPlaying
                 ? DropdownMenuAction.Status.Disabled
                 : DropdownMenuAction.Status.Normal;
+            evt.menu.AppendAction($"Create Transition", OnContextMenuCreateTransition, status);
+
+            var setDefaultStateMenuStatus = StateMachine.IsDefaultState(State) || Application.isPlaying
+                ? DropdownMenuAction.Status.Disabled
+                : DropdownMenuAction.Status.Normal;
+
             evt.menu.AppendAction($"Set As Default State", OnContextMenuSetAsDefaultState, setDefaultStateMenuStatus);
-            
+
             evt.StopPropagation();
         }
 
@@ -110,11 +196,11 @@ namespace DMotion.Editor
             var previousState = model.ParentView.GetViewForState(StateMachine.DefaultState);
             if (previousState != null)
             {
-                previousState.SetDefaultState(false);
+                previousState.SetNodeStateStyle(AnimationStateStyle.Normal);
             }
-            
+
             StateMachine.SetDefaultState(State);
-            SetDefaultState(true);
+            SetNodeStateStyle(AnimationStateStyle.Default);
         }
 
         private void OnContextMenuCreateTransition(DropdownMenuAction obj)
@@ -122,19 +208,21 @@ namespace DMotion.Editor
             //TODO (hack): There should be a better way to create an edge
             var ev = MouseDownEvent.GetPooled(Input.mousePosition, 0, 1, Vector2.zero);
             output.edgeConnector.GetType().GetMethod("OnMouseDown", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(output.edgeConnector, new object[]{ev});
+                .Invoke(output.edgeConnector, new object[] { ev });
         }
-        
+
         protected void CreateInputPort()
         {
-            input = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Input, Port.Capacity.Multi, typeof(bool));
+            input = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Input, Port.Capacity.Multi,
+                typeof(bool));
             input.portName = "";
             inputContainer.Add(input);
         }
 
         protected void CreateOutputPort()
         {
-            output = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Output, Port.Capacity.Multi, typeof(bool));
+            output = Port.Create<TransitionEdge>(Orientation.Vertical, Direction.Output, Port.Capacity.Multi,
+                typeof(bool));
             output.portName = "";
             outputContainer.Add(output);
         }
@@ -150,6 +238,35 @@ namespace DMotion.Editor
         {
             base.OnSelected();
             StateSelectedEvent?.Invoke(this);
+        }
+
+        private void UpdateTimelineProgressBar()
+        {
+            var stateMachine = SelectedEntity.GetComponent<AnimationStateMachine>();
+
+            if (!stateMachine.CurrentState.IsValid)
+            {
+                return;
+            }
+
+            var animationStates = SelectedEntity.GetBuffer<AnimationState>();
+            var samplers = SelectedEntity.GetBuffer<ClipSampler>();
+            var animationState = animationStates.GetWithId((byte)stateMachine.CurrentState.AnimationStateId);
+
+            var avgTime = 0.0f;
+            var avgDuration = 0.0f;
+            var startSamplerIndex = samplers.IdToIndex(animationState.StartSamplerId);
+            for (var i = startSamplerIndex; i < startSamplerIndex + animationState.ClipCount; i++)
+            {
+                avgTime += samplers[i].Time;
+                avgDuration += samplers[i].Duration;
+            }
+
+            avgTime /= animationState.ClipCount;
+            avgDuration /= animationState.ClipCount;
+
+            var percent = avgTime / avgDuration;
+            timelineBar.value = percent;
         }
     }
 }

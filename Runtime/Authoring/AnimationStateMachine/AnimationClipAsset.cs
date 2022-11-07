@@ -17,6 +17,6 @@ namespace DMotion.Authoring
     public class AnimationClipAsset : ScriptableObject
     {
         public AnimationClip Clip;
-        public AnimationClipEvent[] Events;
+        public AnimationClipEvent[] Events = Array.Empty<AnimationClipEvent>();
     }
 }

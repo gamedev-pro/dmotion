@@ -23,13 +23,6 @@ namespace DMotion
                 ref DynamicBuffer<AnimationState> animationStates
             )
             {
-                for (var i = 0; i < animationStates.Length; i++)
-                {
-                    var animationState = animationStates[i];
-                    animationState.Time += DeltaTime * animationState.Speed;
-                    animationStates[i] = animationState;
-                }
-
                 //Check for new transition
                 if (transitionRequest.IsValid)
                 {
@@ -43,13 +36,27 @@ namespace DMotion
                             AnimationStateId = transitionRequest.AnimationStateId,
                             TransitionDuration = transitionDuration,
                         };
+
+                        //reset toState time
+                        var toState = animationStates[newToStateIndex];
+                        toState.Time = 0;
+                        animationStates[newToStateIndex] = toState;
                     }
 
                     transitionRequest = AnimationStateTransitionRequest.Null;
                 }
 
+                //Update states
+                {
+                    for (var i = 0; i < animationStates.Length; i++)
+                    {
+                        var animationState = animationStates[i];
+                        animationState.Time += DeltaTime * animationState.Speed;
+                        animationStates[i] = animationState;
+                    }
+                }
+
                 var toAnimationStateIndex = animationStates.IdToIndex((byte)animationStateTransition.AnimationStateId);
-                
 
                 //Execute blend
                 if (toAnimationStateIndex >= 0)
@@ -103,11 +110,6 @@ namespace DMotion
                                 animationStates[i] = animationState;
                             }
                         }
-
-                        for (var i = 0; i < animationStates.Length; i++)
-                        {
-                            var animationState = animationStates[i];
-                        }
                     }
                 }
             }
@@ -120,6 +122,7 @@ namespace DMotion
 
             internal void Execute(
                 in AnimationStateTransition transition,
+                in AnimationPreserveState animationPreserveState,
                 ref DynamicBuffer<AnimationState> animationStates,
                 ref DynamicBuffer<ClipSampler> samplers)
             {
@@ -127,18 +130,18 @@ namespace DMotion
                 var toAnimationStateIndex = animationStates.IdToIndex((byte)transition.AnimationStateId);
                 for (var i = animationStates.Length - 1; i >= 0; i--)
                 {
-                    if (i != toAnimationStateIndex)
+                    var animationState = animationStates[i];
+                    var shouldCleanupState = i != toAnimationStateIndex &&
+                                             animationState.Id != animationPreserveState.AnimationStateId &&
+                                             mathex.iszero(animationState.Weight);
+                    if (shouldCleanupState)
                     {
-                        var animationState = animationStates[i];
-                        if (mathex.iszero(animationState.Weight))
-                        {
-                            //TODO (perf): Could we improve performance by batching all removes? (we may need to pay for sorting at the end)
-                            var removeCount = animationState.ClipCount;
-                            Assert.IsTrue(removeCount > 0,
-                                "AnimationState doesn't declare clip count to remove. This will lead to sampler leak");
-                            samplers.RemoveRangeWithId(animationState.StartSamplerId, removeCount);
-                            animationStates.RemoveAt(i);
-                        }
+                        //TODO (perf): Could we improve performance by batching all removes? (we may need to pay for sorting at the end)
+                        var removeCount = animationState.ClipCount;
+                        Assert.IsTrue(removeCount > 0,
+                            "AnimationState doesn't declare clip count to remove. This will lead to sampler leak");
+                        samplers.RemoveRangeWithId(animationState.StartSamplerId, removeCount);
+                        animationStates.RemoveAt(i);
                     }
                 }
             }

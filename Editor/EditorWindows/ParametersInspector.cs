@@ -13,11 +13,13 @@ namespace DMotion.Editor
         where T : struct
     {
         protected T model;
+
         void IStateMachineInspector<T>.SetModel(T context)
         {
             model = context;
         }
     }
+
     internal class ParametersInspector : StateMachineInspector<ParameterInspectorModel>
     {
         public override void OnInspectorGUI()
@@ -26,17 +28,21 @@ namespace DMotion.Editor
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField("Parameters", GUILayout.ExpandWidth(true));
-
-                    var rect = EditorGUILayout.GetControlRect(GUILayout.Width(EditorGUIUtility.singleLineHeight * 2));
-                    if (EditorGUI.DropdownButton(rect, new GUIContent(" +"), FocusType.Passive))
+                    using (new EditorGUI.DisabledScope(Application.isPlaying))
                     {
-                        var menu = new GenericMenu();
-                        menu.AddItem(new GUIContent("Boolean"), false, CreateParameter<BoolParameterAsset>);
-                        menu.AddItem(new GUIContent("Integer"), false, CreateParameter<IntParameterAsset>);
-                        menu.AddItem(new GUIContent("Float"), false, CreateParameter<FloatParameterAsset>);
-                        menu.AddItem(new GUIContent("Enum"), false, CreateParameter<EnumParameterAsset>);
-                        menu.DropDown(rect);
+                        EditorGUILayout.LabelField("Parameters", GUILayout.ExpandWidth(true));
+
+                        var rect = EditorGUILayout.GetControlRect(
+                            GUILayout.Width(EditorGUIUtility.singleLineHeight * 2));
+                        if (EditorGUI.DropdownButton(rect, new GUIContent(" +"), FocusType.Passive))
+                        {
+                            var menu = new GenericMenu();
+                            menu.AddItem(new GUIContent("Boolean"), false, CreateParameter<BoolParameterAsset>);
+                            menu.AddItem(new GUIContent("Integer"), false, CreateParameter<IntParameterAsset>);
+                            menu.AddItem(new GUIContent("Float"), false, CreateParameter<FloatParameterAsset>);
+                            menu.AddItem(new GUIContent("Enum"), false, CreateParameter<EnumParameterAsset>);
+                            menu.DropDown(rect);
+                        }
                     }
                 }
 
@@ -50,7 +56,6 @@ namespace DMotion.Editor
                     }
                 }
             }
-
         }
 
         private void CreateParameter<T>()

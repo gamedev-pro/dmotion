@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace DMotion
 {
     [BurstCompile]
-    internal partial struct UpdateLinearBlendStateMachineStatesJob
+    internal partial struct UpdateLinearBlendStateMachineStatesJob : IJobEntity
     {
         internal float DeltaTime;
 
@@ -21,12 +21,13 @@ namespace DMotion
                 {
                     var linearBlendState = linearBlendStates[i];
                     LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(linearBlendState,
-                        blendParameters, out var blendRatio, out var thresholds);
+                        blendParameters, out var blendRatio, out var thresholds, out var speeds);
 
                     LinearBlendStateUtils.UpdateSamplers(
                         DeltaTime,
                         blendRatio,
                         thresholds,
+                        speeds,
                         animationState,
                         ref clipSamplers);
                 }
@@ -35,7 +36,7 @@ namespace DMotion
     }
 
     [BurstCompile]
-    internal partial struct CleanLinearBlendStatesJob
+    internal partial struct CleanLinearBlendStatesJob : IJobEntity
     {
         internal void Execute(
             ref DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,

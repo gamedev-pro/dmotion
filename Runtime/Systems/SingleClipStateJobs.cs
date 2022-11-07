@@ -5,7 +5,7 @@ using Unity.Entities;
 namespace DMotion
 {
     [BurstCompile]
-    internal partial struct UpdateSingleClipStatesJob
+    internal partial struct UpdateSingleClipStatesJob : IJobEntity
     {
         internal float DeltaTime;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -27,7 +27,7 @@ namespace DMotion
     }
     
     [BurstCompile]
-    internal partial struct CleanSingleClipStatesJob
+    internal partial struct CleanSingleClipStatesJob : IJobEntity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Execute(

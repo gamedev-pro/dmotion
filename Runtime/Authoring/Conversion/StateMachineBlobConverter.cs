@@ -20,6 +20,7 @@ namespace DMotion.Authoring
     {
         internal int ClipIndex;
         internal float Threshold;
+        internal float Speed;
     }
     
     internal struct LinearBlendStateConversionData
@@ -106,12 +107,14 @@ namespace DMotion.Authoring
                     
                     var sortedIndexes = builder.Allocate(ref linearBlendStates[i].SortedClipIndexes, clipsArray.Length);
                     var sortedThresholds = builder.Allocate(ref linearBlendStates[i].SortedClipThresholds, clipsArray.Length);
+                    var sortedSpeeds = builder.Allocate(ref linearBlendStates[i].SortedClipSpeeds, clipsArray.Length);
 
                     for (var clipIndex = 0; clipIndex < clipsArray.Length; clipIndex++)
                     {
                         var clip = clipsArray[clipIndex];
                         sortedIndexes[clipIndex] = clip.ClipIndex;
                         sortedThresholds[clipIndex] = clip.Threshold;
+                        sortedSpeeds[clipIndex] = clip.Speed;
                     }
                 }
             }

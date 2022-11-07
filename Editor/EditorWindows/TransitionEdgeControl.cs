@@ -52,10 +52,9 @@ namespace DMotion.Editor
                 var angle = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
                 var lineStart = new Vector2(fromLocal.x, fromLocal.y);
 
-
                 if (!Edge.isGhostEdge && Edge.input != null && Edge.output != null)
                 {
-                    //We shift the lines on their perpendicular direction. This will reversed transitions (i.e A -> B and B -> A)
+                    //We shift the lines on their perpendicular direction. This is reversed transitions (i.e A -> B and B -> A) don't overlap
                     {
                         const float shiftAmount = 8f;
                         var shiftDir = ((Vector2)(Quaternion.Euler(0, 0, 90) * v)).normalized;
@@ -82,11 +81,11 @@ namespace DMotion.Editor
                     }
                 }
 
-                //Set arrow vertices
+                //Set arrow vertices (1 transition = 1 arrow, >1 transitions = 3 arrows)
                 {
                     const float arrowHalfHeight = 8f;
                     const float arrowHalfWidth = 7f;
-                    var arrowOffset = Edge.TransitionCount > 1 ? arrowHalfHeight * 2 : 0;
+                    var arrowOffset = Edge.Model.TransitionCount > 1 ? arrowHalfHeight * 2 : 0;
                     for (var i = 0; i < 3; i++)
                     {
                         var arrowIndex = 4 + 3 * i;
@@ -105,7 +104,7 @@ namespace DMotion.Editor
 
             for (var i = 0; i < vertices.Length; i++)
             {
-                vertices[i].tint = inputColor;
+                vertices[i].tint = Edge.defaultColor;
             }
 
             var mwd = mgc.Allocate(vertices.Length, indices.Length);

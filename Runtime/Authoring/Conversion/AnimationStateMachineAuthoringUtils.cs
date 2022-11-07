@@ -56,7 +56,7 @@ namespace DMotion.Authoring
             IEnumerable<AnimationClipAsset> clips)
         {
             return conversionSystem.World.GetExistingSystem<ClipEventsSmartBlobberSystem>()
-                .AddToConvert(gameObject, new ClipEventsBlobBakeData(){Clips = clips.ToArray()});
+                .AddToConvert(gameObject, new ClipEventsBlobBakeData{Clips = clips.ToArray()});
         }
     }
 }

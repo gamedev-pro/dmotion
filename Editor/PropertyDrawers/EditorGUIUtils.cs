@@ -8,10 +8,16 @@ namespace DMotion.Editor
     {
         public static int GenericEnumPopup(Rect r, Type enumType, int current)
         {
+            return GenericEnumPopup(r, enumType, current, GUIContent.none);
+
+        }
+        public static int GenericEnumPopup(Rect r, Type enumType, int current, GUIContent label)
+        {
             if (enumType is { IsEnum: true })
             {
                 var enumValue = (Enum) Enum.GetValues(enumType).GetValue(current);
-                return (int) (object)EditorGUI.EnumPopup(r, enumValue);
+                var enumObj =(object)EditorGUI.EnumPopup(r, label, enumValue);
+                return Convert.ToInt32(enumObj);
             }
             else
             {

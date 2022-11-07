@@ -1,10 +1,9 @@
 using System;
-using System.Threading;
 using DMotion.Authoring;
+using Unity.Entities.Editor;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
-using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace DMotion.Editor
@@ -18,6 +17,7 @@ namespace DMotion.Editor
     internal struct StateMachineEditorViewModel
     {
         internal StateMachineAsset StateMachineAsset;
+        internal EntitySelectionProxy SelectedEntity;
         internal VisualTreeAsset StateNodeXml;
         internal StateMachineInspectorView InspectorView;
         internal StateMachineInspectorView ParametersInspectorView;
@@ -40,6 +40,35 @@ namespace DMotion.Editor
             wnd.OnSelectionChange();
         }
 
+        private void Awake()
+        {
+            EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
+        }
+
+
+        private void OnDestroy()
+        {
+            EditorApplication.playModeStateChanged -= OnPlaymodeStateChanged;
+        }
+
+        private void OnPlaymodeStateChanged(PlayModeStateChange stateChange)
+        {
+            switch (stateChange)
+            {
+                case PlayModeStateChange.EnteredEditMode:
+                    stateMachineEditorView?.UpdateView();
+                    break;
+                case PlayModeStateChange.ExitingEditMode:
+                    break;
+                case PlayModeStateChange.EnteredPlayMode:
+                    break;
+                case PlayModeStateChange.ExitingPlayMode:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(stateChange), stateChange, null);
+            }
+        }
+        
         internal void CreateGUI()
         {
             var root = rootVisualElement;
@@ -51,7 +80,7 @@ namespace DMotion.Editor
                 parametersInspectorView = root.Q<StateMachineInspectorView>("parameters-inspector");
             }
         }
-        
+
         [OnOpenAsset]
         internal static bool OnOpenBehaviourTree(int instanceId, int line)
         {
@@ -60,34 +89,71 @@ namespace DMotion.Editor
                 ShowExample();
                 return true;
             }
+
             return false;
         }
 
+        #if UNITY_EDITOR || DEBUG
+        private void Update()
+        {
+            if (Application.isPlaying && stateMachineEditorView != null)
+            {
+                stateMachineEditorView.UpdateView();
+            }
+        }
+        #endif
+
         private void OnSelectionChange()
         {
-            if (stateMachineEditorView != null && Selection.activeObject is StateMachineAsset stateMachine)
+            if (stateMachineEditorView != null && !Application.isPlaying &&
+                Selection.activeObject is StateMachineAsset stateMachineAsset)
             {
-                stateMachineEditorView.PopulateView(new StateMachineEditorViewModel()
+                stateMachineEditorView.PopulateView(new StateMachineEditorViewModel
                 {
-                    StateMachineAsset = stateMachine,
+                    StateMachineAsset = stateMachineAsset,
                     StateNodeXml = StateNodeXml,
                     InspectorView = inspectorView,
                     ParametersInspectorView = parametersInspectorView
                 });
-                
-                //TODO (hack): UI Toolkit doesn't seem to offer *any* way to know whether the layout has been calculated
-                //EditorApplication.delayedCall or VisualElement.schedule.Execute don't work, so we're stuck with this
-                EditorApplication.update += WaitAndFrameAll;
-                frameAllTime = EditorApplication.timeSinceStartup + 0.1f;
+                WaitAndFrameAll();
+            }
+
+            //
+            if (stateMachineEditorView != null && Application.isPlaying &&
+                Selection.activeObject is EntitySelectionProxy entitySelectionProxy)
+            {
+                if (entitySelectionProxy.HasComponent<AnimationStateMachineDebug>())
+                {
+                    var stateMachineDebug = entitySelectionProxy.GetManagedComponent<AnimationStateMachineDebug>();
+
+                    stateMachineEditorView.PopulateView(new StateMachineEditorViewModel
+                    {
+                        StateMachineAsset = stateMachineDebug.StateMachineAsset,
+                        SelectedEntity = entitySelectionProxy,
+                        StateNodeXml = StateNodeXml,
+                        InspectorView = inspectorView,
+                        ParametersInspectorView = parametersInspectorView
+                    });
+                    WaitAndFrameAll();
+                }
             }
         }
 
-        private double frameAllTime;
         private void WaitAndFrameAll()
+        {
+            //TODO (hack): UI Toolkit doesn't seem to offer *any* way to know whether the layout has been calculated
+            //EditorApplication.delayedCall or VisualElement.schedule.Execute don't work, so we're stuck with this
+            EditorApplication.update += DoFrameAll;
+            frameAllTime = EditorApplication.timeSinceStartup + 0.1f;
+        }
+
+        private double frameAllTime;
+
+        private void DoFrameAll()
         {
             if (EditorApplication.timeSinceStartup > frameAllTime)
             {
-                EditorApplication.update -= WaitAndFrameAll;
+                EditorApplication.update -= DoFrameAll;
                 stateMachineEditorView.FrameAll();
             }
         }

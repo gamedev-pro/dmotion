@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Latios.Authoring;
 using Latios.Kinemation;
@@ -37,45 +36,20 @@ namespace DMotion.Authoring
                 clipsBlob,
                 clipEventsBlob);
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
-            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
-            
+
             if (EnableEvents && StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
             {
                 dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
             }
 
-            if (gameObject != Owner)
+            var ownerEntity = gameObject != Owner ? conversionSystem.GetPrimaryEntity(Owner) : entity;
+            if (ownerEntity != entity)
             {
-                var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
-                dstManager.AddComponentData(ownerEntity, new AnimatorOwner() { AnimatorEntity = entity });
-                dstManager.AddComponentData(entity, new AnimatorEntity() { Owner = ownerEntity });
+                AnimationStateMachineConversionUtils.AddAnimatorOwnerComponents(dstManager, ownerEntity, entity);
             }
 
-            switch (RootMotionMode)
-            {
-                case RootMotionMode.Disabled:
-                    break;
-                case RootMotionMode.EnabledAutomatic:
-                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
-                    dstManager.AddComponentData(entity, new RootDeltaRotation());
-                    if (gameObject != Owner)
-                    {
-                        var ownerEntity = conversionSystem.GetPrimaryEntity(Owner);
-                        dstManager.AddComponentData(ownerEntity, new TransferRootMotionToOwner());
-                    }
-                    else
-                    {
-                        dstManager.AddComponentData(entity, new ApplyRootMotionToEntity());
-                    }
-
-                    break;
-                case RootMotionMode.EnabledManual:
-                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
-                    dstManager.AddComponentData(entity, new RootDeltaRotation());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            AnimationStateMachineConversionUtils.AddRootMotionComponents(dstManager, ownerEntity, entity,
+                RootMotionMode);
         }
 
         public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager,
@@ -100,6 +74,19 @@ namespace DMotion.Authoring
                     Assert.IsTrue(c != null && c.Clip != null,
                         $"State ({s.name}) in State Machine {StateMachineAsset.name} has invalid clips");
                 }
+            }
+        }
+
+        private void Reset()
+        {
+            if (Animator == null)
+            {
+                Animator = GetComponent<Animator>();
+            }
+
+            if (Animator != null && Owner == null)
+            {
+                Owner = Animator.gameObject;
             }
         }
     }

@@ -31,3 +31,20 @@
 #parameters-inspector {
     background-color: rgb(51, 51, 51);
 }
+
+.edge.transition {
+    --edge-color: #D2D2D2;
+}
+
+.edge.transition:hover {
+    --edge-width: 5;
+}
+
+.edge.transition:selected {
+    --edge-width: 5;
+}
+
+.edge.active-transition {
+    --edge-color: #67C62C;
+    --edge-width: 5;
+}

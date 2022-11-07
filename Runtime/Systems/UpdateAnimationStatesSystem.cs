@@ -1,5 +1,7 @@
-﻿using Unity.Entities;
+﻿using System.Runtime.CompilerServices;
+using Unity.Entities;
 using Unity.Jobs;
+using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Transforms;
 
 namespace DMotion
@@ -8,51 +10,57 @@ namespace DMotion
     [UpdateAfter(typeof(BlendAnimationStatesSystem))]
     internal partial class UpdateAnimationStatesSystem : SystemBase
     {
-        internal EntityQuery updateSingleClipsQuery;
-        internal EntityQuery cleanSingleClipsQuery;
-        internal EntityQuery updateLinearBlendClipsQuery;
-        internal EntityQuery cleanLinearBlendClipsQuery;
-        
-        protected override void OnCreate()
+        protected override void OnUpdate()
         {
-            base.OnCreate();
-            updateSingleClipsQuery = GetEntityQuery(new EntityQueryDesc{All = new[]{ComponentType.ReadOnly<SingleClipState>(), ComponentType.ReadOnly<AnimationState>(), ComponentType.ReadWrite<ClipSampler>()}, Any = new ComponentType[]{}, None = new ComponentType[]{}, Options = EntityQueryOptions.Default});
-            cleanSingleClipsQuery = GetEntityQuery(new EntityQueryDesc{All = new []{ComponentType.ReadOnly<AnimationState>(), ComponentType.ReadWrite<SingleClipState>()}, Any = new ComponentType[]{}, None = new ComponentType[]{}, Options = EntityQueryOptions.Default});
-            updateLinearBlendClipsQuery = GetEntityQuery(new EntityQueryDesc{All = new[]{ComponentType.ReadOnly<AnimationState>(), ComponentType.ReadOnly<LinearBlendStateMachineState>(), ComponentType.ReadOnly<BlendParameter>(), ComponentType.ReadWrite<ClipSampler>()}, Any = new ComponentType[]{}, None = new ComponentType[]{}, Options = EntityQueryOptions.Default});
-            cleanLinearBlendClipsQuery = GetEntityQuery(new EntityQueryDesc{All = new []{ComponentType.ReadOnly<AnimationState>(), ComponentType.ReadWrite<LinearBlendStateMachineState>()}, Any = new ComponentType[]{}, None = new ComponentType[]{}, Options = EntityQueryOptions.Default});
+#if DEBUG || UNITY_EDITOR
+            if (JobsUtility.JobDebuggerEnabled)
+            {
+                OnUpdate_Safe();
+            }
+            else
+            {
+                OnUpdate_Unsafe();
+            }
+#else
+            OnUpdate_Unsafe();
+#endif
         }
 
-        protected override void OnUpdate()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OnUpdate_Safe()
+        {
+             new UpdateSingleClipStatesJob
+             {
+                 DeltaTime = Time.DeltaTime,
+             }.ScheduleParallel();
+ 
+             new CleanSingleClipStatesJob().ScheduleParallel();
+ 
+             new UpdateLinearBlendStateMachineStatesJob
+             {
+                 DeltaTime = Time.DeltaTime,
+             }.ScheduleParallel();
+ 
+             new CleanLinearBlendStatesJob().ScheduleParallel();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OnUpdate_Unsafe()
         {
             var singleClipHandle = new UpdateSingleClipStatesJob
             {
                 DeltaTime = Time.DeltaTime,
-                ClipSamplersHandle = GetBufferTypeHandle<ClipSampler>(false),
-                AnimationStatesHandle = GetBufferTypeHandle<AnimationState>(true),
-                SingleClipStatesHandle = GetBufferTypeHandle<SingleClipState>(true)
-            }.ScheduleParallel(updateSingleClipsQuery, Dependency);
+            }.ScheduleParallel(Dependency);
 
-            singleClipHandle = new CleanSingleClipStatesJob
-            {
-                SingleClipStatesHandle = GetBufferTypeHandle<SingleClipState>(false),
-                AnimationStatesHandle = GetBufferTypeHandle<AnimationState>(true)
-            }.ScheduleParallel(cleanSingleClipsQuery, singleClipHandle);
-            
+            singleClipHandle = new CleanSingleClipStatesJob().ScheduleParallel(singleClipHandle);
+
             var linearBlendHandle = new UpdateLinearBlendStateMachineStatesJob
             {
                 DeltaTime = Time.DeltaTime,
-                ClipSamplersHandle = GetBufferTypeHandle<ClipSampler>(false),
-                AnimationStatesHandle = GetBufferTypeHandle<AnimationState>(true),
-                LinearBlendStateMachineStatesHandle = GetBufferTypeHandle<LinearBlendStateMachineState>(true),
-                BlendParametersStateHandle = GetBufferTypeHandle<BlendParameter>(true)
-            }.ScheduleParallel(updateLinearBlendClipsQuery, Dependency);
+            }.ScheduleParallel(Dependency);
 
-            linearBlendHandle = new CleanLinearBlendStatesJob
-            {
-                LinearBlendStateMachineStates = GetBufferTypeHandle<LinearBlendStateMachineState>(false),
-                AnimationStatesHandle = GetBufferTypeHandle<AnimationState>(true)
-            }.ScheduleParallel(cleanLinearBlendClipsQuery, linearBlendHandle);
-            
+            linearBlendHandle = new CleanLinearBlendStatesJob().ScheduleParallel(linearBlendHandle);
+
             Dependency = JobHandle.CombineDependencies(singleClipHandle, linearBlendHandle);
         }
     }

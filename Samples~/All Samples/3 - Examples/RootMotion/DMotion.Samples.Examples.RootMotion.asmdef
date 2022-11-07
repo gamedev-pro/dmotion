@@ -1,0 +1,24 @@
+{
+    "name": "DMotion.Samples.Examples.RootMotion",
+    "rootNamespace": "",
+    "references": [
+        "GUID:343deaaf83e0cee4ca978e7df0b80d21",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab",
+        "GUID:734d92eba21c94caba915361bd5ac177",
+        "GUID:11912cc675165314485c904ed61b2e92",
+        "GUID:a5baed0c9693541a5bd947d336ec7659",
+        "GUID:c39b61f68344c5e46ad36a286c992104",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:8819f35a0fc84499b990e90a4ca1911f",
+        "GUID:2665a8d13d1b3f18800f46e256720795"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

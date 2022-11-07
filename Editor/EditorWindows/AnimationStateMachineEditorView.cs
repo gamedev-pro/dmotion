@@ -4,6 +4,7 @@ using System.Linq;
 using DMotion.Authoring;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace DMotion.Editor
@@ -12,6 +13,7 @@ namespace DMotion.Editor
     {
         internal AnimationStateAsset FromState;
         internal AnimationStateAsset ToState;
+
         public override int GetHashCode()
         {
             return FromState.GetHashCode() * ToState.GetHashCode();
@@ -22,6 +24,7 @@ namespace DMotion.Editor
             FromState = from;
             ToState = to;
         }
+
         internal TransitionPair(AnimationStateAsset state, int outTransitionIndex)
         {
             var outTransition = state.OutTransitions[outTransitionIndex];
@@ -29,12 +32,12 @@ namespace DMotion.Editor
             ToState = outTransition.ToState;
         }
     }
+
     public class AnimationStateMachineEditorView : GraphView
     {
         public new class UxmlFactory : UxmlFactory<AnimationStateMachineEditorView, UxmlTraits>
         {
         }
-
 
         private StateMachineEditorViewModel model;
 
@@ -62,14 +65,23 @@ namespace DMotion.Editor
         {
             if (model.StateMachineAsset != null)
             {
-                evt.menu.AppendAction("New State", a => CreateState(a, typeof(SingleClipStateAsset)));
-                evt.menu.AppendAction("New Blend Tree 1D", a => CreateState(a, typeof(LinearBlendStateAsset)));
+                var status = Application.isPlaying
+                    ? DropdownMenuAction.Status.Disabled
+                    : DropdownMenuAction.Status.Normal;
+                evt.menu.AppendAction("New State", a => CreateState(a, typeof(SingleClipStateAsset)), status);
+                evt.menu.AppendAction("New Blend Tree 1D", a => CreateState(a, typeof(LinearBlendStateAsset)), status);
             }
+
             evt.StopPropagation();
         }
-        
+
         private GraphViewChange OnGraphViewChanged(GraphViewChange graphviewchange)
         {
+            if (Application.isPlaying)
+            {
+                return graphviewchange;
+            }
+
             if (graphviewchange.elementsToRemove != null)
             {
                 foreach (var el in graphviewchange.elementsToRemove)
@@ -95,21 +107,24 @@ namespace DMotion.Editor
                 {
                     if (edge is TransitionEdge)
                     {
-                        if (edge.output.node is StateNodeView fromStateView && edge.input.node is StateNodeView toStateView)
+                        if (edge.output.node is StateNodeView fromStateView &&
+                            edge.input.node is StateNodeView toStateView)
                         {
                             CreateOutTransition(fromStateView.State, toStateView.State);
                         }
                     }
                 }
+
                 graphviewchange.edgesToCreate.Clear();
             }
-            
+
             return graphviewchange;
         }
 
         private void DeleteState(AnimationStateAsset state)
         {
             model.StateMachineAsset.DeleteState(state);
+            UpdateView();
         }
 
         private void DeleteAllOutTransitions(AnimationStateAsset fromState, AnimationStateAsset toState)
@@ -129,7 +144,7 @@ namespace DMotion.Editor
         {
             var outTransition = new StateOutTransition(toState);
             fromState.OutTransitions.Add(outTransition);
-            InstantiateTransitionEdge(fromState, fromState.OutTransitions.Count-1);
+            InstantiateTransitionEdge(fromState, fromState.OutTransitions.Count - 1);
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -139,12 +154,25 @@ namespace DMotion.Editor
                                nap.node != startPort.node)).ToList();
         }
 
+        internal void UpdateView()
+        {
+            foreach (var stateView in stateToView.Values)
+            {
+                stateView.UpdateView();
+            }
+
+            foreach (var transitions in transitionToEdgeView.Values)
+            {
+                transitions.UpdateView();
+            }
+        }
+
         internal void PopulateView(in StateMachineEditorViewModel newModel)
         {
             model = newModel;
             stateToView.Clear();
             transitionToEdgeView.Clear();
-            
+
             graphViewChanged -= OnGraphViewChanged;
             DeleteElements(graphElements.ToList());
             graphViewChanged += OnGraphViewChanged;
@@ -162,10 +190,11 @@ namespace DMotion.Editor
                 }
             }
 
-            model.ParametersInspectorView.SetInspector<ParametersInspector, ParameterInspectorModel>(model.StateMachineAsset, new ParameterInspectorModel()
-            {
-                StateMachine = model.StateMachineAsset
-            });
+            model.ParametersInspectorView.SetInspector<ParametersInspector, ParameterInspectorModel>(
+                model.StateMachineAsset, new ParameterInspectorModel()
+                {
+                    StateMachine = model.StateMachineAsset
+                });
         }
 
         internal StateNodeView GetViewForState(AnimationStateAsset state)
@@ -178,7 +207,7 @@ namespace DMotion.Editor
             var transitionPair = new TransitionPair(state, outTransitionIndex);
             if (transitionToEdgeView.TryGetValue(transitionPair, out var existingEdge))
             {
-                existingEdge.TransitionCount++;
+                existingEdge.Model.TransitionCount++;
                 existingEdge.MarkDirtyRepaint();
             }
             else
@@ -186,7 +215,12 @@ namespace DMotion.Editor
                 var fromStateView = GetViewForState(transitionPair.FromState);
                 var toStateView = GetViewForState(transitionPair.ToState);
                 var edge = fromStateView.output.ConnectTo<TransitionEdge>(toStateView.input);
-                edge.TransitionCount = 1;
+                edge.Model = new TransitionEdgeModel()
+                {
+                    TransitionCount = 1,
+                    StateMachineAsset = model.StateMachineAsset,
+                    SelectedEntity = model.SelectedEntity
+                };
                 AddElement(edge);
                 transitionToEdgeView.Add(transitionPair, edge);
 
@@ -196,7 +230,7 @@ namespace DMotion.Editor
 
         private void InstantiateStateView(AnimationStateAsset state)
         {
-            var stateView = StateNodeView.New(new StateNodeViewModel(this, state));
+            var stateView = StateNodeView.New(new StateNodeViewModel(this, state, model.SelectedEntity));
             AddElement(stateView);
             stateToView.Add(state, stateView);
 
@@ -223,6 +257,7 @@ namespace DMotion.Editor
                     throw new ArgumentOutOfRangeException(nameof(obj));
             }
         }
+
         private void OnTransitionSelected(TransitionEdge obj)
         {
             var inspectorModel = new TransitionGroupInspectorModel()
@@ -230,7 +265,8 @@ namespace DMotion.Editor
                 FromState = obj.FromState,
                 ToState = obj.ToState
             };
-            model.InspectorView.SetInspector<TransitionGroupInspector, TransitionGroupInspectorModel>(inspectorModel.FromState, inspectorModel);
+            model.InspectorView.SetInspector<TransitionGroupInspector, TransitionGroupInspectorModel>(
+                inspectorModel.FromState, inspectorModel);
         }
     }
 }

@@ -3,9 +3,9 @@ using Unity.Entities;
 
 namespace DMotion
 {
-    internal static class SingleClipStateUtils
+    public static class SingleClipStateUtils
     {
-        public static SingleClipState NewForStateMachine(
+        internal static SingleClipState NewForStateMachine(
             short stateIndex,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clips,
@@ -24,7 +24,7 @@ namespace DMotion
                 ref samplers);
         }
 
-        public static SingleClipState New(
+        internal static SingleClipState New(
             ushort clipIndex,
             float speed,
             bool loop,
@@ -52,7 +52,7 @@ namespace DMotion
             return singleClipState;
         }
 
-        public static void UpdateSamplers(SingleClipState singleClipState, float dt,
+        internal static void UpdateSamplers(SingleClipState singleClipState, float dt,
             in AnimationState animation,
             ref DynamicBuffer<ClipSampler> samplers)
         {

@@ -26,6 +26,7 @@ namespace DMotion
 
             ref var linearBlendBlob = ref linearBlendState.LinearBlendBlob;
             Assert.AreEqual(linearBlendBlob.SortedClipIndexes.Length, linearBlendBlob.SortedClipThresholds.Length);
+            Assert.AreEqual(linearBlendBlob.SortedClipIndexes.Length, linearBlendBlob.SortedClipSpeeds.Length);
             var clipCount = (byte)linearBlendBlob.SortedClipIndexes.Length;
 
             var newSamplers =
@@ -58,11 +59,13 @@ namespace DMotion
             in LinearBlendStateMachineState linearBlendState,
             in DynamicBuffer<BlendParameter> blendParameters,
             out float blendRatio,
-            out NativeArray<float> thresholds)
+            out NativeArray<float> thresholds,
+            out NativeArray<float> speeds)
         {
             ref var linearBlendBlob = ref linearBlendState.LinearBlendBlob;
             blendRatio = blendParameters[linearBlendBlob.BlendParameterIndex].Value;
             thresholds = CollectionUtils.AsArray(ref linearBlendBlob.SortedClipThresholds);
+            speeds = CollectionUtils.AsArray(ref linearBlendBlob.SortedClipSpeeds);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,6 +73,7 @@ namespace DMotion
             float dt,
             float blendRatio,
             in NativeArray<float> thresholds,
+            in NativeArray<float> speeds,
             in AnimationState animation,
             ref DynamicBuffer<ClipSampler> samplers)
         {
@@ -109,8 +113,11 @@ namespace DMotion
 
             //Update clip times
             {
-                var loopDuration = firstSampler.Clip.duration * firstSampler.Weight +
-                                   secondSampler.Clip.duration * secondSampler.Weight;
+                var firstClipSpeed = math.select(speeds[firstClipIndex], 1, speeds[firstClipIndex] <= 0);
+                var secondClipSpeed = math.select(speeds[secondClipIndex], 1, speeds[secondClipIndex] <= 0);
+
+                var loopDuration = firstSampler.Clip.duration / firstClipSpeed * firstSampler.Weight +
+                                   secondSampler.Clip.duration / secondClipSpeed * secondSampler.Weight;
 
                 //We don't want to divide by zero if our weight is zero
                 if (!mathex.iszero(loopDuration))

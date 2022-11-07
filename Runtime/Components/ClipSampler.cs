@@ -19,8 +19,8 @@ namespace DMotion
             ClipIndex = (ushort) clipIndex;
         }
     }
-    
-    internal struct ClipSampler : IBufferElementData, IElementWithId
+
+    public struct ClipSampler : IBufferElementData, IElementWithId
     {
         public byte Id { get; set; }
         internal BlobAssetReference<SkeletonClipSetBlob> Clips;
@@ -31,6 +31,8 @@ namespace DMotion
         internal float Weight;
 
         internal ref SkeletonClip Clip => ref Clips.Value.clips[ClipIndex];
+
+        internal float Duration => Clip.duration;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void LoopToClipTime()

@@ -7,6 +7,7 @@ namespace DMotion.Editor
     internal class SingleStateInspector : AnimationStateInspector
     {
         private SerializedProperty clipProperty;
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -18,7 +19,7 @@ namespace DMotion.Editor
             EditorGUILayout.PropertyField(clipProperty);
         }
     }
-    
+
     internal class LinearBlendStateInspector : AnimationStateInspector
     {
         private SerializedProperty blendParameterProperty;
@@ -37,7 +38,8 @@ namespace DMotion.Editor
 
         protected override void DrawChildProperties()
         {
-            blendParametersSelector.OnGUI(EditorGUILayout.GetControlRect(), blendParameterProperty, new GUIContent(blendParameterProperty.displayName));
+            blendParametersSelector.OnGUI(EditorGUILayout.GetControlRect(), blendParameterProperty,
+                new GUIContent(blendParameterProperty.displayName));
             EditorGUILayout.PropertyField(clipsProperty);
         }
     }
@@ -63,11 +65,14 @@ namespace DMotion.Editor
 
         public override void OnInspectorGUI()
         {
-            DrawName();
-            DrawLoopProperty();
-            DrawSpeedProperty();
-            DrawChildProperties();
-            DrawTransitions();
+            using (new EditorGUI.DisabledScope(Application.isPlaying))
+            {
+                DrawName();
+                DrawLoopProperty();
+                DrawSpeedProperty();
+                DrawChildProperties();
+                DrawTransitions();
+            }
         }
 
         protected abstract void DrawChildProperties();
@@ -90,6 +95,7 @@ namespace DMotion.Editor
         {
             EditorGUILayout.PropertyField(loopProperty);
         }
+
         protected void DrawSpeedProperty()
         {
             EditorGUILayout.PropertyField(speedProperty);
@@ -105,7 +111,8 @@ namespace DMotion.Editor
             EditorGUILayout.LabelField(outTransitionsProperty.displayName);
             foreach (var transition in model.StateAsset.OutTransitions)
             {
-                StateMachineEditorUtils.DrawTransitionSummary(model.StateAsset, transition.ToState, transition.TransitionDuration);
+                StateMachineEditorUtils.DrawTransitionSummary(model.StateAsset, transition.ToState,
+                    transition.TransitionDuration);
             }
         }
     }

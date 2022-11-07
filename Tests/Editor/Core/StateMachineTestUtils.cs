@@ -1,5 +1,4 @@
-﻿using System.Management.Instrumentation;
-using DMotion.Authoring;
+﻿using DMotion.Authoring;
 using Latios.Kinemation;
 using NUnit.Framework;
 using Unity.Entities;
@@ -11,24 +10,21 @@ namespace DMotion.Tests
         public static Entity CreateStateMachineEntity(this EntityManager manager, StateMachineAsset stateMachineAsset,
             BlobAssetReference<StateMachineBlob> stateMachineBlob)
         {
+            return CreateStateMachineEntity(manager, stateMachineAsset, stateMachineBlob,
+                BlobAssetReference<SkeletonClipSetBlob>.Null, BlobAssetReference<ClipEventsBlob>.Null);
+        }
+        
+        public static Entity CreateStateMachineEntity(this EntityManager manager, StateMachineAsset stateMachineAsset,
+            BlobAssetReference<StateMachineBlob> stateMachineBlob,
+            BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            BlobAssetReference<ClipEventsBlob> eventsBlob)
+        {
             var entity = manager.CreateEntity();
             AnimationStateMachineConversionUtils.AddStateMachineSystemComponents(manager, entity, stateMachineAsset,
                 stateMachineBlob,
-                BlobAssetReference<SkeletonClipSetBlob>.Null, BlobAssetReference<ClipEventsBlob>.Null);
+                clipsBlob, eventsBlob);
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(manager, entity);
             return entity;
-        }
-
-        public static Entity InstantiateStateMachineEntity(this EntityManager manager, Entity prefab)
-        {
-            var newEntity = manager.Instantiate(prefab);
-            Assert.IsTrue(manager.HasComponent<AnimationStateMachine>(newEntity));
-            return newEntity;
-        }
-
-        public static void RequestTransitionToStateMachine(EntityManager manager, Entity entity)
-        {
-            manager.SetComponentData(entity, AnimationStateMachineTransitionRequest.New(0.15f));
         }
 
         public static bool ShouldStateMachineBeActive(EntityManager manager, Entity entity)
@@ -37,14 +33,14 @@ namespace DMotion.Tests
             Assert.IsTrue(manager.HasComponent<AnimationStateTransition>(entity));
             Assert.IsTrue(manager.HasComponent<AnimationStateTransitionRequest>(entity));
             Assert.IsTrue(manager.HasComponent<AnimationStateMachine>(entity));
-            
+
             var animationCurrentState = manager.GetComponentData<AnimationCurrentState>(entity);
             var animationStateTransition = manager.GetComponentData<AnimationStateTransition>(entity);
-            var stateMachineTransitionRequest = manager.GetComponentData<AnimationStateMachineTransitionRequest>(entity);
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(entity);
             return UpdateStateMachineJob.ShouldStateMachineBeActive(animationCurrentState, animationStateTransition,
-                stateMachineTransitionRequest, stateMachine.CurrentState);
+                stateMachine.CurrentState);
         }
+
         internal static StateMachineStateRef GetCurrentState(EntityManager manager, Entity entity)
         {
             return manager.GetComponentData<AnimationStateMachine>(entity).CurrentState;
@@ -79,7 +75,7 @@ namespace DMotion.Tests
             Assert.IsTrue(manager.HasComponent<TBuffer>(entity));
             var parameters = manager.GetBuffer<TBuffer>(entity);
             Assert.IsTrue(parameters.Length > 0);
-            parameters.SetParameter(hash, newValue);
+            parameters.SetValue(hash, newValue);
         }
     }
 }

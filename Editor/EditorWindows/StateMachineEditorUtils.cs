@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DMotion.Authoring;
 using UnityEditor;
 using UnityEngine;
@@ -18,15 +19,16 @@ namespace DMotion.Editor
             state.StateEditorData.Guid = GUID.Generate().ToString();
             //TODO: Enable this later. Create editor tool to change this as well
             // state.hideFlags = HideFlags.HideInHierarchy;
-            
+
             stateMachineAsset.States.Add(state);
 
             if (stateMachineAsset.DefaultState == null)
             {
                 stateMachineAsset.SetDefaultState(state);
             }
+
             AssetDatabase.AddObjectToAsset(state, stateMachineAsset);
-            
+
             AssetDatabase.SaveAssets();
             return state;
         }
@@ -45,7 +47,13 @@ namespace DMotion.Editor
                     }
                 }
             }
+
             stateMachineAsset.States.Remove(stateAsset);
+            if (stateMachineAsset.DefaultState == stateAsset)
+            {
+                stateMachineAsset.DefaultState = stateMachineAsset.States.FirstOrDefault();
+            }
+            
             AssetDatabase.RemoveObjectFromAsset(stateAsset);
             AssetDatabase.SaveAssets();
         }
@@ -55,6 +63,7 @@ namespace DMotion.Editor
         {
             return stateMachineAsset.CreateParameter(typeof(T));
         }
+
         public static AnimationParameterAsset CreateParameter(this StateMachineAsset stateMachineAsset, Type type)
         {
             Assert.IsTrue(typeof(AnimationParameterAsset).IsAssignableFrom(type));
@@ -64,15 +73,16 @@ namespace DMotion.Editor
             parameter.name = $"New Parameter {stateMachineAsset.Parameters.Count + 1}";
             //TODO: Enable this later. Create editor tool to change this as well
             // state.hideFlags = HideFlags.HideInHierarchy;
-            
+
             stateMachineAsset.Parameters.Add(parameter);
             AssetDatabase.AddObjectToAsset(parameter, stateMachineAsset);
-            
+
             AssetDatabase.SaveAssets();
             return parameter;
         }
-        
-        public static void DeleteParameter(this StateMachineAsset stateMachineAsset, AnimationParameterAsset parameterAsset)
+
+        public static void DeleteParameter(this StateMachineAsset stateMachineAsset,
+            AnimationParameterAsset parameterAsset)
         {
             //Remove all transitions that reference this state
             foreach (var state in stateMachineAsset.States)
@@ -96,11 +106,13 @@ namespace DMotion.Editor
 
         public static void SetDefaultState(this StateMachineAsset stateMachineAsset, AnimationStateAsset state)
         {
-            Assert.IsTrue(stateMachineAsset.States.Contains(state), $"State {state.name} not present in State machine {stateMachineAsset.name}");
+            Assert.IsTrue(stateMachineAsset.States.Contains(state),
+                $"State {state.name} not present in State machine {stateMachineAsset.name}");
             stateMachineAsset.DefaultState = state;
         }
-        
-        internal static void DrawTransitionSummary(AnimationStateAsset fromState, AnimationStateAsset toState, float transitionTime)
+
+        internal static void DrawTransitionSummary(AnimationStateAsset fromState, AnimationStateAsset toState,
+            float transitionTime)
         {
             var labelWidth = Mathf.Min(EditorGUIUtility.labelWidth, 80f);
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))

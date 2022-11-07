@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
-using DMotion.Authoring;
+﻿using DMotion.Authoring;
 using NUnit.Framework;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -11,145 +10,178 @@ namespace DMotion.Tests
     [CreateSystemsForTest(typeof(AnimationEventsSystem))]
     public class RaiseAnimationEventsJobShould : ECSTestsFixture
     {
-        [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
-        private AnimationStateMachineAuthoring stateMachinePrefab;
-        
-        [SerializeField]
-        private AnimationClipAsset clipWithEvents;
+        private float[] eventTimes = new[] { 0.2f, 0.5f };
 
-        private Entity stateMachineEntityPrefab;
-
-        private int clipWithEventsIndex = -1;
-
-        [SetUp]
-        public override void Setup()
+        [Test]
+        public void Run_With_Valid_Queries()
         {
-            base.Setup();
-            Assert.IsNotNull(clipWithEvents);
-            Assert.NotZero(clipWithEvents.Events.Length);
-            var stateMachineAsset = stateMachinePrefab.GetComponent<AnimationStateMachineAuthoring>().StateMachineAsset;
-            clipWithEventsIndex = stateMachineAsset.Clips.ToList().IndexOf(clipWithEvents);
-            Assert.IsTrue(clipWithEventsIndex >= 0);
+            CreateEntityWithClipPlaying(out _, out _, out _);
+            UpdateWorld();
+            ECSTestUtils.AssertSystemQueries<AnimationEventsSystem>(world);
         }
 
         [Test]
         public void ResetRaisedEventsEveryFrame()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateEntityWithClipPlaying(out var newEntity, out _, out _);
             var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
             raisedEvents.Add(default);
             Assert.NotZero(raisedEvents.Length);
             UpdateWorld();
-            
+
             raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
             Assert.Zero(raisedEvents.Length);
         }
-        
+
         [Test]
         public void Raise_When_EventTime_BetweenPreviousAndCurrentTime()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            UpdateWorld();
+            CreateEntityWithClipPlaying(out var newEntity, out var samplerIndex, out var animationClipEvents);
 
-            var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.Zero(raisedEvents.Length);
-            
-            GetEventAndClipSampler(out var clipSampler, out var eventToRaise);
-            clipSampler.PreviousTime = eventToRaise.ClipTime - 0.1f;
-            clipSampler.Time = eventToRaise.ClipTime + 0.1f;
-            manager.GetBuffer<ClipSampler>(newEntity).Add(clipSampler);
-            
+            var eventToRaise = animationClipEvents[0];
+            UpdateWorld(eventToRaise.ClipTime * 0.5f);
+
+            AssertNoRaisedEvents(newEntity);
+
+            SetTimeAndPreviousTimeForSampler(newEntity, samplerIndex, eventToRaise.ClipTime - 0.1f,
+                eventToRaise.ClipTime + 0.1f);
+
             UpdateWorld();
-            raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.AreEqual(1, raisedEvents.Length);
-            var raised = raisedEvents[0];
-            Assert.AreEqual(raised.EventHash, eventToRaise.EventHash);
+            AssertEventRaised(newEntity, eventToRaise.EventHash);
         }
 
 
         [Test]
         public void Raise_When_EventTime_Equals_CurrentTime()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            UpdateWorld();
+            CreateEntityWithClipPlaying(out var newEntity, out var samplerIndex, out var events);
 
-            var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.Zero(raisedEvents.Length);
-            
-            GetEventAndClipSampler(out var clipSampler, out var eventToRaise);
-            clipSampler.PreviousTime = eventToRaise.ClipTime - 0.1f;
-            clipSampler.Time = eventToRaise.ClipTime;
-            manager.GetBuffer<ClipSampler>(newEntity).Add(clipSampler);
-            
+            var eventToRaise = events[0];
+            UpdateWorld(eventToRaise.ClipTime * 0.5f);
+
+            AssertNoRaisedEvents(newEntity);
+
+            var prevTime = eventToRaise.ClipTime - 0.1f;
+            var time = eventToRaise.ClipTime;
+            SetTimeAndPreviousTimeForSampler(newEntity, samplerIndex, prevTime, time);
+
             UpdateWorld();
-            raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.AreEqual(1, raisedEvents.Length);
-            var raised = raisedEvents[0];
-            Assert.AreEqual(raised.EventHash, eventToRaise.EventHash);
+            AssertEventRaised(newEntity, eventToRaise.EventHash);
         }
-        
-        [Test(Description = "Events should not be raised when EventTime == Previous Time since they will have already be raised in the previous frameb, when Event Time == Current Time")]
-        
+
+        [Test(Description =
+            "Events should not be raised when EventTime == Previous Time since they will have already be raised in the previous frameb, when Event Time == Current Time")]
         public void NotRaise_When_EventTime_Equals_PreviousTime()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateEntityWithClipPlaying(out var newEntity, out var samplerIndex, out var events);
             UpdateWorld();
 
-            var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.Zero(raisedEvents.Length);
-            
-            GetEventAndClipSampler(out var clipSampler, out var eventToRaise);
-            clipSampler.PreviousTime = eventToRaise.ClipTime;
-            clipSampler.Time = eventToRaise.ClipTime + 0.1f;
-            manager.GetBuffer<ClipSampler>(newEntity).Add(clipSampler);
-            
+            AssertNoRaisedEvents(newEntity);
+
+            var eventToRaise = events[0];
+
+            var prevTime = eventToRaise.ClipTime;
+            var time = eventToRaise.ClipTime + 0.1f;
+            SetTimeAndPreviousTimeForSampler(newEntity, samplerIndex, prevTime, time);
+
             UpdateWorld();
-            raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.Zero(raisedEvents.Length);
+            AssertNoRaisedEvents(newEntity);
         }
-        
+
         [Test(Description = "For when the clip loops. Ex: EventTime = 0.1f, Previous Time = 0.9f, Time = 0.2f")]
         public void Raise_When_EventTime_BetweenCurrentAndPreviousTime()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateEntityWithClipPlaying(out var newEntity, out var samplerIndex, out var events);
             UpdateWorld();
 
-            var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.Zero(raisedEvents.Length);
+            AssertNoRaisedEvents(newEntity);
 
-            var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            ref var clip = ref stateMachine.ClipsBlob.Value.clips[clipWithEventsIndex];
-            GetEventAndClipSampler(out var clipSampler, out var eventToRaise);
-            clipSampler.PreviousTime = clip.duration - math.EPSILON;
-            clipSampler.Time = eventToRaise.ClipTime + math.EPSILON;
-            Assert.Greater(clipSampler.PreviousTime, clipSampler.Time, "This test expect Previous time is greater than Clip Time (clip loops). Something is wrong with the test setup, or the event time");
-            Assert.Less(clipSampler.Time, clip.duration, "Event is too near the end of the clip. Please test an event that is close to the beginning of the clip");
-            manager.GetBuffer<ClipSampler>(newEntity).Add(clipSampler);
-            
+            var eventToRaise = events[0];
+            var sampler = manager.GetBuffer<ClipSampler>(newEntity);
+            ref var clip = ref sampler[samplerIndex].Clip;
+
+            var prevTime = clip.duration - math.EPSILON;
+            var time = eventToRaise.ClipTime + math.EPSILON;
+            Assert.Greater(prevTime, time,
+                "This test expect Previous time is greater than Clip Time (clip loops). Something is wrong with the test setup, or the event time");
+            Assert.Less(time, clip.duration,
+                "Event is too near the end of the clip. Please test an event that is close to the beginning of the clip");
+            SetTimeAndPreviousTimeForSampler(newEntity, samplerIndex, prevTime, time);
+
             UpdateWorld();
-            raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
-            Assert.AreEqual(1, raisedEvents.Length);
-            var raised = raisedEvents[0];
-            Assert.AreEqual(raised.EventHash, eventToRaise.EventHash);
+            AssertEventRaised(newEntity, eventToRaise.EventHash);
         }
 
-        private void GetEventAndClipSampler(out ClipSampler clipSampler, out AnimationClipEvent clipEvent)
+        private void CreateEntityWithClipPlaying(out Entity entity, out int samplerIndex,
+            out AnimationClipEvent[] events)
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            ref var events = ref stateMachine.ClipEventsBlob.Value.ClipEvents[clipWithEventsIndex];
-            Assert.NotZero(events.Events.Length);
+            entity = manager.CreateEntity();
+            AnimationStateMachineConversionUtils.AddSingleClipStateComponents(manager, entity, entity,
+                true, false, RootMotionMode.Disabled);
 
-            clipEvent = events.Events[0];
-            clipSampler = new ClipSampler
+            //create fake animation clip asset
+            var animationClipAsset = ScriptableObject.CreateInstance<AnimationClipAsset>();
             {
-                Clips = stateMachine.ClipsBlob,
-                ClipEventsBlob = stateMachine.ClipEventsBlob,
-                ClipIndex = (ushort)clipWithEventsIndex,
-                PreviousTime = 0,
-                Time = 0,
-                Weight = 1
-            };
+                var animationEventName1 = ScriptableObject.CreateInstance<AnimationEventName>();
+                var animationEventName2 = ScriptableObject.CreateInstance<AnimationEventName>();
+                animationEventName1.name = "Event1";
+                animationEventName2.name = "Event2";
+                animationClipAsset.Events = new[]
+                {
+                    new Authoring.AnimationClipEvent { Name = animationEventName1, NormalizedTime = eventTimes[0] },
+                    new Authoring.AnimationClipEvent { Name = animationEventName2, NormalizedTime = eventTimes[1] }
+                };
+
+                var clip = new AnimationClip();
+                var curve = AnimationCurve.Linear(0, 0, 1, 1);
+                clip.SetCurve("", typeof(Transform), "localPosition.x", curve);
+
+                clip.name = "Move";
+                clip.legacy = true;
+
+                animationClipAsset.Clip = clip;
+            }
+
+            var clipEventsBlob =
+                ClipEventsAuthoringUtils.CreateClipEventsBlob(new[] { animationClipAsset }, Allocator.Temp);
+
+            Assert.AreEqual(1, clipEventsBlob.Value.ClipEvents.Length);
+            Assert.AreEqual(2, clipEventsBlob.Value.ClipEvents[0].Events.Length);
+            events = clipEventsBlob.Value.ClipEvents[0].Events.ToArray();
+
+            var singleState = AnimationStateTestUtils.CreateSingleClipState(manager, entity, clipEventsBlob);
+            AnimationStateTestUtils.SetCurrentState(manager, entity, singleState.AnimationStateId);
+
+            var samplers = manager.GetBuffer<ClipSampler>(entity);
+            Assert.AreEqual(1, samplers.Length);
+            samplerIndex = 0;
+            var sampler = samplers[samplerIndex];
+            sampler.Weight = 1;
+            samplers[samplerIndex] = sampler;
+        }
+
+        private void AssertNoRaisedEvents(Entity newEntity)
+        {
+            var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
+            Assert.Zero(raisedEvents.Length);
+        }
+
+        private void AssertEventRaised(Entity newEntity, int expectedHash)
+        {
+            var raisedEvents = manager.GetBuffer<RaisedAnimationEvent>(newEntity);
+            Assert.AreEqual(1, raisedEvents.Length);
+            var raised = raisedEvents[0];
+            Assert.AreEqual(raised.EventHash, expectedHash);
+        }
+
+        private void SetTimeAndPreviousTimeForSampler(Entity newEntity, int samplerIndex, float prevTime, float time)
+        {
+            var clipSamplers = manager.GetBuffer<ClipSampler>(newEntity);
+            var clipSampler = clipSamplers[samplerIndex];
+            clipSampler.PreviousTime = prevTime;
+            clipSampler.Time = time;
+
+            clipSamplers[samplerIndex] = clipSampler;
         }
     }
 }

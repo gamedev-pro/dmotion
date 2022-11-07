@@ -1,17 +1,54 @@
 ﻿using System;
 using DMotion.Authoring;
+using Unity.Entities.Editor;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 namespace DMotion.Editor
 {
+    internal struct TransitionEdgeModel
+    {
+        internal StateMachineAsset StateMachineAsset;
+        internal EntitySelectionProxy SelectedEntity;
+        internal int TransitionCount;
+    }
+
     public class TransitionEdge : Edge
     {
-        internal int TransitionCount;
+        internal TransitionEdgeModel Model;
+
         internal Action<TransitionEdge> TransitionSelectedEvent;
         internal AnimationStateAsset FromState => (output.node as StateNodeView)?.State;
         internal AnimationStateAsset ToState => (input.node as StateNodeView)?.State;
-        public TransitionEdge() : base()
+
+        public TransitionEdge()
         {
+            AddToClassList("transition");
+        }
+
+        public void UpdateView()
+        {
+            const string activeTransitionClassName = "active-transition";
+            RemoveFromClassList(activeTransitionClassName);
+            if (Application.isPlaying && Model.SelectedEntity != null && Model.SelectedEntity.Exists)
+            {
+                var currentAnimationState = Model.SelectedEntity.GetComponent<AnimationCurrentState>();
+                var currentTransition = Model.SelectedEntity.GetComponent<AnimationStateTransition>();
+                var stateMachine = Model.SelectedEntity.GetComponent<AnimationStateMachine>();
+                if (currentTransition.IsValid && stateMachine.PreviousState.IsValid &&
+                    stateMachine.CurrentState.IsValid &&
+                    currentAnimationState.AnimationStateId == stateMachine.PreviousState.AnimationStateId &&
+                    currentTransition.AnimationStateId == stateMachine.CurrentState.AnimationStateId)
+                {
+                    var currentTransitionFromState =
+                        Model.StateMachineAsset.States[stateMachine.PreviousState.StateIndex];
+                    var currentTransitionToState = Model.StateMachineAsset.States[stateMachine.CurrentState.StateIndex];
+                    if (currentTransitionFromState == FromState && currentTransitionToState == ToState)
+                    {
+                        AddToClassList(activeTransitionClassName);
+                    }
+                }
+            }
         }
 
         public override void OnSelected()
@@ -22,7 +59,7 @@ namespace DMotion.Editor
 
         protected override EdgeControl CreateEdgeControl()
         {
-            return new TransitionEdgeControl()
+            return new TransitionEdgeControl
             {
                 Edge = this,
                 capRadius = 4f,

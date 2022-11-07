@@ -18,7 +18,7 @@ namespace DMotion
         internal float ClipTime;
     }
 
-    internal struct ClipEvents
+    public struct ClipEvents
     {
         internal BlobArray<AnimationClipEvent> Events;
     }

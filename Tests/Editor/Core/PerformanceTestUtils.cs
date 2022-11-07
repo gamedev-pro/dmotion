@@ -102,7 +102,7 @@ namespace DMotion.Tests
             BurstCompiler.Options.EnableBurstDebug = true;
             BurstCompiler.Options.EnableBurstCompilation = false;
             BurstCompiler.Options.EnableBurstSafetyChecks = true;
-            BurstCompiler.Options.ForceEnableBurstSafetyChecks = true;
+            BurstCompiler.Options.ForceEnableBurstSafetyChecks = false;
             BurstCompiler.Options.EnableBurstCompileSynchronously = false;
             Coverage.enabled = true;
         }

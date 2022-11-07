@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    internal static class AnimationStateMachineConversionUtils
+    public static class AnimationStateMachineConversionUtils
     {
         public static BlobAssetReference<StateMachineBlob> CreateStateMachineBlob(StateMachineAsset stateMachineAsset,
             Allocator allocator)
@@ -80,7 +80,8 @@ namespace DMotion.Authoring
                             linearBlendState.ClipsWithThresholds[blendClipIndex] = new ClipIndexWithThreshold
                             {
                                 ClipIndex = clipIndex,
-                                Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold
+                                Threshold = linearBlendStateAsset.BlendClips[blendClipIndex].Threshold,
+                                Speed = linearBlendStateAsset.BlendClips[blendClipIndex].Speed
                             };
                             clipIndex++;
                         }
@@ -202,11 +203,12 @@ namespace DMotion.Authoring
             dstManager.AddComponentData(entity, AnimationStateTransition.Null);
             dstManager.AddComponentData(entity, AnimationStateTransitionRequest.Null);
             dstManager.AddComponentData(entity, AnimationCurrentState.Null);
+            dstManager.AddComponentData(entity, AnimationPreserveState.Null);
             var clipSamplers = dstManager.AddBuffer<ClipSampler>(entity);
             clipSamplers.Capacity = 10;
         }
 
-        internal static void AddOneShotSystemComponents(EntityManager dstManager, Entity entity)
+        public static void AddOneShotSystemComponents(EntityManager dstManager, Entity entity)
         {
             dstManager.AddComponentData(entity, PlayOneShotRequest.Null);
             dstManager.AddComponentData(entity, OneShotState.Null);
@@ -229,7 +231,6 @@ namespace DMotion.Authoring
                 };
 
                 dstManager.AddComponentData(entity, stateMachine);
-                dstManager.AddComponentData(entity, AnimationStateMachineTransitionRequest.Null);
 
                 dstManager.AddBuffer<SingleClipState>(entity);
                 dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
@@ -260,6 +261,74 @@ namespace DMotion.Authoring
                             throw new ArgumentOutOfRangeException(nameof(p));
                     }
                 }
+            }
+
+#if UNITY_EDITOR || DEBUG
+            dstManager.AddComponentData(entity, new AnimationStateMachineDebug
+            {
+                StateMachineAsset = stateMachineAsset
+            });
+#endif
+        }
+
+        public static void AddSingleClipStateComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,
+            bool enableEvents = true, bool enableSingleClipRequest = true, RootMotionMode rootMotionMode = RootMotionMode.Disabled)
+        {
+            AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
+
+            dstManager.AddBuffer<SingleClipState>(entity);
+
+            if (enableEvents)
+            {
+                dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
+            }
+
+            if (enableSingleClipRequest)
+            {
+                dstManager.AddComponentData(entity, PlaySingleClipRequest.Null);
+            }
+
+            if (ownerEntity != entity)
+            {
+                AnimationStateMachineConversionUtils.AddAnimatorOwnerComponents(dstManager, ownerEntity, entity);
+            }
+
+            AnimationStateMachineConversionUtils.AddRootMotionComponents(dstManager, ownerEntity, entity,
+                rootMotionMode);
+        }
+
+        public static void AddAnimatorOwnerComponents(EntityManager dstManager, Entity ownerEntity, Entity entity)
+        {
+            dstManager.AddComponentData(ownerEntity, new AnimatorOwner { AnimatorEntity = entity });
+            dstManager.AddComponentData(entity, new AnimatorEntity { Owner = ownerEntity });
+        }
+
+        public static void AddRootMotionComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,
+            RootMotionMode rootMotionMode)
+        {
+            switch (rootMotionMode)
+            {
+                case RootMotionMode.Disabled:
+                    break;
+                case RootMotionMode.EnabledAutomatic:
+                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
+                    dstManager.AddComponentData(entity, new RootDeltaRotation());
+                    if (ownerEntity != entity)
+                    {
+                        dstManager.AddComponentData(ownerEntity, new TransferRootMotionToOwner());
+                    }
+                    else
+                    {
+                        dstManager.AddComponentData(entity, new ApplyRootMotionToEntity());
+                    }
+
+                    break;
+                case RootMotionMode.EnabledManual:
+                    dstManager.AddComponentData(entity, new RootDeltaTranslation());
+                    dstManager.AddComponentData(entity, new RootDeltaRotation());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

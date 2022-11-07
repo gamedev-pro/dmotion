@@ -8,15 +8,10 @@ namespace DMotion.Tests
     [CreateSystemsForTest(typeof(AnimationStateMachineSystem))]
     public class UpdateStateMachineJobShould : ECSTestsFixture
     {
-        [SerializeField, ConvertGameObjectPrefab(nameof(stateMachineEntityPrefab))]
-        private AnimationStateMachineAuthoring stateMachinePrefab;
-
-        private Entity stateMachineEntityPrefab;
-
         [Test]
         public void Run_With_Valid_Queries()
         {
-            manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateStateMachineEntity(out _, out _, out _);
             UpdateWorld();
             ECSTestUtils.AssertSystemQueries<AnimationStateMachineSystem>(world);
         }
@@ -24,7 +19,7 @@ namespace DMotion.Tests
         [Test]
         public void Be_Active_When_AnimationStateNotValid()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateStateMachineEntity(out _, out _, out var newEntity);
             AnimationStateTestUtils.SetInvalidCurrentState(manager, newEntity);
             AnimationStateTestUtils.AssertCurrentStateInvalid(manager, newEntity);
             var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, newEntity);
@@ -32,40 +27,24 @@ namespace DMotion.Tests
         }
         
         [Test]
-        public void Be_Active_When_StateMachineTransitionIsRequested()
-        {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            var singleState = AnimationStateTestUtils.CreateSingleClipState(manager, newEntity);
-            AnimationStateTestUtils.SetCurrentState(manager, newEntity, singleState.AnimationStateId);
-            UpdateWorld();
-            AnimationStateTestUtils.AssertCurrentState(manager, newEntity, singleState.AnimationStateId);
-            
-            StateMachineTestUtils.RequestTransitionToStateMachine(manager, newEntity);
-            
-            var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, newEntity);
-            Assert.IsTrue(shouldBeActive, "Expected state machine should be active if state machine transition is requested");
-        }
-        
-        [Test]
         public void Be_Active_When_CurrentStateMachineState_Is_CurrentAnimationState()
         {
-            var entity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateStateMachineEntity(out _, out _, out var entity);
             UpdateWorld();
             var currentState = StateMachineTestUtils.GetCurrentState(manager, entity);
             Assert.IsTrue(currentState.IsValid);
             AnimationStateTestUtils.SetCurrentState(manager, entity, (byte)currentState.AnimationStateId);
-            
-            manager.SetComponentData(entity, AnimationStateMachineTransitionRequest.Null);
             
             AnimationStateTestUtils.AssertCurrentState(manager, entity, (byte)currentState.AnimationStateId);
             
             var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, entity);
             Assert.IsTrue(shouldBeActive, "Expected state machine should be active if Current State Machine State is current Animation State");
         }
+        
         [Test]
         public void Be_Active_When_CurrentStateMachineState_Is_AnimationStateTransition()
         {
-            var entity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateStateMachineEntity(out _, out _, out var entity);
             UpdateWorld();
             
             var singleState = AnimationStateTestUtils.CreateSingleClipState(manager, entity);
@@ -73,11 +52,9 @@ namespace DMotion.Tests
             
             var currentState = StateMachineTestUtils.GetCurrentState(manager, entity);
             Assert.IsTrue(currentState.IsValid);
-
+        
             AnimationStateTestUtils.SetAnimationStateTransition(manager, entity, (byte)currentState.AnimationStateId);
             AnimationStateTestUtils.AssertOnGoingTransition(manager, entity, (byte)currentState.AnimationStateId);
-            
-            manager.SetComponentData(entity, AnimationStateMachineTransitionRequest.Null);
             
             var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, entity);
             Assert.IsTrue(shouldBeActive, "Expected state machine should be active if Current State Machine State is Animation State Transition");
@@ -86,7 +63,7 @@ namespace DMotion.Tests
         [Test]
         public void NotInitialize_If_NotPlaying()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateStateMachineEntity(out _, out _, out var newEntity);
             var currentState = StateMachineTestUtils.GetCurrentState(manager, newEntity);
             Assert.AreEqual(currentState, StateMachineStateRef.Null);
             
@@ -94,11 +71,11 @@ namespace DMotion.Tests
             var otherState =
                 AnimationStateTestUtils.NewAnimationStateFromEntity(manager, newEntity, default(ClipSampler));
             AnimationStateTestUtils.SetCurrentState(manager, newEntity, otherState.Id);
-
+        
             var shouldBeActive = StateMachineTestUtils.ShouldStateMachineBeActive(manager, newEntity);
             Assert.IsFalse(shouldBeActive, "Expected state machine not to be active");
             UpdateWorld();
-
+        
             //We shouldn't have initialized
             currentState = StateMachineTestUtils.GetCurrentState(manager, newEntity);
             Assert.AreEqual(currentState, StateMachineStateRef.Null, "Expected state machine not to have initialized");
@@ -107,40 +84,32 @@ namespace DMotion.Tests
         [Test]
         public void Initialize_When_Necessary()
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
+            CreateStateMachineEntity(out _, out _, out var newEntity);
             var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.AreEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
-
+        
             UpdateWorld();
-
+        
             stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
             Assert.AreNotEqual(stateMachine.CurrentState, StateMachineStateRef.Null);
         }
-
-        [Test]
-        public void StartTransition_From_BoolParameter()
-        {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            AnimationStateTestUtils.AssertNoOnGoingTransition(manager, newEntity);
-            manager.SetBoolParameter(newEntity, 0, true);
-            UpdateWorld();
-
-            var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.IsTrue(stateMachine.CurrentState.IsValid);
-            AnimationStateTestUtils.AssertTransitionRequested(manager, newEntity, (byte)stateMachine.CurrentState.AnimationStateId);
-        }
         
-        [Test]
-        public void StartTransition_From_IntParameter()
+        private void CreateStateMachineEntity(
+            out StateMachineAsset stateMachineAsset,
+            out BlobAssetReference<StateMachineBlob> stateMachineBlob,
+            out Entity entity)
         {
-            var newEntity = manager.InstantiateStateMachineEntity(stateMachineEntityPrefab);
-            AnimationStateTestUtils.AssertNoOnGoingTransition(manager, newEntity);
-            manager.SetIntParameter(newEntity, 0, 1);
-            UpdateWorld();
+            var stateMachineBuilder = AnimationStateMachineAssetBuilder.New();
+            stateMachineBuilder.AddState<SingleClipStateAsset>();
 
-            var stateMachine = manager.GetComponentData<AnimationStateMachine>(newEntity);
-            Assert.IsTrue(stateMachine.CurrentState.IsValid);
-            AnimationStateTestUtils.AssertTransitionRequested(manager, newEntity, (byte)stateMachine.CurrentState.AnimationStateId);
+            stateMachineAsset = stateMachineBuilder.Build();
+
+            stateMachineBlob =
+                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset,
+                    world.UpdateAllocator.ToAllocator);
+
+            entity = manager.CreateStateMachineEntity(stateMachineAsset, stateMachineBlob);
         }
     }
+    
 }

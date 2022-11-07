@@ -2,7 +2,6 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEditor.Experimental.Rendering;
 using UnityEngine.Assertions;
 
 namespace DMotion
@@ -12,7 +11,7 @@ namespace DMotion
         byte Id { get; set; }
     }
 
-    internal struct AnimationCurrentState : IComponentData
+    public struct AnimationCurrentState : IComponentData
     {
         internal sbyte AnimationStateId;
         internal bool IsValid => AnimationStateId >= 0;
@@ -40,7 +39,7 @@ namespace DMotion
         }
     }
 
-    internal struct AnimationStateTransitionRequest : IComponentData
+    public struct AnimationStateTransitionRequest : IComponentData
     {
         internal sbyte AnimationStateId;
         internal float TransitionDuration;
@@ -58,9 +57,16 @@ namespace DMotion
             };
         }
     }
+    
+    internal struct AnimationPreserveState : IComponentData
+    {
+        internal sbyte AnimationStateId;
+        internal static AnimationPreserveState Null => new () { AnimationStateId = -1 };
+        internal bool IsValid => AnimationStateId >= 0;
+    }
 
     [BurstCompile]
-    internal struct AnimationState : IBufferElementData, IElementWithId
+    public struct AnimationState : IBufferElementData, IElementWithId
     {
         public byte Id { get; set; }
         internal float Time;
