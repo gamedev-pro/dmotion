@@ -12,7 +12,9 @@ namespace DMotion.Authoring
     {
         public AnimationClipAsset Clip;
         public float Speed;
+        public static SingleClipRefConvertData Default => new () { Clip = null, Speed = 1 };
     }
+    
     public struct SingleClipRefsConverter
     {
         public Animator Animator;
