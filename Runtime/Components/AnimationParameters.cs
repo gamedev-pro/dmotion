@@ -68,7 +68,7 @@ namespace DMotion
         }
     }
 
-    public struct BlendParameter : IBufferElementData, IStateMachineParameter<float>
+    public struct FloatParameter : IBufferElementData, IStateMachineParameter<float>
     {
 #if UNITY_EDITOR || DEBUG
         public FixedString64Bytes Name;
@@ -84,7 +84,7 @@ namespace DMotion
             set => Value = value;
         }
 
-        public BlendParameter(FixedString64Bytes name, int hash)
+        public FloatParameter(FixedString64Bytes name, int hash)
         {
 #if UNITY_EDITOR || DEBUG
             Name = name;

@@ -57,7 +57,7 @@ namespace DMotion
 
         internal static void ExtractLinearBlendVariablesFromStateMachine(
             in LinearBlendStateMachineState linearBlendState,
-            in DynamicBuffer<BlendParameter> blendParameters,
+            in DynamicBuffer<FloatParameter> blendParameters,
             out float blendRatio,
             out NativeArray<float> thresholds,
             out NativeArray<float> speeds)

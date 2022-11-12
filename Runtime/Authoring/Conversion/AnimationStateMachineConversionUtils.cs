@@ -240,7 +240,7 @@ namespace DMotion.Authoring
             {
                 dstManager.AddBuffer<BoolParameter>(entity);
                 dstManager.AddBuffer<IntParameter>(entity);
-                dstManager.AddBuffer<BlendParameter>(entity);
+                dstManager.AddBuffer<FloatParameter>(entity);
                 foreach (var p in stateMachineAsset.Parameters)
                 {
                     switch (p)
@@ -254,8 +254,8 @@ namespace DMotion.Authoring
                             intParameters.Add(new IntParameter(p.name, p.Hash));
                             break;
                         case FloatParameterAsset:
-                            var floatParameters = dstManager.GetBuffer<BlendParameter>(entity);
-                            floatParameters.Add(new BlendParameter(p.name, p.Hash));
+                            var floatParameters = dstManager.GetBuffer<FloatParameter>(entity);
+                            floatParameters.Add(new FloatParameter(p.name, p.Hash));
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(p));

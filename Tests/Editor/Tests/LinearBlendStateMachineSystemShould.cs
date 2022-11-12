@@ -197,7 +197,7 @@ namespace DMotion.Tests
             var entity = manager.CreateStateMachineEntity(stateMachineAsset, stateMachineBlob, clipsBlob, BlobAssetReference<ClipEventsBlob>.Null);
             
             Assert.IsTrue(manager.HasComponent<LinearBlendStateMachineState>(entity));
-            Assert.IsTrue(manager.HasComponent<BlendParameter>(entity));
+            Assert.IsTrue(manager.HasComponent<FloatParameter>(entity));
             return entity;
         }
     }

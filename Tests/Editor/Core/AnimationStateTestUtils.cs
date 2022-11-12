@@ -146,7 +146,7 @@ namespace DMotion.Tests
         internal static void SetBlendParameter(in LinearBlendStateMachineState linearBlendState, EntityManager manager,
             Entity entity, float value)
         {
-            var blendParams = manager.GetBuffer<BlendParameter>(entity);
+            var blendParams = manager.GetBuffer<FloatParameter>(entity);
             ref var blob = ref linearBlendState.LinearBlendBlob;
             var blendRatio = blendParams[blob.BlendParameterIndex];
             blendRatio.Value = value;
@@ -158,7 +158,7 @@ namespace DMotion.Tests
             EntityManager manager, Entity entity,
             out int firstClipIndex, out int secondClipIndex)
         {
-            var blendParams = manager.GetBuffer<BlendParameter>(entity);
+            var blendParams = manager.GetBuffer<FloatParameter>(entity);
             LinearBlendStateUtils.ExtractLinearBlendVariablesFromStateMachine(
                 linearBlendState, blendParams,
                 out var blendRatio, out var thresholds, out _);

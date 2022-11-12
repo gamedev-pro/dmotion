@@ -95,7 +95,7 @@ namespace DMotion.PerformanceTests
 
                 Assert.IsTrue(manager.HasComponent<LinearBlendDirection>(e));
                 Assert.IsTrue(manager.HasComponent<PlayOneShotRequest>(e));
-                Assert.IsTrue(manager.HasComponent<BlendParameter>(e));
+                Assert.IsTrue(manager.HasComponent<FloatParameter>(e));
                 Assert.IsTrue(manager.HasComponent<BoolParameter>(e));
                 Assert.IsTrue(manager.HasComponent<StressTestOneShotClip>(e));
             }

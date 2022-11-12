@@ -38,12 +38,12 @@ namespace DMotion.PerformanceTests
                 Entity e,
                 ref LinearBlendDirection linearBlendDirection,
                 ref PlayOneShotRequest playOneShotRequest,
-                ref DynamicBuffer<BlendParameter> blendParameters,
+                ref DynamicBuffer<FloatParameter> blendParameters,
                 ref DynamicBuffer<BoolParameter> boolParameters,
                 in StressTestOneShotClip oneShotClip) =>
             {
                 using var scope = marker.Auto();
-                blendParameters[0] = new BlendParameter
+                blendParameters[0] = new FloatParameter
                 {
                     Hash = blendParameters[0].Hash,
                     Value = math.clamp(blendParameters[0].Value + linearBlendDirection.Value*dt, 0, 1)

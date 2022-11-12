@@ -12,7 +12,7 @@ namespace DMotion
             ref DynamicBuffer<ClipSampler> clipSamplers,
             in DynamicBuffer<AnimationState> animationStates,
             in DynamicBuffer<LinearBlendStateMachineState> linearBlendStates,
-            in DynamicBuffer<BlendParameter> blendParameters
+            in DynamicBuffer<FloatParameter> blendParameters
         )
         {
             for (var i = 0; i < linearBlendStates.Length; i++)

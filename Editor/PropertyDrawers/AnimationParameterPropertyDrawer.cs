@@ -81,7 +81,7 @@ namespace DMotion.Editor
                     {
                         var parameterIndex = stateMachineAsset.Parameters.OfType<FloatParameterAsset>()
                             .FindIndex(p => parameterAsset == p);
-                        var floatParameters = selectedEntity.GetBuffer<BlendParameter>();
+                        var floatParameters = selectedEntity.GetBuffer<FloatParameter>();
                         var floatParameter = floatParameters[parameterIndex];
                         floatParameter.Value = EditorGUI.FloatField(position, label, floatParameter.Value);
                         floatParameters[parameterIndex] = floatParameter;
