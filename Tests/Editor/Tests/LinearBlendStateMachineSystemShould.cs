@@ -6,7 +6,7 @@ using Unity.Entities;
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(BlendAnimationStatesSystem), typeof(UpdateAnimationStatesSystem))]
-    public class LinearBlendStateMachineSystemShould : ECSTestsFixture
+    public class LinearBlendStateMachineSystemShould : ECSTestBase
     {
         private static readonly float[] thresholds = { 0.0f, 0.5f, 0.8f };
 

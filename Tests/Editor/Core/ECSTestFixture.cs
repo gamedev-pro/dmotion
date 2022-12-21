@@ -3,11 +3,16 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Burst;
+using Unity.Core;
 using Unity.Entities;
+using UnityEngine;
 #if !UNITY_DOTSRUNTIME
 using UnityEngine.LowLevel;
 #endif
 
+/*
+ * IMPORTANT: This file is copied directly from Unity.Entities package. Edit ECSTestBase instead
+ */
 namespace DMotion.Tests
 {
     // If ENABLE_UNITY_COLLECTIONS_CHECKS is not defined we will ignore the test
@@ -109,6 +114,9 @@ namespace DMotion.Tests
 
     }
 
+    /// <summary>
+    /// This is copied directly from Unity.Entities package
+    /// </summary>
     public abstract class ECSTestsFixture : ECSTestsCommonBase
     {
         protected World previousWorld;
@@ -119,8 +127,8 @@ namespace DMotion.Tests
         protected EntityManager manager;
         protected EntityManager.EntityManagerDebug managerDebug;
 
-        protected int StressTestEntityCount = 1000;
         private bool JobsDebuggerWasEnabled;
+
 
         [SetUp]
         public override void Setup()
@@ -189,11 +197,6 @@ namespace DMotion.Tests
             base.TearDown();
         }
         
-        protected void UpdateWorld(float dt = 0.1f)
-        {
-            throw new System.NotImplementedException();
-        }
-
         partial class EntityForEachSystem : SystemBase
         {
             protected override void OnUpdate() {}

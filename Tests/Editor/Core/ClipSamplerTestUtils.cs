@@ -33,7 +33,7 @@ namespace DMotion.Tests
             }
         }
         
-        internal static void AssertSamplerUpdate(ECSTestsFixture ecsTest, Entity entity, int[] samplerIndexes)
+        internal static void AssertSamplerUpdate(ECSTestBase ecsTest, Entity entity, int[] samplerIndexes)
         {
         }
     }

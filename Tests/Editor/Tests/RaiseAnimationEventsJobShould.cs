@@ -8,7 +8,7 @@ using UnityEngine;
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(AnimationEventsSystem))]
-    public class RaiseAnimationEventsJobShould : ECSTestsFixture
+    public class RaiseAnimationEventsJobShould : ECSTestBase
     {
         private float[] eventTimes = new[] { 0.2f, 0.5f };
 

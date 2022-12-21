@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(BlendAnimationStatesSystem), typeof(UpdateAnimationStatesSystem))]
-    public class SingleClipStateSystemShould : ECSTestsFixture
+    public class SingleClipStateSystemShould : ECSTestBase
     {
         [Test]
         public void UpdateSamplers()

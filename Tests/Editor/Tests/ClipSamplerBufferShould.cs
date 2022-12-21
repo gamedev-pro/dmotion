@@ -4,7 +4,7 @@ using AssertionException = UnityEngine.Assertions.AssertionException;
 
 namespace DMotion.Tests
 {
-    public class ClipSamplerBufferShould : ECSTestsFixture
+    public class ClipSamplerBufferShould : ECSTestBase
     {
         private DynamicBuffer<ClipSampler> CreateSamplerBuffer()
         {

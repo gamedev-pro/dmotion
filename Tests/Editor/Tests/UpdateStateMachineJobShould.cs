@@ -6,7 +6,7 @@ using UnityEngine;
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(AnimationStateMachineSystem))]
-    public class UpdateStateMachineJobShould : ECSTestsFixture
+    public class UpdateStateMachineJobShould : ECSTestBase
     {
         [Test]
         public void Run_With_Valid_Queries()

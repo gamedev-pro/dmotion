@@ -246,14 +246,21 @@ namespace DMotion.Authoring
             });
 #endif
         }
+
+
         internal static void AddStateMachineParameters(EntityManager dstManager, Entity entity,
             StateMachineAsset stateMachineAsset)
         {
             //Parameters
             {
-                var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
-                var intParameters = dstManager.AddBuffer<IntParameter>(entity);
-                var floatParameters = dstManager.AddBuffer<FloatParameter>(entity);
+                dstManager.AddBuffer<BoolParameter>(entity);
+                dstManager.AddBuffer<IntParameter>(entity);
+                dstManager.AddBuffer<FloatParameter>(entity);
+
+                var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
+                var intParameters = dstManager.GetBuffer<IntParameter>(entity);
+                var floatParameters = dstManager.GetBuffer<FloatParameter>(entity);
+                
                 foreach (var p in stateMachineAsset.Parameters)
                 {
                     switch (p)
@@ -304,6 +311,7 @@ namespace DMotion.Authoring
             }
             AddStateMachineParameters(dstManager, entity, stateMachineAsset);
         }
+
         internal static void AddStateMachineSystemComponents(EntityManager dstManager, Entity entity,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
             BlobAssetReference<SkeletonClipSetBlob> clipsBlob,

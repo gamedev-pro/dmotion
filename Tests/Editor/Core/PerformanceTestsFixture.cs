@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DMotion.PerformanceTests
 {
-    public class PerformanceTestsFixture : ECSTestsFixture
+    public class PerformanceTestsFixture : ECSTestBase
     {
         private BurstAndJobConfigsCache cache;
         [SetUp]

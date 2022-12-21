@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(AnimationStateMachineSystem))]
-    public class StateMachineTransitionsShould : ECSTestsFixture
+    public class StateMachineTransitionsShould : ECSTestBase
     {
         [Test]
         public void StartTransition_When_BoolParameter_True()

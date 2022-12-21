@@ -6,7 +6,7 @@ using AssertionException = UnityEngine.Assertions.AssertionException;
 namespace DMotion.Tests
 {
     [CreateSystemsForTest(typeof(BlendAnimationStatesSystem))]
-    public class BlendAnimationStatesSystemShould : ECSTestsFixture
+    public class BlendAnimationStatesSystemShould : ECSTestBase
     {
         [Test]
         public void Run_With_Valid_Queries()
