@@ -4,11 +4,20 @@ using UnityEngine;
 
 namespace DMotion.Samples.AnimationEvents
 {
-    public class AnimationEventsSampleAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+    //tag for this sample
+    struct AnimationEventsSample : IComponentData
     {
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+    }
+
+    class AnimationEventsSampleAuthoring : MonoBehaviour
+    {
+    }
+
+    class AnimationEventsSampleBaker : Baker<AnimationEventsSampleAuthoring>
+    {
+        public override void Bake(AnimationEventsSampleAuthoring authoring)
         {
-            DMotionSamplesUtils.AddSytemToPlayerUpdate<AnimationEventsSampleSystem>(dstManager);
+            AddComponent<AnimationEventsSample>();
         }
     }
 }

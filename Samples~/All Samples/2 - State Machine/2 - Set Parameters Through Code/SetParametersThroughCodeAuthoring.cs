@@ -1,14 +1,18 @@
-using DMotion.Samples.Common;
 using Unity.Entities;
 using UnityEngine;
 
 namespace DMotion.Samples.StateMachine
 {
-    public class SetParametersThroughCodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+    struct SetParametersThroughCodeSample : IComponentData{}
+    class SetParametersThroughCodeAuthoring : MonoBehaviour
     {
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+    }
+
+    class SetParametersThroughCodeBaker : Baker<SetParametersThroughCodeAuthoring>
+    {
+        public override void Bake(SetParametersThroughCodeAuthoring authoring)
         {
-            DMotionSamplesUtils.AddSytemToPlayerUpdate<SetParametersThroughCodeSystem>(dstManager);
+            AddComponent<SetParametersThroughCodeSample>();
         }
     }
 }
