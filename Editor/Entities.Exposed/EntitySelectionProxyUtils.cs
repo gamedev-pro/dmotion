@@ -1,5 +1,6 @@
 ﻿using Unity.Entities;
 using Unity.Entities.Editor;
+using UnityEditor;
 
 namespace DMotion.Editor
 {
@@ -22,11 +23,42 @@ namespace DMotion.Editor
         {
             return obj is EntitySelectionProxy;
         }
+
+        public static bool TryExtractEntitySelectionProxy(out EntitySelectionProxyWrapper proxyWrapper)
+        {
+            var proxy = Selection.activeContext as EntitySelectionProxy;
+            if (proxy == null)
+            {
+                proxy = Selection.activeObject as EntitySelectionProxy;
+            }
+
+            if (proxy != null)
+            {
+                proxyWrapper = new EntitySelectionProxyWrapper(proxy);
+                return true;
+            }
+
+            proxyWrapper = default;
+            return false;
+        }
         
         public static bool HasComponent<T>(this EntitySelectionProxyWrapper proxy)
             where T : IComponentData
         {
             return proxy.Exists && proxy.World.EntityManager.HasComponent<T>(proxy.Entity);
+        }
+
+        public static bool TryGetManagedComponent<T>(this EntitySelectionProxyWrapper proxy, out T c)
+            where T : class, IComponentData, new()
+        {
+            if (proxy.Exists && proxy.World.EntityManager.HasComponent<T>(proxy.Entity))
+            {
+                c = proxy.GetManagedComponent<T>();
+                return true;
+            }
+
+            c = default;
+            return false;
         }
 
         public static T GetComponent<T>(this EntitySelectionProxyWrapper proxy)

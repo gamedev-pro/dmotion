@@ -40,8 +40,7 @@ namespace DMotion.Editor
         private static void DrawParameterPlaymode(Rect position, AnimationParameterAsset parameterAsset,
             StateMachineAsset stateMachineAsset)
         {
-            var selectedEntity = new EntitySelectionProxyWrapper(Selection.activeObject);
-            //value
+            if (EntitySelectionProxyUtils.TryExtractEntitySelectionProxy(out var selectedEntity))
             {
                 var label = new GUIContent(parameterAsset.name);
                 switch (parameterAsset)
@@ -96,17 +95,13 @@ namespace DMotion.Editor
 
         private bool IsAnimatorEntitySelected(StateMachineAsset myStateMachineAsset)
         {
-            if (Application.isPlaying && Selection.activeObject.IsEntitySelectionProxy())
-            {
-                var entitySelectionProxy = new EntitySelectionProxyWrapper(Selection.activeObject);
-                return entitySelectionProxy.Exists && entitySelectionProxy.HasComponent<AnimationStateMachineDebug>()
-                                                   && entitySelectionProxy
-                                                       .GetManagedComponent<AnimationStateMachineDebug>()
-                                                       .StateMachineAsset ==
-                                                   myStateMachineAsset;
-            }
-
-            return false;
+            return Application.isPlaying &&
+                   EntitySelectionProxyUtils.TryExtractEntitySelectionProxy(out var entitySelectionProxy) &&
+                   entitySelectionProxy.Exists && entitySelectionProxy.HasComponent<AnimationStateMachineDebug>()
+                   && entitySelectionProxy
+                       .GetManagedComponent<AnimationStateMachineDebug>()
+                       .StateMachineAsset ==
+                   myStateMachineAsset;
         }
 
         private void DrawPropertyEditorMode(Rect position, AnimationParameterAsset parameterAsset,

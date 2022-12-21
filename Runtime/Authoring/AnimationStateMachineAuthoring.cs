@@ -35,7 +35,7 @@ namespace DMotion.Authoring
             }
         }
     }
-
+    class AnimationStateMachineBaker : SmartBaker<AnimationStateMachineAuthoring, AnimationStateMachineBakeItem>{}
     struct AnimationStateMachineBakeItem : ISmartBakeItem<AnimationStateMachineAuthoring>
     {
         private Entity Owner;

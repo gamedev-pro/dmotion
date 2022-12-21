@@ -4,6 +4,7 @@ using Unity.Entities.Editor;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
 namespace DMotion.Editor
@@ -67,7 +68,7 @@ namespace DMotion.Editor
                     throw new ArgumentOutOfRangeException(nameof(stateChange), stateChange, null);
             }
         }
-        
+
         internal void CreateGUI()
         {
             var root = rootVisualElement;
@@ -92,7 +93,7 @@ namespace DMotion.Editor
             return false;
         }
 
-        #if UNITY_EDITOR || DEBUG
+#if UNITY_EDITOR || DEBUG
         private void Update()
         {
             if (Application.isPlaying && stateMachineEditorView != null)
@@ -100,7 +101,7 @@ namespace DMotion.Editor
                 stateMachineEditorView.UpdateView();
             }
         }
-        #endif
+#endif
 
         private void OnSelectionChange()
         {
@@ -119,22 +120,23 @@ namespace DMotion.Editor
 
             //
             if (stateMachineEditorView != null && Application.isPlaying &&
-                Selection.activeObject.IsEntitySelectionProxy())
+                EntitySelectionProxyUtils.TryExtractEntitySelectionProxy(out var entitySelectionProxy))
             {
-                var entitySelectionProxy = new EntitySelectionProxyWrapper(Selection.activeObject);
-                if (entitySelectionProxy.HasComponent<AnimationStateMachineDebug>())
+                if (entitySelectionProxy.TryGetManagedComponent<AnimationStateMachineDebug>(out var stateMachineDebug))
                 {
-                    var stateMachineDebug = entitySelectionProxy.GetManagedComponent<AnimationStateMachineDebug>();
-
-                    stateMachineEditorView.PopulateView(new StateMachineEditorViewModel
+                    Assert.IsNotNull(stateMachineDebug.StateMachineAsset);
+                    if (stateMachineDebug.StateMachineAsset != null)
                     {
-                        StateMachineAsset = stateMachineDebug.StateMachineAsset,
-                        SelectedEntity = entitySelectionProxy,
-                        StateNodeXml = StateNodeXml,
-                        InspectorView = inspectorView,
-                        ParametersInspectorView = parametersInspectorView
-                    });
-                    WaitAndFrameAll();
+                        stateMachineEditorView.PopulateView(new StateMachineEditorViewModel
+                        {
+                            StateMachineAsset = stateMachineDebug.StateMachineAsset,
+                            SelectedEntity = entitySelectionProxy,
+                            StateNodeXml = StateNodeXml,
+                            InspectorView = inspectorView,
+                            ParametersInspectorView = parametersInspectorView
+                        });
+                        WaitAndFrameAll();
+                    }
                 }
             }
         }
