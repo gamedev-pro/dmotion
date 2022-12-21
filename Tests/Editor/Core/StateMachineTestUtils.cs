@@ -69,8 +69,8 @@ namespace DMotion.Tests
 
         public static void SetParameter<TBuffer, TValue>(this EntityManager manager, Entity entity, int hash,
             TValue newValue)
-            where TBuffer : struct, IBufferElementData, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IBufferElementData, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             Assert.IsTrue(manager.HasComponent<TBuffer>(entity));
             var parameters = manager.GetBuffer<TBuffer>(entity);

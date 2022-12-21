@@ -46,6 +46,7 @@ namespace DMotion.Tests
             }
         }
 
+
         [Test]
         public void BlendBetweenTwoClips()
         {
@@ -189,8 +190,7 @@ namespace DMotion.Tests
             var stateMachineAsset = stateMachineBuilder.Build();
 
             var stateMachineBlob =
-                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset,
-                    world.UpdateAllocator.ToAllocator);
+                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset);
 
             var clipsBlob = AnimationStateTestUtils.CreateFakeSkeletonClipSetBlob(3);
             

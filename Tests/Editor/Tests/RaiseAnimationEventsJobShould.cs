@@ -143,7 +143,7 @@ namespace DMotion.Tests
             }
 
             var clipEventsBlob =
-                ClipEventsAuthoringUtils.CreateClipEventsBlob(new[] { animationClipAsset }, Allocator.Temp);
+                ClipEventsAuthoringUtils.CreateClipEventsBlob(new[] { animationClipAsset });
 
             Assert.AreEqual(1, clipEventsBlob.Value.ClipEvents.Length);
             Assert.AreEqual(2, clipEventsBlob.Value.ClipEvents[0].Events.Length);

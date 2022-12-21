@@ -31,14 +31,14 @@ namespace DMotion
         {
              new UpdateSingleClipStatesJob
              {
-                 DeltaTime = Time.DeltaTime,
+                 DeltaTime = SystemAPI.Time.DeltaTime,
              }.ScheduleParallel();
  
              new CleanSingleClipStatesJob().ScheduleParallel();
  
              new UpdateLinearBlendStateMachineStatesJob
              {
-                 DeltaTime = Time.DeltaTime,
+                 DeltaTime = SystemAPI.Time.DeltaTime,
              }.ScheduleParallel();
  
              new CleanLinearBlendStatesJob().ScheduleParallel();
@@ -49,14 +49,14 @@ namespace DMotion
         {
             var singleClipHandle = new UpdateSingleClipStatesJob
             {
-                DeltaTime = Time.DeltaTime,
+                DeltaTime = SystemAPI.Time.DeltaTime,
             }.ScheduleParallel(Dependency);
 
             singleClipHandle = new CleanSingleClipStatesJob().ScheduleParallel(singleClipHandle);
 
             var linearBlendHandle = new UpdateLinearBlendStateMachineStatesJob
             {
-                DeltaTime = Time.DeltaTime,
+                DeltaTime = SystemAPI.Time.DeltaTime,
             }.ScheduleParallel(Dependency);
 
             linearBlendHandle = new CleanLinearBlendStatesJob().ScheduleParallel(linearBlendHandle);

@@ -17,7 +17,7 @@ namespace DMotion.Editor
     internal struct StateMachineEditorViewModel
     {
         internal StateMachineAsset StateMachineAsset;
-        internal EntitySelectionProxy SelectedEntity;
+        internal EntitySelectionProxyWrapper SelectedEntity;
         internal VisualTreeAsset StateNodeXml;
         internal StateMachineInspectorView InspectorView;
         internal StateMachineInspectorView ParametersInspectorView;
@@ -44,7 +44,6 @@ namespace DMotion.Editor
         {
             EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
         }
-
 
         private void OnDestroy()
         {
@@ -120,8 +119,9 @@ namespace DMotion.Editor
 
             //
             if (stateMachineEditorView != null && Application.isPlaying &&
-                Selection.activeObject is EntitySelectionProxy entitySelectionProxy)
+                Selection.activeObject.IsEntitySelectionProxy())
             {
+                var entitySelectionProxy = new EntitySelectionProxyWrapper(Selection.activeObject);
                 if (entitySelectionProxy.HasComponent<AnimationStateMachineDebug>())
                 {
                     var stateMachineDebug = entitySelectionProxy.GetManagedComponent<AnimationStateMachineDebug>();

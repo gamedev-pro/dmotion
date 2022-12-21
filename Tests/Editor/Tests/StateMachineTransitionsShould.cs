@@ -74,8 +74,7 @@ namespace DMotion.Tests
                 out var boolParameter);
 
             var stateMachineBlob =
-                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset,
-                    world.UpdateAllocator.ToAllocator);
+                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset);
 
             var newEntity = manager.CreateStateMachineEntity(stateMachineAsset, stateMachineBlob);
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, newEntity);
@@ -100,8 +99,7 @@ namespace DMotion.Tests
                 out var intParameter);
 
             var stateMachineBlob =
-                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset,
-                    world.UpdateAllocator.ToAllocator);
+                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset);
 
             var newEntity = manager.CreateStateMachineEntity(stateMachineAsset, stateMachineBlob);
             AnimationStateTestUtils.AssertNoOnGoingTransition(manager, newEntity);

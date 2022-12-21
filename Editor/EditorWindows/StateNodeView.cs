@@ -37,11 +37,11 @@ namespace DMotion.Editor
     {
         internal AnimationStateMachineEditorView ParentView;
         internal AnimationStateAsset StateAsset;
-        internal EntitySelectionProxy SelectedEntity;
+        internal EntitySelectionProxyWrapper SelectedEntity;
 
         internal StateNodeViewModel(AnimationStateMachineEditorView parentView,
             AnimationStateAsset stateAsset,
-            EntitySelectionProxy selectedEntity)
+            EntitySelectionProxyWrapper selectedEntity)
         {
             ParentView = parentView;
             StateAsset = stateAsset;
@@ -89,7 +89,7 @@ namespace DMotion.Editor
 
         internal Action<StateNodeView> StateSelectedEvent;
         public AnimationStateAsset State => model.StateAsset;
-        public EntitySelectionProxy SelectedEntity => model.SelectedEntity;
+        public EntitySelectionProxyWrapper SelectedEntity => model.SelectedEntity;
         public StateMachineAsset StateMachine => model.ParentView.StateMachine;
         public Port input;
         public Port output;

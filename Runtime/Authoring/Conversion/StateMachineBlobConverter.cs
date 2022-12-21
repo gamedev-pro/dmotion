@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using Latios.Authoring.Systems;
 using Latios.Unsafe;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -38,14 +38,15 @@ namespace DMotion.Authoring
         internal UnsafeList<IntTransition> IntTransitions;
     }
     
-    internal struct StateMachineBlobConverter : ISmartBlobberSimpleBuilder<StateMachineBlob>, IComparer<ClipIndexWithThreshold>
+    [TemporaryBakingType]
+    internal struct StateMachineBlobConverter : IComponentData, IComparer<ClipIndexWithThreshold>, IDisposable
     {
         internal byte DefaultStateIndex;
         internal UnsafeList<AnimationStateConversionData> States;
         internal UnsafeList<SingleClipStateBlob> SingleClipStates;
         internal UnsafeList<LinearBlendStateConversionData> LinearBlendStates;
 
-        public unsafe BlobAssetReference<StateMachineBlob> BuildBlob()
+        public readonly unsafe BlobAssetReference<StateMachineBlob> BuildBlob()
         {
             var builder = new BlobBuilder(Allocator.Temp);
             ref var root = ref builder.ConstructRoot<StateMachineBlob>();
@@ -125,6 +126,13 @@ namespace DMotion.Authoring
         public int Compare(ClipIndexWithThreshold x, ClipIndexWithThreshold y)
         {
             return x.Threshold.CompareTo(y.Threshold);
+        }
+
+        public void Dispose()
+        {
+            States.Dispose();
+            SingleClipStates.Dispose();
+            LinearBlendStates.Dispose();
         }
     }
 }

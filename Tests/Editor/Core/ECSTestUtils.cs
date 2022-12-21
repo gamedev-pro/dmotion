@@ -7,7 +7,7 @@ namespace DMotion.Tests
     {
         public static void AssertSystemQueries<T>(World world) where T : SystemBase
         {
-            var system = world.GetExistingSystem<T>();
+            var system = world.GetExistingSystemManaged<T>();
             Assert.NotNull(system, $"Couldn't find system of type {typeof(T).Name}");
             Assert.NotZero(system.EntityQueries.Length, "System has no queries to test");
             for (var i = 0; i < system.EntityQueries.Length; i++)

@@ -105,8 +105,7 @@ namespace DMotion.Tests
             stateMachineAsset = stateMachineBuilder.Build();
 
             stateMachineBlob =
-                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset,
-                    world.UpdateAllocator.ToAllocator);
+                AnimationStateMachineConversionUtils.CreateStateMachineBlob(stateMachineAsset);
 
             entity = manager.CreateStateMachineEntity(stateMachineAsset, stateMachineBlob);
         }

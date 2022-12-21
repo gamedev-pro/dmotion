@@ -1,22 +1,61 @@
-﻿using System.Linq;
+﻿using System.Reflection;
 using NUnit.Framework;
-using System.Reflection;
-using DMotion.Tests;
 using Unity.Collections;
-using Unity.Core;
-using Unity.Entities;
 using Unity.Jobs.LowLevel.Unsafe;
-using UnityEngine;
+using Unity.Burst;
+using Unity.Entities;
 #if !UNITY_DOTSRUNTIME
 using UnityEngine.LowLevel;
 #endif
 
-#if NET_DOTS
-    public class EmptySystem : ComponentSystem
+namespace DMotion.Tests
+{
+    // If ENABLE_UNITY_COLLECTIONS_CHECKS is not defined we will ignore the test
+    // When using this attribute, consider it to logically AND with any other TestRequiresxxxx attrubute
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+    internal class TestRequiresCollectionChecks : System.Attribute
     {
-        protected override void OnUpdate()
-        {
-        }
+        public TestRequiresCollectionChecks(string msg = null) { }
+    }
+#else
+    internal class TestRequiresCollectionChecks : IgnoreAttribute
+    {
+        public TestRequiresCollectionChecks(string msg = null) : base($"Test requires ENABLE_UNITY_COLLECTION_CHECKS which is not defined{(msg == null ? "." : $": {msg}")}") { }
+    }
+#endif
+
+    // If ENABLE_UNITY_COLLECTIONS_CHECKS and UNITY_DOTS_DEBUG is not defined we will ignore the test
+    // conversely if either of them are defined the test will be run.
+    // When using this attribute, consider it to logically AND with any other TestRequiresxxxx attrubute
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+    internal class TestRequiresDotsDebugOrCollectionChecks: System.Attribute
+    {
+        public TestRequiresDotsDebugOrCollectionChecks(string msg = null) { }
+    }
+#else
+    internal class TestRequiresDotsDebugOrCollectionChecks : IgnoreAttribute
+    {
+        public TestRequiresDotsDebugOrCollectionChecks(string msg = null) : base($"Test requires UNITY_DOTS_DEBUG || ENABLE_UNITY_COLLECTION_CHECKS which neither are defined{(msg == null ? "." : $": {msg}")}") { }
+    }
+#endif
+
+    // Ignores te test when in an il2cpp build only. Please make use of the 'msg' string
+    // to tell others why this test should be ignored
+#if !ENABLE_IL2CPP
+    internal class IgnoreTest_IL2CPP: System.Attribute
+    {
+        public IgnoreTest_IL2CPP(string msg = null) { }
+    }
+#else
+    internal class IgnoreTest_IL2CPP : IgnoreAttribute
+    {
+        public IgnoreTest_IL2CPP(string msg = null) : base($"Test ignored on IL2CPP builds{(msg == null ? "." : $": {msg}")}") { }
+    }
+#endif
+
+    public partial class EmptySystem : SystemBase
+    {
+        protected override void OnUpdate() {}
 
         public new EntityQuery GetEntityQuery(params EntityQueryDesc[] queriesDesc)
         {
@@ -32,203 +71,146 @@ using UnityEngine.LowLevel;
         {
             return base.GetEntityQuery(componentTypes);
         }
+    }
 
-        public unsafe new BufferFromEntity<T> GetBufferFromEntity<T>(bool isReadOnly =
- false) where T : struct, IBufferElementData
+    [BurstCompile(CompileSynchronously = true)]
+    public class ECSTestsCommonBase
+    {
+        [SetUp]
+        public virtual void Setup()
         {
-            CheckedState()->AddReaderWriter(isReadOnly ? ComponentType.ReadOnly<T>() : ComponentType.ReadWrite<T>());
-            return EntityManager.GetBufferFromEntity<T>(isReadOnly);
-        }
-    }
-#else
-public partial class EmptySystem : SystemBase
-{
-    protected override void OnUpdate()
-    {
-    }
-
-    public new EntityQuery GetEntityQuery(params EntityQueryDesc[] queriesDesc) => base.GetEntityQuery(queriesDesc);
-
-    public new EntityQuery GetEntityQuery(params ComponentType[] componentTypes) => base.GetEntityQuery(componentTypes);
-
-    public new EntityQuery GetEntityQuery(NativeArray<ComponentType> componentTypes) =>
-        base.GetEntityQuery(componentTypes);
-}
-
-#endif
-
-public class ECSTestsCommonBase : ScriptableObject
-{
-    [SetUp]
-    public virtual void Setup()
-    {
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.EnterScope();
+            UnityEngine.TestTools.LogAssert.ExpectReset();
 #endif
-    }
+        }
 
-    [TearDown]
-    public virtual void TearDown()
-    {
+        [TearDown]
+        public virtual void TearDown()
+        {
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.ExitScope();
 #endif
+        }
+
+        [BurstDiscard]
+        static public void TestBurstCompiled(ref bool falseIfNot)
+        {
+            falseIfNot = false;
+        }
+
+        [BurstCompile(CompileSynchronously = true)]
+        static public bool IsBurstEnabled()
+        {
+            bool burstCompiled = true;
+            TestBurstCompiled(ref burstCompiled);
+            return burstCompiled;
+        }
+
     }
-}
 
-/// <summary>
-/// Copied from the Entities package and slightly modified to enable default world creation and fixing a call to an internal method via reflection.
-/// </summary>
-public abstract class ECSTestsFixture : ECSTestsCommonBase
-{
-    protected World previousWorld;
-    protected World world;
-#if !UNITY_DOTSRUNTIME
-    protected PlayerLoopSystem previousPlayerLoop;
-#endif
-    protected EntityManager manager;
-    protected EntityManager.EntityManagerDebug managerDebug;
-
-    protected int stressTestEntityCount = 1000;
-    protected bool createDefaultWorld = false;
-    private bool jobsDebuggerWasEnabled;
-
-    private float elapsedTime;
-    private const float defaultDeltaTime = 1.0f / 60.0f;
-
-    [SetUp]
-    public override void Setup()
+    public abstract class ECSTestsFixture : ECSTestsCommonBase
     {
-        base.Setup();
-
+        protected World previousWorld;
+        protected World world;
 #if !UNITY_DOTSRUNTIME
-        // unit tests preserve the current player loop to restore later, and start from a blank slate.
-        previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
-        PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
+        protected PlayerLoopSystem previousPlayerLoop;
 #endif
+        protected EntityManager manager;
+        protected EntityManager.EntityManagerDebug managerDebug;
 
-        previousWorld = world;
-        world = World.DefaultGameObjectInjectionWorld =
-            createDefaultWorld
-                ? DefaultWorldInitialization.Initialize("Default Test World")
-                : new World("Empty Test World");
-        manager = world.EntityManager;
-        managerDebug = new EntityManager.EntityManagerDebug(manager);
+        protected int StressTestEntityCount = 1000;
+        private bool JobsDebuggerWasEnabled;
 
-        // Many ECS tests will only pass if the Jobs Debugger enabled;
-        // force it enabled for all tests, and restore the original value at teardown.
-        jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
-        JobsUtility.JobDebuggerEnabled = true;
-#if !UNITY_DOTSRUNTIME
-        JobUtility_ClearSystemIds();
-#endif
-        elapsedTime = Time.time;
-
-        //Create required systems
+        [SetUp]
+        public override void Setup()
         {
-            var requiredSystemsAttr = GetType().GetCustomAttribute<CreateSystemsForTest>();
-            if (requiredSystemsAttr != null)
+            base.Setup();
+
+#if !UNITY_DOTSRUNTIME
+            // unit tests preserve the current player loop to restore later, and start from a blank slate.
+            previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
+            PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
+#endif
+
+            previousWorld = World.DefaultGameObjectInjectionWorld;
+            world = World.DefaultGameObjectInjectionWorld = new World("Test World");
+            world.UpdateAllocatorEnableBlockFree = true;
+            manager = world.EntityManager;
+            managerDebug = new EntityManager.EntityManagerDebug(manager);
+
+            // Many ECS tests will only pass if the Jobs Debugger enabled;
+            // force it enabled for all tests, and restore the original value at teardown.
+            JobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
+            JobsUtility.JobDebuggerEnabled = true;
+
+#if !UNITY_DOTSRUNTIME
+            JobUtility_ClearSystemIds();
+#endif
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+            // In case entities journaling is initialized, clear it
+            EntitiesJournaling.Clear();
+#endif
+        }
+        
+        [TearDown]
+        public override void TearDown()
+        {
+            if (world != null && world.IsCreated)
             {
-                var baseType = typeof(SystemBase);
-                foreach (var t in requiredSystemsAttr.SystemTypes)
+                // Clean up systems before calling CheckInternalConsistency because we might have filters etc
+                // holding on SharedComponentData making checks fail
+                while (world.Systems.Count > 0)
                 {
-                    Assert.IsTrue(baseType.IsAssignableFrom(t), $"Expected {t.Name} to be a subclass of {baseType.Name}");
-                    world.CreateSystem(t);
+                    world.DestroySystemManaged(world.Systems[0]);
                 }
+
+                managerDebug.CheckInternalConsistency();
+
+                world.Dispose();
+                world = null;
+
+                World.DefaultGameObjectInjectionWorld = previousWorld;
+                previousWorld = null;
+                manager = default;
             }
-        }
 
-        //Convert entity prefabs
-        {
-            var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            var convertPrefabField = GetType()
-                .GetFields(bindingFlags)
-                .Where(f => f.GetCustomAttribute<ConvertGameObjectPrefab>() != null);
-            var convertToEntitySystem = world.GetOrCreateSystem<ConvertToEntitySystem>();
-            foreach (var f in convertPrefabField)
-            {
-                var value = f.GetValue(this);
-                Assert.IsNotNull(value);
-                GameObject go = null;
-                if (value is GameObject g)
-                {
-                    go = g;
-                }
-                else if (value is MonoBehaviour mono)
-                {
-                    go = mono.gameObject;
-                }
-                
-                Assert.IsNotNull(go);
-                
-                var entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(
-                    go,
-                    new GameObjectConversionSettings(world, GameObjectConversionUtility.ConversionFlags.AssignName,
-                        convertToEntitySystem.BlobAssetStore));
-                Assert.AreNotEqual(entity, Entity.Null);
-                Assert.IsTrue(manager.HasComponent<Prefab>(entity));
+            JobsUtility.JobDebuggerEnabled = JobsDebuggerWasEnabled;
 
-                var attr = f.GetCustomAttribute<ConvertGameObjectPrefab>();
-                var receiveField = GetType().GetField(attr.ToFieldName, bindingFlags);
-                Assert.IsNotNull(receiveField, $"Couldn't find field to receive entity prefab ({f.Name}, {attr.ToFieldName})");
-                receiveField.SetValue(this, entity);
-            }
-        }
-    }
-
-    [TearDown]
-    public override void TearDown()
-    {
-        if (world != null && world.IsCreated)
-        {
-            // Clean up systems before calling CheckInternalConsistency because we might have filters etc
-            // holding on SharedComponentData making checks fail
-            while (world.Systems.Count > 0)
-                world.DestroySystem(world.Systems[0]);
-
-            managerDebug.CheckInternalConsistency();
-
-            world.Dispose();
-            world = null;
-
-            world = previousWorld;
-            previousWorld = null;
-            manager = default;
-        }
-
-        JobsUtility.JobDebuggerEnabled = jobsDebuggerWasEnabled;
 #if !UNITY_DOTSRUNTIME
-        //JobsUtility.ClearSystemIds();
-        JobUtility_ClearSystemIds();
+            JobUtility_ClearSystemIds();
 #endif
 
 #if !UNITY_DOTSRUNTIME
-        PlayerLoop.SetPlayerLoop(previousPlayerLoop);
+            PlayerLoop.SetPlayerLoop(previousPlayerLoop);
 #endif
 
-        base.TearDown();
-    }
-
-    protected void UpdateWorld(float deltaTime = defaultDeltaTime, bool completeAllJobs = true)
-    {
-        if (world != null && world.IsCreated)
+            base.TearDown();
+        }
+        
+        protected void UpdateWorld(float dt = 0.1f)
         {
-            elapsedTime += deltaTime;
-            world.SetTime(new TimeData(elapsedTime, deltaTime));
-            foreach (var s in world.Systems)
-            {
-                s.Update();
-            }
+            throw new System.NotImplementedException();
+        }
 
-            if (completeAllJobs)
+        partial class EntityForEachSystem : SystemBase
+        {
+            protected override void OnUpdate() {}
+        }
+
+        public EmptySystem EmptySystem
+        {
+            get
             {
-                manager.CompleteAllJobs();
+                return World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<EmptySystem>();
             }
         }
-    }
-
+        
+        
     // calls JobUtility.ClearSystemIds() (internal method)
     private void JobUtility_ClearSystemIds() =>
-        typeof(JobsUtility).GetMethod("ClearSystemIds", BindingFlags.Static | BindingFlags.NonPublic)
+        typeof(JobsUtility).GetMethod("ClearSystemIds", BindingFlags.Static | BindingFlags.NonPublic)!
             .Invoke(null, null);
+    }
 }

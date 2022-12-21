@@ -1,4 +1,5 @@
-﻿using Latios.Authoring.Systems;
+﻿using System;
+using Latios.Authoring.Systems;
 using Latios.Unsafe;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -10,10 +11,12 @@ namespace DMotion.Authoring
     {
         internal UnsafeList<DMotion.AnimationClipEvent> Events;
     }
-    internal struct ClipEventsBlobConverter : ISmartBlobberSimpleBuilder<ClipEventsBlob>
+    
+    [TemporaryBakingType]
+    internal struct ClipEventsBlobConverter : IComponentData, IDisposable
     {
         internal UnsafeList<ClipEventsConversionData> ClipEvents;
-        public unsafe BlobAssetReference<ClipEventsBlob> BuildBlob()
+        public readonly unsafe BlobAssetReference<ClipEventsBlob> BuildBlob()
         {
             var builder = new BlobBuilder(Allocator.Temp);
             ref var root = ref builder.ConstructRoot<ClipEventsBlob>();
@@ -24,6 +27,11 @@ namespace DMotion.Authoring
                     ClipEvents[i].Events.Length);
             }
             return builder.CreateBlobAssetReference<ClipEventsBlob>(Allocator.Persistent);
+        }
+
+        public void Dispose()
+        {
+            ClipEvents.Dispose();
         }
     }
 }

@@ -55,7 +55,7 @@ namespace DMotion
             
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones
             {
-                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                BfeClipSampler = SystemAPI.GetBufferLookup<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
             }.ScheduleParallel(Dependency);
             
@@ -71,8 +71,8 @@ namespace DMotion
             
             var transferRootMotionHandle = new TransferRootMotionJob
             {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
-                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
+                CfeDeltaPosition = SystemAPI.GetComponentLookup<RootDeltaTranslation>(true),
+                CfeDeltaRotation = SystemAPI.GetComponentLookup<RootDeltaRotation>(true),
                 Marker = Marker_TransferRootMotionJob
             }.ScheduleParallel(sampleRootDeltasHandle);
             //end sample bones
@@ -91,7 +91,7 @@ namespace DMotion
             
             new SampleNonOptimizedBones
             {
-                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                BfeClipSampler = SystemAPI.GetBufferLookup<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
             }.ScheduleParallel();
             
@@ -107,8 +107,8 @@ namespace DMotion
             
             new TransferRootMotionJob
             {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
-                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
+                CfeDeltaPosition = SystemAPI.GetComponentLookup<RootDeltaTranslation>(true),
+                CfeDeltaRotation = SystemAPI.GetComponentLookup<RootDeltaRotation>(true),
                 Marker = Marker_TransferRootMotionJob
             }.ScheduleParallel();
         }

@@ -11,21 +11,19 @@ namespace DMotion.Authoring
 {
     public static class AnimationStateMachineConversionUtils
     {
-        public static BlobAssetReference<StateMachineBlob> CreateStateMachineBlob(StateMachineAsset stateMachineAsset,
-            Allocator allocator)
+        public static BlobAssetReference<StateMachineBlob> CreateStateMachineBlob(StateMachineAsset stateMachineAsset)
         {
-            return CreateConverter(stateMachineAsset, allocator).BuildBlob();
+            return CreateConverter(stateMachineAsset).BuildBlob();
         }
 
-        internal static StateMachineBlobConverter CreateConverter(StateMachineAsset stateMachineAsset,
-            Allocator allocator)
+        internal static StateMachineBlobConverter CreateConverter(StateMachineAsset stateMachineAsset)
         {
             var converter = new StateMachineBlobConverter();
             var defaultStateIndex = stateMachineAsset.States.ToList().IndexOf(stateMachineAsset.DefaultState);
             Assert.IsTrue(defaultStateIndex >= 0,
                 $"Couldn't find state {stateMachineAsset.DefaultState.name}, in state machine {stateMachineAsset.name}");
             converter.DefaultStateIndex = (byte)defaultStateIndex;
-            BuildStates(stateMachineAsset, ref converter, allocator);
+            BuildStates(stateMachineAsset, ref converter, Allocator.Persistent);
             return converter;
         }
 
@@ -247,15 +245,15 @@ namespace DMotion.Authoring
                     {
                         case BoolParameterAsset:
                             var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
-                            boolParameters.Add(new BoolParameter(p.name, p.Hash));
+                            boolParameters.Add(new BoolParameter(p.Hash));
                             break;
                         case IntParameterAsset:
                             var intParameters = dstManager.GetBuffer<IntParameter>(entity);
-                            intParameters.Add(new IntParameter(p.name, p.Hash));
+                            intParameters.Add(new IntParameter(p.Hash));
                             break;
                         case FloatParameterAsset:
                             var floatParameters = dstManager.GetBuffer<FloatParameter>(entity);
-                            floatParameters.Add(new FloatParameter(p.name, p.Hash));
+                            floatParameters.Add(new FloatParameter(p.Hash));
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(p));
@@ -272,7 +270,8 @@ namespace DMotion.Authoring
         }
 
         public static void AddSingleClipStateComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,
-            bool enableEvents = true, bool enableSingleClipRequest = true, RootMotionMode rootMotionMode = RootMotionMode.Disabled)
+            bool enableEvents = true, bool enableSingleClipRequest = true,
+            RootMotionMode rootMotionMode = RootMotionMode.Disabled)
         {
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
 

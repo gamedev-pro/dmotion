@@ -7,8 +7,8 @@ namespace DMotion
 {
     [BurstCompile]
     public struct StateMachineParameterRef<TBuffer, TValue>
-        where TBuffer : struct, IStateMachineParameter<TValue>
-        where TValue : struct
+        where TBuffer : unmanaged, IStateMachineParameter<TValue>
+        where TValue : unmanaged
     {
         public sbyte Index;
 
@@ -39,7 +39,7 @@ namespace DMotion
     public static class StateMachineParameterUtils
     {
         public static int HashToIndex<T>(this DynamicBuffer<T> parameters, int hash)
-            where T : struct, IHasHash
+            where T : unmanaged, IHasHash
         {
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -59,8 +59,8 @@ namespace DMotion
         }
 
         public static void SetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash, TValue value)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             var index = parameters.HashToIndex(hash);
             if (index >= 0)
@@ -73,8 +73,8 @@ namespace DMotion
         
         public static void SetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
             FixedString64Bytes name, TValue value)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             var hash = name.GetHashCode();
             parameters.SetValue(hash, value);
@@ -82,8 +82,8 @@ namespace DMotion
 
         public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash,
             out TValue value)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             var index = parameters.HashToIndex(hash);
             if (index >= 0)
@@ -98,24 +98,24 @@ namespace DMotion
 
         public static bool TryGetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString64Bytes name,
             out TValue value)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             var hash = name.GetHashCode();
             return parameters.TryGetValue(hash, out value);
         }
         
         public static TValue GetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, int hash)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             parameters.TryGetValue<TBuffer, TValue>(hash, out var value);
             return value;
         }
         
         // public static TValue GetValue<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters, FixedString64Bytes name)
-        //     where TBuffer : struct, IStateMachineParameter<TValue>
-        //     where TValue : struct
+        //     where TBuffer : unmanaged, IStateMachineParameter<TValue>
+        //     where TValue : unmanaged
         // {
         //     var hash = name.GetHashCode();
         //     return parameters.GetValue<TBuffer, TValue>(hash);
@@ -123,8 +123,8 @@ namespace DMotion
 
         public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
             int hash)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             return new StateMachineParameterRef<TBuffer, TValue>()
             {
@@ -134,8 +134,8 @@ namespace DMotion
         
         public static StateMachineParameterRef<TBuffer, TValue> CreateRef<TBuffer, TValue>(this DynamicBuffer<TBuffer> parameters,
             FixedString64Bytes name)
-            where TBuffer : struct, IStateMachineParameter<TValue>
-            where TValue : struct
+            where TBuffer : unmanaged, IStateMachineParameter<TValue>
+            where TValue : unmanaged
         {
             var hash = name.GetHashCode();
             return parameters.CreateRef<TBuffer, TValue>(hash);

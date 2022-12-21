@@ -9,7 +9,7 @@ namespace DMotion.Editor
     internal struct TransitionEdgeModel
     {
         internal StateMachineAsset StateMachineAsset;
-        internal EntitySelectionProxy SelectedEntity;
+        internal EntitySelectionProxyWrapper SelectedEntity;
         internal int TransitionCount;
     }
 

@@ -151,7 +151,7 @@ namespace DMotion
         {
             new BlendAnimationStatesJob
             {
-                DeltaTime = Time.DeltaTime
+                DeltaTime = SystemAPI.Time.DeltaTime
             }.ScheduleParallel();
             new CleanAnimationStatesJob().ScheduleParallel();
         }
