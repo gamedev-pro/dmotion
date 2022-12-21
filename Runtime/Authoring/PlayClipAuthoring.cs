@@ -31,8 +31,10 @@ namespace DMotion.Authoring
         public bool EnableEvents;
         public bool EnableSingleClipRequests;
     }
+    
+    public class PlayClipBaker : SmartBaker<PlayClipAuthoring, PlayClipBakeItem>{}
 
-    struct PlayClipBakeItem : ISmartBakeItem<PlayClipAuthoring>
+    public struct PlayClipBakeItem : ISmartBakeItem<PlayClipAuthoring>
     {
         public PlaySingleClipBakeData BakeData;
 

@@ -212,6 +212,75 @@ namespace DMotion.Authoring
             dstManager.AddComponentData(entity, OneShotState.Null);
         }
 
+        internal static void AddStateMachineParameters(IBaker dstManager, Entity entity,
+            StateMachineAsset stateMachineAsset)
+        {
+            //Parameters
+            {
+                var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
+                var intParameters = dstManager.AddBuffer<IntParameter>(entity);
+                var floatParameters = dstManager.AddBuffer<FloatParameter>(entity);
+                foreach (var p in stateMachineAsset.Parameters)
+                {
+                    switch (p)
+                    {
+                        case BoolParameterAsset:
+                            boolParameters.Add(new BoolParameter(p.Hash));
+                            break;
+                        case IntParameterAsset:
+                            intParameters.Add(new IntParameter(p.Hash));
+                            break;
+                        case FloatParameterAsset:
+                            floatParameters.Add(new FloatParameter(p.Hash));
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(p));
+                    }
+                }
+            }
+
+#if UNITY_EDITOR || DEBUG
+            dstManager.AddComponentObject(entity, new AnimationStateMachineDebug
+            {
+                StateMachineAsset = stateMachineAsset
+            });
+#endif
+        }
+        internal static void AddStateMachineParameters(EntityManager dstManager, Entity entity,
+            StateMachineAsset stateMachineAsset)
+        {
+            //Parameters
+            {
+                var boolParameters = dstManager.AddBuffer<BoolParameter>(entity);
+                var intParameters = dstManager.AddBuffer<IntParameter>(entity);
+                var floatParameters = dstManager.AddBuffer<FloatParameter>(entity);
+                foreach (var p in stateMachineAsset.Parameters)
+                {
+                    switch (p)
+                    {
+                        case BoolParameterAsset:
+                            boolParameters.Add(new BoolParameter(p.Hash));
+                            break;
+                        case IntParameterAsset:
+                            intParameters.Add(new IntParameter(p.Hash));
+                            break;
+                        case FloatParameterAsset:
+                            floatParameters.Add(new FloatParameter(p.Hash));
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(p));
+                    }
+                }
+            }
+
+#if UNITY_EDITOR || DEBUG
+            dstManager.AddComponentObject(entity, new AnimationStateMachineDebug
+            {
+                StateMachineAsset = stateMachineAsset
+            });
+#endif
+        }
+
         internal static void AddStateMachineSystemComponents(EntityManager dstManager, Entity entity,
             StateMachineAsset stateMachineAsset,
             BlobAssetReference<StateMachineBlob> stateMachineBlob,
@@ -233,40 +302,28 @@ namespace DMotion.Authoring
                 dstManager.AddBuffer<SingleClipState>(entity);
                 dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
             }
-
-            //Parameters
+            AddStateMachineParameters(dstManager, entity, stateMachineAsset);
+        }
+        internal static void AddStateMachineSystemComponents(EntityManager dstManager, Entity entity,
+            BlobAssetReference<StateMachineBlob> stateMachineBlob,
+            BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            BlobAssetReference<ClipEventsBlob> clipEventsBlob)
+        {
+            //state machine data
             {
-                dstManager.AddBuffer<BoolParameter>(entity);
-                dstManager.AddBuffer<IntParameter>(entity);
-                dstManager.AddBuffer<FloatParameter>(entity);
-                foreach (var p in stateMachineAsset.Parameters)
+                var stateMachine = new AnimationStateMachine
                 {
-                    switch (p)
-                    {
-                        case BoolParameterAsset:
-                            var boolParameters = dstManager.GetBuffer<BoolParameter>(entity);
-                            boolParameters.Add(new BoolParameter(p.Hash));
-                            break;
-                        case IntParameterAsset:
-                            var intParameters = dstManager.GetBuffer<IntParameter>(entity);
-                            intParameters.Add(new IntParameter(p.Hash));
-                            break;
-                        case FloatParameterAsset:
-                            var floatParameters = dstManager.GetBuffer<FloatParameter>(entity);
-                            floatParameters.Add(new FloatParameter(p.Hash));
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(p));
-                    }
-                }
-            }
+                    StateMachineBlob = stateMachineBlob,
+                    ClipsBlob = clipsBlob,
+                    ClipEventsBlob = clipEventsBlob,
+                    CurrentState = StateMachineStateRef.Null
+                };
 
-#if UNITY_EDITOR || DEBUG
-            dstManager.AddComponentData(entity, new AnimationStateMachineDebug
-            {
-                StateMachineAsset = stateMachineAsset
-            });
-#endif
+                dstManager.AddComponentData(entity, stateMachine);
+
+                dstManager.AddBuffer<SingleClipState>(entity);
+                dstManager.AddBuffer<LinearBlendStateMachineState>(entity);
+            }
         }
 
         public static void AddSingleClipStateComponents(EntityManager dstManager, Entity ownerEntity, Entity entity,

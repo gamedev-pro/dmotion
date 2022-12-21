@@ -21,6 +21,7 @@ namespace DMotion.Authoring
 
         public RootMotionMode RootMotionMode;
         public bool EnableEvents = true;
+
         private void Reset()
         {
             if (Animator == null)
@@ -37,8 +38,9 @@ namespace DMotion.Authoring
 
     struct AnimationStateMachineBakeItem : ISmartBakeItem<AnimationStateMachineAuthoring>
     {
-        private AnimationStateMachineAuthoring Authoring;
         private Entity Owner;
+        private RootMotionMode RootMotionMode;
+        private bool EnableEvents;
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsBlobHandle;
         private SmartBlobberHandle<StateMachineBlob> stateMachineBlobHandle;
         private SmartBlobberHandle<ClipEventsBlob> clipEventsBlobHandle;
@@ -46,11 +48,14 @@ namespace DMotion.Authoring
         public bool Bake(AnimationStateMachineAuthoring authoring, IBaker baker)
         {
             ValidateStateMachine(authoring);
-            Authoring = authoring;
             Owner = baker.GetEntity(authoring.Owner);
+            RootMotionMode = authoring.RootMotionMode;
+            EnableEvents = authoring.EnableEvents && authoring.StateMachineAsset.Clips.Any(c => c.Events.Length > 0);
             clipsBlobHandle = baker.RequestCreateBlobAsset(authoring.Animator, authoring.StateMachineAsset.Clips);
             stateMachineBlobHandle = baker.RequestCreateBlobAsset(authoring.StateMachineAsset);
             clipEventsBlobHandle = baker.RequestCreateBlobAsset(authoring.StateMachineAsset.Clips);
+            AnimationStateMachineConversionUtils.AddStateMachineParameters(baker, baker.GetEntity(),
+                authoring.StateMachineAsset);
             return true;
         }
 
@@ -61,13 +66,12 @@ namespace DMotion.Authoring
             var clipEventsBlob = clipEventsBlobHandle.Resolve(dstManager);
 
             AnimationStateMachineConversionUtils.AddStateMachineSystemComponents(dstManager, entity,
-                Authoring.StateMachineAsset,
                 stateMachineBlob,
                 clipsBlob,
                 clipEventsBlob);
             AnimationStateMachineConversionUtils.AddAnimationStateSystemComponents(dstManager, entity);
 
-            if (Authoring.EnableEvents && Authoring.StateMachineAsset.Clips.Any(c => c.Events.Length > 0))
+            if (EnableEvents)
             {
                 dstManager.GetOrCreateBuffer<RaisedAnimationEvent>(entity);
             }
@@ -83,7 +87,7 @@ namespace DMotion.Authoring
             }
 
             AnimationStateMachineConversionUtils.AddRootMotionComponents(dstManager, Owner, entity,
-                Authoring.RootMotionMode);
+                RootMotionMode);
         }
 
         private void ValidateStateMachine(AnimationStateMachineAuthoring authoring)
