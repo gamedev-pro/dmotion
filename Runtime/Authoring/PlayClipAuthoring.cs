@@ -70,13 +70,7 @@ namespace DMotion.Authoring
             var clipsBlob = BakeData.ClipsBlobHandle.Resolve(entityManager);
             var clipEventsBlob = BakeData.ClipEventsBlobHandle.Resolve(entityManager);
 
-            var singleClipRef = new SingleClipRef
-            {
-                Clips = clipsBlob,
-                ClipEvents = clipEventsBlob,
-                ClipIndex = 0,
-                Speed = BakeData.Speed
-            };
+            var singleClipRef = new SingleClipRef(clipsBlob, clipEventsBlob, 0, BakeData.Speed);
 
             if (singleClipRef.IsValid)
             {

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace DMotion.Authoring
 {
-    internal static class AnimationStateMachineConversionExtensions
+    public static class AnimationStateMachineConversionExtensions
     {
         public static SmartBlobberHandle<SkeletonClipSetBlob> RequestCreateBlobAsset(
             this IBaker baker,
