@@ -79,7 +79,7 @@ namespace DMotion.Tests
     }
 
     [BurstCompile(CompileSynchronously = true)]
-    public class ECSTestsCommonBase
+    public class ECSTestsCommonBase : ScriptableObject
     {
         [SetUp]
         public virtual void Setup()

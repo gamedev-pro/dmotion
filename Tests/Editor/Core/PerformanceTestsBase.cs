@@ -1,9 +1,10 @@
 ﻿using DMotion.Tests;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 
 namespace DMotion.PerformanceTests
 {
-    public class PerformanceTestsFixture : ECSTestBase
+    public class PerformanceTestsBase : ECSTestBase
     {
         private BurstAndJobConfigsCache cache;
         [SetUp]
