@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] – 2022-12-22
+
+### Changed
+- Upgraded DMotion to Entities 1.0
+- All DMotion systems know use ISystem instead of SystemBase
+
+### Added
+- State Machine Visual Debug (click entity with StateMachineComponent in hierarchy)
+- Simpler APIs for playing SingleClips and OneShot clips
+- 9 new samples
+
+### Fixed
+- Normalize rotations when blending between multiple clips (optimized and non-optimized)
+- Fix Safety Exceptions on ClipSamplingSystem and UpdateAnimationStatesSystem
+- 
 ## [0.3.4] – 2022-10-30
 
 ### Added
