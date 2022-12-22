@@ -16,7 +16,7 @@ namespace DMotion.Tests
 
         public static Entity ConvertGameObject(World world, GameObject go, BlobAssetStore store)
         {
-            BakeGameObjects(world, new []{go}, store);
+            BakeGameObjects(world, new[] { go }, store);
             return GetEntityForGameObject(world, go);
         }
 
