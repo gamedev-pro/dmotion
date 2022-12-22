@@ -17,7 +17,6 @@ namespace DMotion.PerformanceTests
         typeof(ClipSamplingSystem),
         typeof(BlendAnimationStatesSystem),
         typeof(UpdateAnimationStatesSystem))]
-    // [RequiresPlayMode(true)]
     public class StateMachinePerformanceTests : PerformanceTestsBase
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(skeletonPrefabEntity))]

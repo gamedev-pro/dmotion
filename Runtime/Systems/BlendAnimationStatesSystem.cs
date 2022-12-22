@@ -2,14 +2,15 @@
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace DMotion
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateBefore(typeof(ClipSamplingSystem))]
-    public partial class BlendAnimationStatesSystem : SystemBase
+    [RequireMatchingQueriesForUpdate]
+    [BurstCompile]
+    public partial struct BlendAnimationStatesSystem : ISystem
     {
         [BurstCompile]
         internal partial struct BlendAnimationStatesJob : IJobEntity
@@ -147,7 +148,16 @@ namespace DMotion
             }
         }
 
-        protected override void OnUpdate()
+        public void OnCreate(ref SystemState state)
+        {
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
             new BlendAnimationStatesJob
             {

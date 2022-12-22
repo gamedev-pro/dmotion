@@ -16,7 +16,7 @@ namespace DMotion.Tests
             return ref state.EntityQueries;
         }
         
-        public static ref UnsafeList<EntityQuery> GetRequiredQueries(this SystemState state)
+        public static ref UnsafeList<EntityQuery> GetStateRequiredQueries(this SystemState state)
         {
             return ref state.RequiredEntityQueries;
         }

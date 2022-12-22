@@ -2,7 +2,6 @@
 using NUnit.Framework;
 using Unity.PerformanceTesting;
 using Unity.Profiling;
-using UnityEngine.TestTools;
 using MethodMeasurement = Unity.PerformanceTesting.Measurements.MethodMeasurement;
 
 namespace DMotion.PerformanceTests

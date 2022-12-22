@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
@@ -10,7 +11,9 @@ namespace DMotion
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(TRSToLocalToParentSystem))]
     [UpdateBefore(typeof(TRSToLocalToWorldSystem))]
-    public partial class ClipSamplingSystem : SystemBase
+    [RequireMatchingQueriesForUpdate]
+    [BurstCompile]
+    public partial struct ClipSamplingSystem : ISystem
     {
         internal static readonly ProfilerMarker Marker_SampleOptimizedBonesJob =
             new("SampleOptimizedBonesJob");
@@ -27,42 +30,51 @@ namespace DMotion
         internal static readonly ProfilerMarker Marker_TransferRootMotionJob =
             new("TransferRootMotionJob");
 
-        protected override void OnUpdate()
+        public void OnCreate(ref SystemState state)
+        {
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
 #if DEBUG || UNITY_EDITOR
             if (JobsUtility.JobDebuggerEnabled)
             {
-                OnUpdate_Safe();
+                OnUpdate_Safe(ref state);
             }
             else
             {
-                OnUpdate_Unsafe();
+                OnUpdate_Unsafe(ref state);
             }
 #else
-            OnUpdate_Unsafe();
+            OnUpdate_Unsafe(ref state);
 #endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnUpdate_Unsafe()
+        private void OnUpdate_Unsafe(ref SystemState state)
         {
             // new NormalizedSamplersWeights().ScheduleParallel();
             //Sample bones (those only depend on updateFmsHandle)
             var sampleOptimizedHandle = new SampleOptimizedBonesJob
             {
                 Marker = Marker_SampleOptimizedBonesJob
-            }.ScheduleParallel(Dependency);
+            }.ScheduleParallel(state.Dependency);
 
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones
             {
                 BfeClipSampler = SystemAPI.GetBufferLookup<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
-            }.ScheduleParallel(Dependency);
+            }.ScheduleParallel(state.Dependency);
 
             var sampleRootDeltasHandle = new SampleRootDeltasJob
             {
                 Marker = Marker_SampleRootDeltasJob
-            }.ScheduleParallel(Dependency);
+            }.ScheduleParallel(state.Dependency);
 
             var applyRootMotionHandle = new ApplyRootMotionToEntityJob
             {
@@ -77,13 +89,13 @@ namespace DMotion
             }.ScheduleParallel(sampleRootDeltasHandle);
             //end sample bones
 
-            Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle,
+            state.Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle,
                 transferRootMotionHandle);
-            Dependency = JobHandle.CombineDependencies(Dependency, applyRootMotionHandle);
+            state.Dependency = JobHandle.CombineDependencies(state.Dependency, applyRootMotionHandle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnUpdate_Safe()
+        private void OnUpdate_Safe(ref SystemState state)
         {
             new SampleOptimizedBonesJob
             {

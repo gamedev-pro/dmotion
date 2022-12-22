@@ -14,6 +14,8 @@ namespace DMotion.Tests
     {
         protected const float defaultDeltaTime = 1.0f / 60.0f;
         private float elapsedTime;
+        private NativeArray<SystemHandle> allSystems;
+        private BlobAssetStore blobAssetStore;
 
         public override void Setup()
         {
@@ -33,6 +35,8 @@ namespace DMotion.Tests
                             $"Expected {t.Name} to be a subclass of {baseType.Name} or {baseTypeManaged.Name}");
                         world.CreateSystem(t);
                     }
+
+                    allSystems = world.Unmanaged.GetAllSystems(Allocator.Persistent);
                 }
             }
 
@@ -44,7 +48,7 @@ namespace DMotion.Tests
                     .Where(f => f.GetCustomAttribute<ConvertGameObjectPrefab>() != null).ToArray();
                 var createdEntities = new NativeArray<Entity>(convertPrefabField.Length, Allocator.Temp);
 
-                var blobAssetStore = new BlobAssetStore(128);
+                blobAssetStore = new BlobAssetStore(128);
                 var conversionWorld = new World("Test Conversion World");
 
                 //instantiate all entities in a conversion word
@@ -85,8 +89,21 @@ namespace DMotion.Tests
                     receiveField.SetValue(this, entity);
                 }
 
-                blobAssetStore.Dispose();
                 conversionWorld.Dispose();
+            }
+        }
+
+        public override void TearDown()
+        {
+            base.TearDown();
+            if (allSystems.IsCreated)
+            {
+                allSystems.Dispose();
+            }
+
+            if (blobAssetStore.IsCreated)
+            {
+                blobAssetStore.Dispose();
             }
         }
 
@@ -96,9 +113,9 @@ namespace DMotion.Tests
             {
                 elapsedTime += deltaTime;
                 world.SetTime(new TimeData(elapsedTime, deltaTime));
-                foreach (var s in world.Systems)
+                foreach (var s in allSystems)
                 {
-                    s.Update();
+                    s.Update(world.Unmanaged);
                 }
 
                 //We always want to complete all jobs after update world. Otherwise transformations that test expect to run may not have been run during Assert
