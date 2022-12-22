@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
@@ -56,15 +57,19 @@ PrefabInstance:
       value: Armature_StressTest_LOD2 Variant 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -156680093466705880}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8307121162986993383}
   m_SourcePrefab: {fileID: 100100000, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
 --- !u!1 &4121311047611608358 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
-  m_PrefabInstance: {fileID: 3886816889099604087}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &7249153794679107046 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
   m_PrefabInstance: {fileID: 3886816889099604087}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &-156680093466705880
@@ -81,19 +86,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animator: {fileID: 7249153794679107046}
   OneShotClip: {fileID: 11400000, guid: 411918f1c0037bd4da6262a82555471d, type: 2}
---- !u!114 &7767486422772939567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4121311047611608358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea7d7495833204790ba1d3a8755397f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ConversionMode: 0
 --- !u!114 &8307121162986993383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,3 +103,8 @@ MonoBehaviour:
   StateMachineAsset: {fileID: 11400000, guid: 8ebc108947fc6364ca525c7bc51ff4f3, type: 2}
   RootMotionMode: 0
   EnableEvents: 0
+--- !u!95 &7249153794679107046 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: e90d5325d4cbbeb409d40e50905ffd9e, type: 3}
+  m_PrefabInstance: {fileID: 3886816889099604087}
+  m_PrefabAsset: {fileID: 0}

@@ -1,9 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using Unity.Core;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace DMotion.Tests
 {
@@ -11,6 +11,7 @@ namespace DMotion.Tests
     {
         private const float defaultDeltaTime = 1.0f / 60.0f;
         private float elapsedTime;
+        private BlobAssetStore blobAssetStore;
 
         public override void Setup()
         {
@@ -30,6 +31,45 @@ namespace DMotion.Tests
                     }
                 }
             }
+
+            blobAssetStore = new BlobAssetStore(128);
+            // //Convert entity prefabs
+            {
+                var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                var convertPrefabField = GetType()
+                    .GetFields(bindingFlags)
+                    .Where(f => f.GetCustomAttribute<ConvertGameObjectPrefab>() != null);
+                foreach (var f in convertPrefabField)
+                {
+                    var value = f.GetValue(this);
+                    Assert.IsNotNull(value);
+                    GameObject go = null;
+                    if (value is GameObject g)
+                    {
+                        go = g;
+                    }
+                    else if (value is MonoBehaviour mono)
+                    {
+                        go = mono.gameObject;
+                    }
+                
+                    Assert.IsNotNull(go);
+
+                    var entity = BakingTestUtils.ConvertGameObject(world, go, blobAssetStore);
+                    Assert.AreNotEqual(entity, Entity.Null);
+            
+                    var attr = f.GetCustomAttribute<ConvertGameObjectPrefab>();
+                    var receiveField = GetType().GetField(attr.ToFieldName, bindingFlags);
+                    Assert.IsNotNull(receiveField, $"Couldn't find field to receive entity prefab ({f.Name}, {attr.ToFieldName})");
+                    receiveField.SetValue(this, entity);
+                }
+            }
+        }
+
+        public override void TearDown()
+        {
+            base.TearDown();
+            blobAssetStore.Dispose();
         }
 
         protected void UpdateWorld(float deltaTime = defaultDeltaTime, bool completeAllJobs = true)
@@ -48,6 +88,7 @@ namespace DMotion.Tests
                     manager.CompleteAllTrackedJobs();
                 }
             }
+            
         }
     }
 }

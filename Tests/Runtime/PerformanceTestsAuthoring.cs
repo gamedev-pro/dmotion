@@ -22,10 +22,10 @@ namespace DMotion.PerformanceTests
     }
 
     [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-    public partial class UpdateStateMachines : SystemBase
+    public partial class StateMachinePerformanceTestSystem : SystemBase
     {
         public static readonly ProfilerMarker Marker =
-            ProfilingUtils.CreateAnimationMarker<UpdateStateMachines>(nameof(OnUpdate));
+            ProfilingUtils.CreateAnimationMarker<StateMachinePerformanceTestSystem>(nameof(OnUpdate));
 
         protected override void OnUpdate()
         {
@@ -76,13 +76,15 @@ namespace DMotion.PerformanceTests
         }
     }
 
-    public class PerformanceTestsAuthoring : MonoBehaviour
+    class PerformanceTestsAuthoring : MonoBehaviour
     {
         public Animator Animator;
         public AnimationClipAsset OneShotClip;
     }
+    
+    class PerfomanceTestBaker : SmartBaker<PerformanceTestsAuthoring, PerformanceTestBakeItem>{}
 
-    public struct PerformanceTestBakeItem : ISmartBakeItem<PerformanceTestsAuthoring>
+    struct PerformanceTestBakeItem : ISmartBakeItem<PerformanceTestsAuthoring>
     {
         private SmartBlobberHandle<SkeletonClipSetBlob> clipsHandle;
 
@@ -94,6 +96,7 @@ namespace DMotion.PerformanceTests
 
         public void PostProcessBlobRequests(EntityManager entityManager, Entity entity)
         {
+            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(entityManager, entity);
             entityManager.AddComponentData(entity, new LinearBlendDirection { Value = 1 });
             entityManager.AddComponentData(entity, new StressTestOneShotClip
             {
