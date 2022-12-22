@@ -72,18 +72,6 @@ namespace DMotion.PerformanceTests
             return true;
         }
 
-        // [Test, Performance]
-        // public void JobMarkers([ValueSource(nameof(testValues))] int count)
-        // {
-        //     InstantiateEntities(count, skeletonPrefabEntity);
-        //     using var markersMeasurement = Measure.ProfilerMarkers(
-        //             AnimationStateMachineSystem.Marker_UpdateStateMachineJob.GetNameSlow(),
-        //             AnimationStateMachineSystem.Marker_SampleOptimizedBonesJob.GetNameSlow(),
-        //             UpdateStateMachines.Marker.GetNameSlow()
-        //         );
-        //     UpdateWorld();
-        // }
-
         private void InstantiateEntities(int count, Entity prefab)
         {
             Assert.IsTrue(manager.HasComponent<LinearBlendDirection>(prefab));

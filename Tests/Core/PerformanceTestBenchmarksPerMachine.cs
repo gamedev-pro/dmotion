@@ -6,5 +6,6 @@ namespace DMotion.Tests
     public class PerformanceTestBenchmarksPerMachine : ScriptableObject
     {
         public MachineSpecificPerformanceBenchmarks[] MachineBenchmarks;
+        //
     }
 }

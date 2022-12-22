@@ -4,9 +4,11 @@ using NUnit.Framework;
 using Unity.Core;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace DMotion.Tests
 {
+    [RequiresPlayMode(false)]
     public abstract class ECSTestBase : ECSTestsFixture
     {
         private const float defaultDeltaTime = 1.0f / 60.0f;
