@@ -22,11 +22,13 @@ namespace DMotion.Tests
                 var requiredSystemsAttr = GetType().GetCustomAttribute<CreateSystemsForTest>();
                 if (requiredSystemsAttr != null)
                 {
-                    var baseType = typeof(SystemBase);
+                    var baseTypeManaged = typeof(SystemBase);
+                    var baseType = typeof(ISystem);
                     foreach (var t in requiredSystemsAttr.SystemTypes)
                     {
-                        Assert.IsTrue(baseType.IsAssignableFrom(t),
-                            $"Expected {t.Name} to be a subclass of {baseType.Name}");
+                        var isValid = baseType.IsAssignableFrom(t) || baseTypeManaged.IsAssignableFrom(t);
+                        Assert.IsTrue(isValid,
+                            $"Expected {t.Name} to be a subclass of {baseType.Name} or {baseTypeManaged.Name}");
                         world.CreateSystem(t);
                     }
                 }

@@ -10,7 +10,7 @@ namespace DMotion
     public partial class AnimationStateMachineSystem : SystemBase
     {
         internal static readonly ProfilerMarker Marker_UpdateStateMachineJob =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(UpdateStateMachineJob));
+            new ProfilerMarker($"UpdateStateMachineJob");
         
         protected override void OnUpdate()
         {

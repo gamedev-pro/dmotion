@@ -1,6 +1,7 @@
 ﻿using DMotion.Authoring;
 using Latios.Authoring;
 using Latios.Kinemation;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Profiling;
@@ -22,26 +23,51 @@ namespace DMotion.PerformanceTests
     }
 
     [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-    public partial class StateMachinePerformanceTestSystem : SystemBase
+    [BurstCompile]
+    [RequireMatchingQueriesForUpdate]
+    public partial struct StateMachinePerformanceTestSystem : ISystem
     {
         public static readonly ProfilerMarker Marker =
-            ProfilingUtils.CreateAnimationMarker<StateMachinePerformanceTestSystem>(nameof(OnUpdate));
+            new ProfilerMarker($"StateMachinePerformanceTestSystem: OnUpdate");
 
-        protected override void OnUpdate()
+        public void OnCreate(ref SystemState state)
+        {
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
             var dt = SystemAPI.Time.DeltaTime;
             var integerPart = (uint)SystemAPI.Time.ElapsedTime + 1;
             var decimalPart = (float)(SystemAPI.Time.ElapsedTime + 1) - integerPart;
             var shouldSwitchStates = decimalPart < dt && integerPart % 2 == 0;
-            var marker = Marker;
+            new UpdateStateMachineParametersJob
+            {
+                dt = dt,
+                integerPart = integerPart,
+                shouldSwitchStates = shouldSwitchStates,
+                marker = Marker,
+            }.ScheduleParallel();
+        }
 
-            Entities.ForEach((
-                Entity e,
+        [BurstCompile]
+        partial struct UpdateStateMachineParametersJob : IJobEntity
+        {
+            public float dt;
+            public uint integerPart;
+            public bool shouldSwitchStates;
+            public ProfilerMarker marker;
+
+            public void Execute(Entity e,
                 ref LinearBlendDirection linearBlendDirection,
                 ref PlayOneShotRequest playOneShotRequest,
                 ref DynamicBuffer<FloatParameter> blendParameters,
                 ref DynamicBuffer<BoolParameter> boolParameters,
-                in StressTestOneShotClip oneShotClip) =>
+                in StressTestOneShotClip oneShotClip)
             {
                 using var scope = marker.Auto();
                 blendParameters[0] = new FloatParameter
@@ -72,7 +98,7 @@ namespace DMotion.PerformanceTests
                             new PlayOneShotRequest(oneShotClip.Clips, oneShotClip.ClipEvents, oneShotClip.ClipIndex);
                     }
                 }
-            }).ScheduleParallel();
+            }
         }
     }
 
@@ -81,8 +107,10 @@ namespace DMotion.PerformanceTests
         public Animator Animator;
         public AnimationClipAsset OneShotClip;
     }
-    
-    class PerfomanceTestBaker : SmartBaker<PerformanceTestsAuthoring, PerformanceTestBakeItem>{}
+
+    class PerfomanceTestBaker : SmartBaker<PerformanceTestsAuthoring, PerformanceTestBakeItem>
+    {
+    }
 
     struct PerformanceTestBakeItem : ISmartBakeItem<PerformanceTestsAuthoring>
     {
