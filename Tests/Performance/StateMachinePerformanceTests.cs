@@ -4,7 +4,9 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.PerformanceTesting;
+using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace DMotion.PerformanceTests
 {
@@ -15,6 +17,7 @@ namespace DMotion.PerformanceTests
         typeof(ClipSamplingSystem),
         typeof(BlendAnimationStatesSystem),
         typeof(UpdateAnimationStatesSystem))]
+    // [RequiresPlayMode(true)]
     public class StateMachinePerformanceTests : PerformanceTestsBase
     {
         [SerializeField, ConvertGameObjectPrefab(nameof(skeletonPrefabEntity))]
@@ -25,12 +28,14 @@ namespace DMotion.PerformanceTests
         private Entity skeletonPrefabEntity;
 
         private static int[] testValues = { 1000, 10_000, 100_000 };
+        internal static readonly ProfilerMarker Marker =
+            new("StateMachinePerformanceTests (UpdateWorld)");
 
         [Test, Performance]
         public void AverageUpdateTime([ValueSource(nameof(testValues))] int count)
         {
             InstantiateEntities(count, skeletonPrefabEntity);
-            Measure.Method(() => UpdateWorld())
+            Measure.Method(UpdateWorldWithMarker)
                 .WarmupCount(5)
                 .MeasurementCount(20)
                 .IterationsPerMeasurement(1)
@@ -40,6 +45,12 @@ namespace DMotion.PerformanceTests
             {
                 benchmark.AssertWithinBenchmark();
             }
+        }
+
+        private void UpdateWorldWithMarker()
+        {
+            using var scope = Marker.Auto();
+            UpdateWorld(defaultDeltaTime, false);
         }
 
         private bool TryGetBenchmarkForCount(int count, PerformanceTestBenchmarksPerMachine groupsAsset,

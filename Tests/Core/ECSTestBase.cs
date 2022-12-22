@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Unity.Collections;
 using Unity.Core;
 using Unity.Entities;
 using UnityEngine;
@@ -11,10 +12,8 @@ namespace DMotion.Tests
     [RequiresPlayMode(false)]
     public abstract class ECSTestBase : ECSTestsFixture
     {
-        private const float defaultDeltaTime = 1.0f / 60.0f;
+        protected const float defaultDeltaTime = 1.0f / 60.0f;
         private float elapsedTime;
-        private BlobAssetStore blobAssetStore;
-
         public override void Setup()
         {
             base.Setup();
@@ -36,15 +35,21 @@ namespace DMotion.Tests
                 }
             }
 
-            blobAssetStore = new BlobAssetStore(128);
             // //Convert entity prefabs
             {
                 var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
                 var convertPrefabField = GetType()
                     .GetFields(bindingFlags)
-                    .Where(f => f.GetCustomAttribute<ConvertGameObjectPrefab>() != null);
-                foreach (var f in convertPrefabField)
+                    .Where(f => f.GetCustomAttribute<ConvertGameObjectPrefab>() != null).ToArray();
+                var createdEntities = new NativeArray<Entity>(convertPrefabField.Length, Allocator.Temp);
+
+                var blobAssetStore = new BlobAssetStore(128);
+                var conversionWorld = new World("Test Conversion World");
+
+                //instantiate all entities in a conversion word
+                for (var i = 0; i < convertPrefabField.Length; i++)
                 {
+                    var f = convertPrefabField[i];
                     var value = f.GetValue(this);
                     Assert.IsNotNull(value);
                     GameObject go = null;
@@ -56,24 +61,32 @@ namespace DMotion.Tests
                     {
                         go = mono.gameObject;
                     }
-                
+
                     Assert.IsNotNull(go);
 
-                    var entity = BakingTestUtils.ConvertGameObject(world, go, blobAssetStore);
+                    var entity = BakingTestUtils.ConvertGameObject(conversionWorld, go, blobAssetStore);
                     Assert.AreNotEqual(entity, Entity.Null);
-            
+                    createdEntities[i] = entity;
+                }
+
+                //copy entities from conversionWorld to testWorld
+                var outputEntities = new NativeArray<Entity>(createdEntities.Length, Allocator.Temp);
+                manager.CopyEntitiesFrom(conversionWorld.EntityManager, createdEntities, outputEntities);
+
+                for (var i = 0; i < convertPrefabField.Length; i++)
+                {
+                    var f = convertPrefabField[i];
+                    var entity = outputEntities[i];
                     var attr = f.GetCustomAttribute<ConvertGameObjectPrefab>();
                     var receiveField = GetType().GetField(attr.ToFieldName, bindingFlags);
-                    Assert.IsNotNull(receiveField, $"Couldn't find field to receive entity prefab ({f.Name}, {attr.ToFieldName})");
+                    Assert.IsNotNull(receiveField,
+                        $"Couldn't find field to receive entity prefab ({f.Name}, {attr.ToFieldName})");
                     receiveField.SetValue(this, entity);
                 }
-            }
-        }
 
-        public override void TearDown()
-        {
-            base.TearDown();
-            blobAssetStore.Dispose();
+                blobAssetStore.Dispose();
+                conversionWorld.Dispose();
+            }
         }
 
         protected void UpdateWorld(float deltaTime = defaultDeltaTime, bool completeAllJobs = true)
@@ -92,7 +105,6 @@ namespace DMotion.Tests
                     manager.CompleteAllTrackedJobs();
                 }
             }
-            
         }
     }
 }
