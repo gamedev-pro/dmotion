@@ -14,6 +14,7 @@ namespace DMotion.Tests
     {
         protected const float defaultDeltaTime = 1.0f / 60.0f;
         private float elapsedTime;
+
         public override void Setup()
         {
             base.Setup();
@@ -89,7 +90,7 @@ namespace DMotion.Tests
             }
         }
 
-        protected void UpdateWorld(float deltaTime = defaultDeltaTime, bool completeAllJobs = true)
+        protected void UpdateWorld(float deltaTime = defaultDeltaTime)
         {
             if (world != null && world.IsCreated)
             {
@@ -100,10 +101,9 @@ namespace DMotion.Tests
                     s.Update();
                 }
 
-                if (completeAllJobs)
-                {
-                    manager.CompleteAllTrackedJobs();
-                }
+                //We always want to complete all jobs after update world. Otherwise transformations that test expect to run may not have been run during Assert
+                //This is also necessary for performance tests accuracy.
+                manager.CompleteAllTrackedJobs();
             }
         }
     }

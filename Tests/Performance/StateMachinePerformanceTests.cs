@@ -35,22 +35,12 @@ namespace DMotion.PerformanceTests
         public void AverageUpdateTime([ValueSource(nameof(testValues))] int count)
         {
             InstantiateEntities(count, skeletonPrefabEntity);
-            Measure.Method(UpdateWorldWithMarker)
-                .WarmupCount(5)
-                .MeasurementCount(20)
-                .IterationsPerMeasurement(1)
-                .Run();
+            DefaultPerformanceMeasure(Marker).Run();
 
             if (TryGetBenchmarkForCount(count, avgUpdateTimeBenchmarks, out var benchmark))
             {
                 benchmark.AssertWithinBenchmark();
             }
-        }
-
-        private void UpdateWorldWithMarker()
-        {
-            using var scope = Marker.Auto();
-            UpdateWorld(defaultDeltaTime, false);
         }
 
         private bool TryGetBenchmarkForCount(int count, PerformanceTestBenchmarksPerMachine groupsAsset,
