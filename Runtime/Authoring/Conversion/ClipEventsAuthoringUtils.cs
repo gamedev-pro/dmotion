@@ -33,7 +33,6 @@ namespace DMotion.Authoring
                     var clipAssetEvent = clipAssetEvents[eventIndex];
                     clipEvents.Events[eventIndex] = new DMotion.AnimationClipEvent
                     {
-                        ClipIndex = (short) clipIndex,
                         EventHash = clipAssetEvent.Hash,
                         ClipTime = Mathf.Clamp01(clipAssetEvent.NormalizedTime) * clip.Clip.length
                     };

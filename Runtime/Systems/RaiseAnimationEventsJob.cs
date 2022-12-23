@@ -45,11 +45,9 @@ namespace DMotion
 
                     if (shouldRaiseEvent)
                     {
-                        raisedAnimationEvents.Add(new RaisedAnimationEvent()
+                        raisedAnimationEvents.Add(new RaisedAnimationEvent
                         {
-                            EventHash = e.EventHash,
-                            ClipWeight = sampler.Weight,
-                            ClipHandle = new SkeletonClipHandle(sampler.Clips, sampler.ClipIndex),
+                            EventHash = e.EventHash
                         });
                     }
                 }
