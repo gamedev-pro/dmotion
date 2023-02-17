@@ -1,7 +1,5 @@
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
 
 namespace DMotion
 {
@@ -9,6 +7,7 @@ namespace DMotion
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
         internal void Execute(
+            Entity entity,
             ref DynamicBuffer<RaisedAnimationEvent> raisedAnimationEvents,
             in DynamicBuffer<ClipSampler> samplers
         )
@@ -47,6 +46,7 @@ namespace DMotion
                     {
                         raisedAnimationEvents.Add(new RaisedAnimationEvent
                         {
+                            Entity = entity,
                             EventHash = e.EventHash
                         });
                     }

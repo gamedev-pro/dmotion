@@ -6,6 +6,8 @@ namespace DMotion
 {
     public struct RaisedAnimationEvent : IBufferElementData
     {
+        //the animated entity that received the event
+        public Entity Entity;
         public int EventHash;
     }
     
