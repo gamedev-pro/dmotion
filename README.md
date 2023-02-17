@@ -5,7 +5,8 @@
 DMotion (DOTS Motion) is a general purpose Animation framework and State Machine for DOTS, built on top of [Kinemation](https://github.com/Dreaming381/Latios-Framework/tree/master/Kinemation).
 
 ***Important Notes***:
-  - *DMotion currently only supports Entities 0.51. Support for 1.0 will come in the future but no current ETA.*
+  - *DMotion currently only supports Transforms V1*. You will need to add `ENABLE_TRANSFORMS_V1` to your Script Define Symbols for it to work.
+  - Support for Transforms V2 will come the future but no current ETA.
   - *Kinemation only supports Windows, Linux and Mac. Mobile support is possible but require manual compilation of the ACL library, I suggest contacting the author of Kinemation for further information.*
 
 I've built this tool with usability and performance in mind. *The runtime is 100% bursted, and it's currently ~6 times faster than Unity's Mechanim, for 10000 animated skeletons on screen at the same time.*
