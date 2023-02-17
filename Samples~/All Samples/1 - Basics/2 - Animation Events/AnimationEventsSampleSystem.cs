@@ -1,4 +1,5 @@
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -24,9 +25,10 @@ namespace DMotion.Samples.AnimationEvents
         {
             foreach (var raisedEvents in SystemAPI.Query<DynamicBuffer<RaisedAnimationEvent>>())
             {
-                if (raisedEvents.WasEventRaised(FootstepEventHash))
+                if (raisedEvents.WasEventRaised(FootstepEventHash, out var index))
                 {
-                    Debug.Log("Footstep raised!");
+                    var e = raisedEvents[index];
+                    Debug.Log(FixedString.Format("Footstep event raised by entity: {0}", e.Entity.Index));
                 }
             }
         }
