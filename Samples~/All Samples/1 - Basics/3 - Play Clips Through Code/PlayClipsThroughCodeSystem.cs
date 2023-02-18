@@ -9,6 +9,7 @@ namespace DMotion.Samples.PlayClipsThroughCode
         public void OnCreate(ref SystemState state)
         {
         }
+
         public void OnDestroy(ref SystemState state)
         {
         }
