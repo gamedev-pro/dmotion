@@ -13,7 +13,7 @@ namespace DMotion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool AddWithId<T>(this DynamicBuffer<T> samplers, T newSampler, out byte id, out int index)
-            where T : struct, IElementWithId
+            where T : unmanaged, IElementWithId
         {
             if (samplers.TryFindIdAndInsertIndex(1, out id, out index))
             {
@@ -26,14 +26,14 @@ namespace DMotion
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static byte AddWithId<T>(this DynamicBuffer<T> samplers, T newSampler) where T : struct, IElementWithId
+        internal static byte AddWithId<T>(this DynamicBuffer<T> samplers, T newSampler) where T : unmanaged, IElementWithId
         {
             samplers.AddWithId(newSampler, out var id, out _);
             return id;
         }
 
         internal static bool TryFindIdAndInsertIndex<T>(this DynamicBuffer<T> samplers, byte reserveCount, out byte id,
-            out int insertIndex) where T : struct, IElementWithId
+            out int insertIndex) where T : unmanaged, IElementWithId
         {
             //we assume the list is always sorted (should be true if Id always increments  from 0 to 128 and loops back)
             //on the loop back case, we add after the first element for which we can ensure reserveCount
@@ -93,7 +93,7 @@ namespace DMotion
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool RemoveWithId<T>(this DynamicBuffer<T> samplers, byte id) where T : struct, IElementWithId
+        internal static bool RemoveWithId<T>(this DynamicBuffer<T> samplers, byte id) where T : unmanaged, IElementWithId
         {
             return RemoveRangeWithId(samplers, id, 1);
         }
@@ -101,7 +101,7 @@ namespace DMotion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool RemoveRangeWithId<T>(this DynamicBuffer<T> samplers, byte id, byte count)
-            where T : struct, IElementWithId
+            where T : unmanaged, IElementWithId
         {
             var index = samplers.IdToIndex(id);
             var exists = index >= 0;
@@ -114,7 +114,7 @@ namespace DMotion
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int IdToIndex<T>(this DynamicBuffer<T> samplers, byte id) where T : struct, IElementWithId
+        internal static int IdToIndex<T>(this DynamicBuffer<T> samplers, byte id) where T : unmanaged, IElementWithId
         {
             for (var i = 0; i < samplers.Length; i++)
             {
@@ -128,14 +128,14 @@ namespace DMotion
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool ExistsWithId<T>(this DynamicBuffer<T> samplers, byte id) where T : struct, IElementWithId
+        internal static bool ExistsWithId<T>(this DynamicBuffer<T> samplers, byte id) where T : unmanaged, IElementWithId
         {
             return samplers.IdToIndex(id) >= 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool TryGetWithId<T>(this DynamicBuffer<T> samplers, byte id, out T element)
-            where T : struct, IElementWithId
+            where T : unmanaged, IElementWithId
         {
             var index = samplers.IdToIndex(id);
             if (index >= 0)
@@ -149,7 +149,7 @@ namespace DMotion
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static T GetWithId<T>(this DynamicBuffer<T> elements, byte id) where T : struct, IElementWithId
+        internal static T GetWithId<T>(this DynamicBuffer<T> elements, byte id) where T : unmanaged, IElementWithId
         {
             var success = elements.TryGetWithId(id, out var e);
             Assert.IsTrue(success);

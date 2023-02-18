@@ -1,12 +1,13 @@
-﻿using System.Linq;
-using Latios.Authoring;
+﻿using Latios.Authoring;
+using Latios.Kinemation;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace DMotion.Authoring
 {
-    public class PlayClipAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
+    [DisallowMultipleComponent]
+    public class PlayClipAuthoring : MonoBehaviour
     {
         public GameObject Owner;
         public Animator Animator;
@@ -17,47 +18,86 @@ namespace DMotion.Authoring
         public bool EnableEvents = true;
 
         public bool EnableSingleClipRequests = true;
+    }
 
-        private SingleClipRefsConverter singleClipsConverter;
+    public struct PlaySingleClipBakeData
+    {
+        public Entity Owner;
+        public SmartBlobberHandle<SkeletonClipSetBlob> ClipsBlobHandle;
+        public SmartBlobberHandle<ClipEventsBlob> ClipEventsBlobHandle;
+        public bool Loop;
+        public float Speed;
+        public RootMotionMode RootMotionMode;
+        public bool EnableEvents;
+        public bool EnableSingleClipRequests;
+    }
+    
+    public class PlayClipBaker : SmartBaker<PlayClipAuthoring, PlayClipBakeItem>{}
 
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+    public struct PlayClipBakeItem : ISmartBakeItem<PlayClipAuthoring>
+    {
+        public PlaySingleClipBakeData BakeData;
+
+        public bool Bake(PlayClipAuthoring authoring, IBaker baker)
         {
-            var ownerEntity = gameObject != Owner ? conversionSystem.GetPrimaryEntity(Owner) : entity;
-            AnimationStateMachineConversionUtils.AddSingleClipStateComponents(dstManager, ownerEntity, entity,
-                EnableEvents, EnableSingleClipRequests, RootMotionMode);
-            var singleClipRef = singleClipsConverter.ConvertClips().FirstOrDefault();
+            Assert.IsNotNull(authoring.Clip.Clip, $"Trying to play null clip ({authoring.gameObject.name})");
+            if (authoring.Clip.Clip == null)
+            {
+                return false;
+            }
+
+            var clip = authoring.Clip;
+            BakeData.Owner = baker.GetEntity(authoring.Owner);
+            BakeData.ClipsBlobHandle = baker.RequestCreateBlobAsset(authoring.Animator, clip.Clip);
+            BakeData.ClipEventsBlobHandle =
+                baker.RequestCreateBlobAsset(clip.Clip);
+            BakeData.Loop = authoring.Loop;
+            BakeData.Speed = clip.Speed;
+            BakeData.RootMotionMode = authoring.RootMotionMode;
+            BakeData.EnableEvents = authoring.EnableEvents;
+            BakeData.EnableSingleClipRequests = authoring.EnableSingleClipRequests;
+            return true;
+        }
+
+        public void PostProcessBlobRequests(EntityManager entityManager, Entity entity)
+        {
+            if (BakeData.Owner == Entity.Null)
+            {
+                BakeData.Owner = entity;
+            }
+
+            AnimationStateMachineConversionUtils.AddSingleClipStateComponents(entityManager, BakeData.Owner, entity,
+                BakeData.EnableEvents, BakeData.EnableSingleClipRequests, BakeData.RootMotionMode);
+
+            var clipsBlob = BakeData.ClipsBlobHandle.Resolve(entityManager);
+            var clipEventsBlob = BakeData.ClipEventsBlobHandle.Resolve(entityManager);
+
+            var singleClipRef = new SingleClipRef(clipsBlob, clipEventsBlob, 0, BakeData.Speed);
+
             if (singleClipRef.IsValid)
             {
-                if (EnableSingleClipRequests)
+                if (BakeData.EnableSingleClipRequests)
                 {
-                    dstManager.SetComponentData(entity, PlaySingleClipRequest.New(singleClipRef));
+                    entityManager.SetComponentData(entity, PlaySingleClipRequest.New(singleClipRef));
                 }
                 else
                 {
-                    var singleClips = dstManager.GetBuffer<SingleClipState>(entity);
-                    var animationStates = dstManager.GetBuffer<AnimationState>(entity);
-                    var clipSamplers = dstManager.GetBuffer<ClipSampler>(entity);
+                    var singleClips = entityManager.GetBuffer<SingleClipState>(entity);
+                    var animationStates = entityManager.GetBuffer<AnimationState>(entity);
+                    var clipSamplers = entityManager.GetBuffer<ClipSampler>(entity);
 
                     var singleClipState = SingleClipStateUtils.New(singleClipRef.ClipIndex, singleClipRef.Speed,
-                        Loop, singleClipRef.Clips, singleClipRef.ClipEvents, ref singleClips,
+                        BakeData.Loop, singleClipRef.Clips, singleClipRef.ClipEvents, ref singleClips,
                         ref animationStates,
                         ref clipSamplers);
 
-                    dstManager.SetComponentData(entity, new AnimationStateTransitionRequest()
+                    entityManager.SetComponentData(entity, new AnimationStateTransitionRequest
                     {
                         AnimationStateId = (sbyte)singleClipState.AnimationStateId,
                         TransitionDuration = 0
                     });
                 }
             }
-        }
-
-        public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager,
-            GameObjectConversionSystem conversionSystem)
-        {
-            Assert.IsNotNull(Clip.Clip, $"Trying to play null clip ({gameObject.name})");
-            singleClipsConverter = new SingleClipRefsConverter(Animator, new[] { Clip });
-            singleClipsConverter.RequestBlobAssets(conversionSystem);
         }
     }
 }

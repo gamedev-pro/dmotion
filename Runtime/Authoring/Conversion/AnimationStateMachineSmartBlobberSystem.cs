@@ -1,7 +1,7 @@
+using Latios.Authoring;
 using Latios.Authoring.Systems;
-using Latios.Kinemation.Authoring.Systems;
+using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
 
 namespace DMotion.Authoring
 {
@@ -10,17 +10,51 @@ namespace DMotion.Authoring
         internal StateMachineAsset StateMachineAsset;
     }
 
-    [UpdateAfter(typeof(SkeletonClipSetSmartBlobberSystem))]
-    internal class AnimationStateMachineSmartBlobberSystem : SmartBlobberConversionSystem<StateMachineBlob,
-        StateMachineBlobBakeData, StateMachineBlobConverter>
+    public struct AnimationStateMachineSmartBlobberFilter : ISmartBlobberRequestFilter<StateMachineBlob>
     {
-        protected override bool Filter(in StateMachineBlobBakeData input, GameObject gameObject,
-            out StateMachineBlobConverter converter)
-        {
-            var allocator = World.UpdateAllocator.ToAllocator;
-            converter = AnimationStateMachineConversionUtils.CreateConverter(input.StateMachineAsset, allocator);
+        public StateMachineAsset StateMachine;
 
+        public bool Filter(IBaker baker, Entity blobBakingEntity)
+        {
+            if (StateMachine == null)
+            {
+                return false;
+            }
+
+            var stateMachineConverter = AnimationStateMachineConversionUtils.CreateConverter(StateMachine);
+            baker.AddComponent(blobBakingEntity, stateMachineConverter);
             return true;
+        }
+    }
+
+    [UpdateInGroup(typeof(SmartBlobberBakingGroup))]
+    [BurstCompile]
+    internal partial struct AnimationStateMachineSmartBlobberSystem : ISystem
+    {
+        public void OnCreate(ref SystemState state)
+        {
+            new SmartBlobberTools<StateMachineBlob>().Register(state.World);
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
+            new BuildBlobJob().ScheduleParallel();
+        }
+
+        [WithOptions(EntityQueryOptions.IncludeDisabledEntities | EntityQueryOptions.IncludePrefab)]
+        [BurstCompile]
+        partial struct BuildBlobJob : IJobEntity
+        {
+            public void Execute(ref SmartBlobberResult result, in StateMachineBlobConverter stateMachineBlobConverter)
+            {
+                var blob = stateMachineBlobConverter.BuildBlob();
+                result.blob = Unity.Entities.LowLevel.Unsafe.UnsafeUntypedBlobAssetReference.Create(blob);
+            }
         }
     }
 }

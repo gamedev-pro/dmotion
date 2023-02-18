@@ -1,7 +1,5 @@
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
 
 namespace DMotion
 {
@@ -9,6 +7,7 @@ namespace DMotion
     internal partial struct RaiseAnimationEventsJob : IJobEntity
     {
         internal void Execute(
+            Entity entity,
             ref DynamicBuffer<RaisedAnimationEvent> raisedAnimationEvents,
             in DynamicBuffer<ClipSampler> samplers
         )
@@ -45,11 +44,10 @@ namespace DMotion
 
                     if (shouldRaiseEvent)
                     {
-                        raisedAnimationEvents.Add(new RaisedAnimationEvent()
+                        raisedAnimationEvents.Add(new RaisedAnimationEvent
                         {
-                            EventHash = e.EventHash,
-                            ClipWeight = sampler.Weight,
-                            ClipHandle = new SkeletonClipHandle(sampler.Clips, sampler.ClipIndex),
+                            Entity = entity,
+                            EventHash = e.EventHash
                         });
                     }
                 }

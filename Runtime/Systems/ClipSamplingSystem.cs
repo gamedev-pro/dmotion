@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
@@ -10,105 +11,117 @@ namespace DMotion
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(TRSToLocalToParentSystem))]
     [UpdateBefore(typeof(TRSToLocalToWorldSystem))]
-    public partial class ClipSamplingSystem : SystemBase
+    [RequireMatchingQueriesForUpdate]
+    [BurstCompile]
+    public partial struct ClipSamplingSystem : ISystem
     {
         internal static readonly ProfilerMarker Marker_SampleOptimizedBonesJob =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(SampleOptimizedBonesJob));
-        
+            new("SampleOptimizedBonesJob");
+
         internal static readonly ProfilerMarker Marker_SampleNonOptimizedBonesJob =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(Marker_SampleNonOptimizedBonesJob));
-        
+            new("SampleNonOptimizedBonesJob");
+
         internal static readonly ProfilerMarker Marker_SampleRootDeltasJob =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(SampleRootDeltasJob));
-        
+            new("SampleRootDeltasJob");
+
         internal static readonly ProfilerMarker Marker_ApplyRootMotionToEntityJob =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(ApplyRootMotionToEntityJob));
-        
+            new("ApplyRootMotionToEntityJob");
+
         internal static readonly ProfilerMarker Marker_TransferRootMotionJob =
-            ProfilingUtils.CreateAnimationMarker<AnimationStateMachineSystem>(nameof(TransferRootMotionJob));
-        
-        protected override void OnUpdate()
+            new("TransferRootMotionJob");
+
+        public void OnCreate(ref SystemState state)
+        {
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
 #if DEBUG || UNITY_EDITOR
             if (JobsUtility.JobDebuggerEnabled)
             {
-                OnUpdate_Safe();
+                OnUpdate_Safe(ref state);
             }
             else
             {
-                OnUpdate_Unsafe();
+                OnUpdate_Unsafe(ref state);
             }
 #else
-            OnUpdate_Unsafe();
+            OnUpdate_Unsafe(ref state);
 #endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnUpdate_Unsafe()
+        private void OnUpdate_Unsafe(ref SystemState state)
         {
             // new NormalizedSamplersWeights().ScheduleParallel();
             //Sample bones (those only depend on updateFmsHandle)
             var sampleOptimizedHandle = new SampleOptimizedBonesJob
             {
                 Marker = Marker_SampleOptimizedBonesJob
-            }.ScheduleParallel(Dependency);
-            
+            }.ScheduleParallel(state.Dependency);
+
             var sampleNonOptimizedHandle = new SampleNonOptimizedBones
             {
-                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                BfeClipSampler = SystemAPI.GetBufferLookup<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
-            }.ScheduleParallel(Dependency);
-            
+            }.ScheduleParallel(state.Dependency);
+
             var sampleRootDeltasHandle = new SampleRootDeltasJob
             {
                 Marker = Marker_SampleRootDeltasJob
-            }.ScheduleParallel(Dependency);
-            
+            }.ScheduleParallel(state.Dependency);
+
             var applyRootMotionHandle = new ApplyRootMotionToEntityJob
             {
                 Marker = Marker_ApplyRootMotionToEntityJob
             }.ScheduleParallel(sampleRootDeltasHandle);
-            
+
             var transferRootMotionHandle = new TransferRootMotionJob
             {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
-                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
+                CfeDeltaPosition = SystemAPI.GetComponentLookup<RootDeltaTranslation>(true),
+                CfeDeltaRotation = SystemAPI.GetComponentLookup<RootDeltaRotation>(true),
                 Marker = Marker_TransferRootMotionJob
             }.ScheduleParallel(sampleRootDeltasHandle);
             //end sample bones
-            
-            Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle, transferRootMotionHandle);
-            Dependency = JobHandle.CombineDependencies(Dependency, applyRootMotionHandle);
+
+            state.Dependency = JobHandle.CombineDependencies(sampleOptimizedHandle, sampleNonOptimizedHandle,
+                transferRootMotionHandle);
+            state.Dependency = JobHandle.CombineDependencies(state.Dependency, applyRootMotionHandle);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnUpdate_Safe()
+        private void OnUpdate_Safe(ref SystemState state)
         {
             new SampleOptimizedBonesJob
             {
                 Marker = Marker_SampleOptimizedBonesJob
             }.ScheduleParallel();
-            
+
             new SampleNonOptimizedBones
             {
-                BfeClipSampler = GetBufferFromEntity<ClipSampler>(true),
+                BfeClipSampler = SystemAPI.GetBufferLookup<ClipSampler>(true),
                 Marker = Marker_SampleNonOptimizedBonesJob
             }.ScheduleParallel();
-            
+
             new SampleRootDeltasJob
             {
                 Marker = Marker_SampleRootDeltasJob
             }.ScheduleParallel();
-            
+
             new ApplyRootMotionToEntityJob
             {
                 Marker = Marker_ApplyRootMotionToEntityJob
             }.ScheduleParallel();
-            
+
             new TransferRootMotionJob
             {
-                CfeDeltaPosition = GetComponentDataFromEntity<RootDeltaTranslation>(true),
-                CfeDeltaRotation = GetComponentDataFromEntity<RootDeltaRotation>(true),
+                CfeDeltaPosition = SystemAPI.GetComponentLookup<RootDeltaTranslation>(true),
+                CfeDeltaRotation = SystemAPI.GetComponentLookup<RootDeltaRotation>(true),
                 Marker = Marker_TransferRootMotionJob
             }.ScheduleParallel();
         }

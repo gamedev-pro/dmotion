@@ -1,55 +1,65 @@
-﻿using System.Linq;
-using DMotion.Authoring;
-using DMotion.Samples.Common;
+﻿using DMotion.Authoring;
 using Latios.Authoring;
+using Latios.Kinemation;
 using Unity.Assertions;
 using Unity.Entities;
 using UnityEngine;
 
 namespace DMotion.Samples.PlayOneShot
 {
-    public struct PlayOneShotExampleComponent : IComponentData
+    struct PlayOneShotExampleComponent : IComponentData
     {
         public SingleClipRef OneShotClipRef;
         public float TransitionDuration;
         public float NormalizedEndTime;
     }
-    public class PlayOneShotExampleAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IRequestBlobAssets
+
+    class PlayOneShotExampleAuthoring : MonoBehaviour
     {
         public Animator Animator;
         public SingleClipRefConvertData OneShotClip;
         public float TransitionDuration = 0.15f;
         [Range(0, 1)] public float NormalizedEndTime = 0.8f;
+    }
 
-        private SingleClipRefsConverter singleClipsConverter;
+    class PlayOneShotExampleBaker : SmartBaker<PlayOneShotExampleAuthoring, PlayOneShotExampleBakeItem>
+    {
+    }
 
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+    internal struct PlayOneShotExampleBakeItem : ISmartBakeItem<PlayOneShotExampleAuthoring>
+    {
+        public SmartBlobberHandle<SkeletonClipSetBlob> ClipsBlobHandle;
+        public SmartBlobberHandle<ClipEventsBlob> ClipEventsBlobHandle;
+
+        public float Speed;
+        public float TransitionDuration;
+        public float NormalizeEndTime;
+
+        public bool Bake(PlayOneShotExampleAuthoring authoring, IBaker baker)
         {
-            //create this sample's system
-            DMotionSamplesUtils.AddSytemToPlayerUpdate<PlayOneShotExampleSystem>(dstManager);
-
-            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(dstManager, entity);
-
-            //Setup single clip refs
-            var clips = singleClipsConverter.ConvertClips().ToArray();
-            if (clips.Length == 1)
-            {
-                dstManager.AddComponentData(entity,
-                    new PlayOneShotExampleComponent
-                    {
-                        OneShotClipRef = clips[0],
-                        TransitionDuration = TransitionDuration,
-                        NormalizedEndTime = NormalizedEndTime
-                    });
-            }
+            Assert.IsNotNull(authoring.OneShotClip.Clip, $"Missing one shot clip");
+            ClipsBlobHandle = baker.RequestCreateBlobAsset(authoring.Animator, authoring.OneShotClip.Clip);
+            ClipEventsBlobHandle =
+                baker.RequestCreateBlobAsset(authoring.OneShotClip.Clip);
+            Speed = authoring.OneShotClip.Speed;
+            TransitionDuration = authoring.TransitionDuration;
+            NormalizeEndTime = authoring.NormalizedEndTime;
+            return true;
         }
 
-        public void RequestBlobAssets(Entity entity, EntityManager dstEntityManager,
-            GameObjectConversionSystem conversionSystem)
+        public void PostProcessBlobRequests(EntityManager entityManager, Entity entity)
         {
-            Assert.IsNotNull(OneShotClip.Clip, $"Missing one shot clip");
-            singleClipsConverter = new SingleClipRefsConverter(Animator, new[] { OneShotClip });
-            singleClipsConverter.RequestBlobAssets(conversionSystem);
+            AnimationStateMachineConversionUtils.AddOneShotSystemComponents(entityManager, entity);
+            //Setup single clip refs
+            var clipsBlob = ClipsBlobHandle.Resolve(entityManager);
+            var clipEventsBlob = ClipEventsBlobHandle.Resolve(entityManager);
+            entityManager.AddComponentData(entity,
+                new PlayOneShotExampleComponent
+                {
+                    OneShotClipRef = new SingleClipRef(clipsBlob, clipEventsBlob, 0, Speed),
+                    TransitionDuration = TransitionDuration,
+                    NormalizedEndTime = NormalizeEndTime
+                });
         }
     }
 }

@@ -21,5 +21,14 @@ namespace DMotion
         public float ClipDuration => Clip.duration;
         public FixedString128Bytes Name => Clip.name;
         public float SampleRate => Clip.sampleRate;
+
+        public SingleClipRef(BlobAssetReference<SkeletonClipSetBlob> clipsBlob,
+            BlobAssetReference<ClipEventsBlob> clipEventsBlob, int clipIndex, float speed)
+        {
+            Clips = clipsBlob;
+            ClipEvents = clipEventsBlob;
+            ClipIndex = (ushort) clipIndex;
+            Speed = speed;
+        }
     }
 }

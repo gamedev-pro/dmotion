@@ -17,9 +17,6 @@ namespace DMotion
 
     public struct IntParameter : IBufferElementData, IStateMachineParameter<int>
     {
-#if UNITY_EDITOR || DEBUG
-        public FixedString64Bytes Name;
-#endif
         public int Hash;
         public int Value;
         int IHasHash.Hash => Hash;
@@ -31,11 +28,8 @@ namespace DMotion
             set => Value = value;
         }
 
-        public IntParameter(FixedString64Bytes name, int hash)
+        public IntParameter(int hash)
         {
-#if UNITY_EDITOR || DEBUG
-            Name = name;
-#endif
             Hash = hash;
             Value = 0;
         }
@@ -43,9 +37,6 @@ namespace DMotion
 
     public struct BoolParameter : IBufferElementData, IStateMachineParameter<bool>
     {
-#if UNITY_EDITOR || DEBUG
-        public FixedString64Bytes Name;
-#endif
         public int Hash;
         public bool Value;
 
@@ -58,11 +49,8 @@ namespace DMotion
             set => Value = value;
         }
 
-        public BoolParameter(FixedString64Bytes name, int hash)
+        public BoolParameter(int hash)
         {
-#if UNITY_EDITOR || DEBUG
-            Name = name;
-#endif
             Hash = hash;
             Value = false;
         }
@@ -70,9 +58,6 @@ namespace DMotion
 
     public struct FloatParameter : IBufferElementData, IStateMachineParameter<float>
     {
-#if UNITY_EDITOR || DEBUG
-        public FixedString64Bytes Name;
-#endif
         public int Hash;
         public float Value;
         int IHasHash.Hash => Hash;
@@ -84,11 +69,8 @@ namespace DMotion
             set => Value = value;
         }
 
-        public FloatParameter(FixedString64Bytes name, int hash)
+        public FloatParameter(int hash)
         {
-#if UNITY_EDITOR || DEBUG
-            Name = name;
-#endif
             Hash = hash;
             Value = 0;
         }

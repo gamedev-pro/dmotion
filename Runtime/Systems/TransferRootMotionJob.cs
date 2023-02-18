@@ -9,12 +9,12 @@ using UnityEngine;
 namespace DMotion
 {
     [BurstCompile]
-    [WithEntityQueryOptions(EntityQueryOptions.FilterWriteGroup)]
+    [WithOptions(EntityQueryOptions.FilterWriteGroup)]
     [WithAll(typeof(TransferRootMotionToOwner))]
     internal partial struct TransferRootMotionJob : IJobEntity
     {
-        [ReadOnly] public ComponentDataFromEntity<RootDeltaTranslation> CfeDeltaPosition;
-        [ReadOnly] public ComponentDataFromEntity<RootDeltaRotation> CfeDeltaRotation;
+        [ReadOnly] public ComponentLookup<RootDeltaTranslation> CfeDeltaPosition;
+        [ReadOnly] public ComponentLookup<RootDeltaRotation> CfeDeltaRotation;
         internal ProfilerMarker Marker;
 
         public void Execute(ref Translation translation, ref Rotation rotation, in AnimatorOwner owner)

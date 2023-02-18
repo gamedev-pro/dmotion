@@ -3,21 +3,30 @@ using UnityEngine;
 
 namespace DMotion.Samples.PlayOneShot
 {
-    [DisableAutoCreation]
-    public partial class PlayOneShotExampleSystem : SystemBase
+    [RequireMatchingQueriesForUpdate]
+    public partial struct PlayOneShotExampleSystem : ISystem
     {
-        protected override void OnUpdate()
+        public void OnCreate(ref SystemState state)
+        {
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        public void OnUpdate(ref SystemState state)
         {
             var shouldPlayOneShot = Input.GetKeyDown(KeyCode.Space);
-            Entities.ForEach((ref PlayOneShotRequest playOneShotRequest,
-                in PlayOneShotExampleComponent playOneShotExampleComponent) =>
+
+            foreach (var (playOneShotRequest, playOneShotExampleComponent) in SystemAPI
+                         .Query<RefRW<PlayOneShotRequest>, PlayOneShotExampleComponent>())
             {
                 if (shouldPlayOneShot)
                 {
-                    playOneShotRequest = PlayOneShotRequest.New(playOneShotExampleComponent.OneShotClipRef,
+                    playOneShotRequest.ValueRW = PlayOneShotRequest.New(playOneShotExampleComponent.OneShotClipRef,
                         playOneShotExampleComponent.TransitionDuration, playOneShotExampleComponent.NormalizedEndTime);
                 }
-            }).Schedule();
+            }
         }
     }
 }

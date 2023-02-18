@@ -1,21 +1,36 @@
+using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
 namespace DMotion.Samples.AnimationEvents
 {
-    [DisableAutoCreation]
-    public partial class AnimationEventsSampleSystem : SystemBase
+    [BurstCompile]
+    [RequireMatchingQueriesForUpdate]
+    public partial struct AnimationEventsSampleSystem : ISystem
     {
         private static readonly int FootstepEventHash = StateMachineParameterUtils.GetHashCode("EV_Footstep");
-        protected override void OnUpdate()
+
+        public void OnCreate(ref SystemState state)
         {
-            Entities.ForEach((in DynamicBuffer<RaisedAnimationEvent> raisedEvents) =>
+            state.RequireForUpdate<AnimationEventsSample>();
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
+            foreach (var raisedEvents in SystemAPI.Query<DynamicBuffer<RaisedAnimationEvent>>())
             {
-                if (raisedEvents.WasEventRaised(FootstepEventHash))
+                if (raisedEvents.WasEventRaised(FootstepEventHash, out var index))
                 {
-                    Debug.Log("Footstep raised!");
+                    var e = raisedEvents[index];
+                    Debug.Log(FixedString.Format("Footstep event raised by entity: {0}", e.Entity.Index));
                 }
-            }).Schedule();
+            }
         }
     }
 }

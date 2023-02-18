@@ -8,27 +8,29 @@ namespace DMotion.Samples
     [UpdateInGroup(typeof(TransformSystemGroup))]
     //must update after ClipSampling in order to have RootMotion deltas
     [UpdateAfter(typeof(ClipSamplingSystem))]
-    public partial class CustomRootMotionSystem : SystemBase
+    [RequireMatchingQueriesForUpdate]
+    public partial struct CustomRootMotionSystem : ISystem
     {
-        protected override void OnUpdate()
+        public void OnCreate(ref SystemState state)
         {
-            Entities
-                //only works for when the SkeletonMes is the root object. Check TransferRootMotionJob.cs for an example of transfering root motion
-                .WithAll<SkeletonRootTag>()
-                //tag component to filter entities with custom motion
-                .WithAll<CustomRootMotionComponent>()
-                .ForEach((
-                    ref Translation translation,
-                    ref Rotation rotation,
-                    in RootDeltaTranslation rootDeltaTranslation,
-                    in RootDeltaRotation rootDeltaRotation
-                ) =>
-                {
-                    //RootDeltaTranslation and RootDeltaRotation are calculated by DMotion in the ClipSamplingSystem, so you can just read them here
-                    var deltaTranslation = -rootDeltaTranslation.Value;
-                    translation.Value += deltaTranslation;
-                    rotation.Value = math.mul(rootDeltaRotation.Value, rotation.Value);
-                }).Schedule();
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        public void OnUpdate(ref SystemState state)
+        {
+            foreach (var (translation, rotation, rootDeltaTranslation, rootDeltaRotation) in SystemAPI
+                         .Query<RefRW<Translation>, RefRW<Rotation>, RootDeltaTranslation, RootDeltaRotation>()
+                         .WithAll<CustomRootMotionComponent>()
+                         .WithAll<SkeletonRootTag>())
+            {
+                //RootDeltaTranslation and RootDeltaRotation are calculated by DMotion in the ClipSamplingSystem, so you can just read them here
+                var deltaTranslation = -rootDeltaTranslation.Value;
+                translation.ValueRW.Value += deltaTranslation;
+                rotation.ValueRW.Value = math.mul(rootDeltaRotation.Value, rotation.ValueRW.Value);
+            }
         }
     }
 }

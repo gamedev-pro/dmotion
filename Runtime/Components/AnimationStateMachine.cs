@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using DMotion.Authoring;
 using Latios.Kinemation;
@@ -37,9 +38,16 @@ namespace DMotion
     }
     
     #if UNITY_EDITOR || DEBUG
-    internal class AnimationStateMachineDebug : IComponentData
+    internal class AnimationStateMachineDebug : IComponentData, ICloneable
     {
         internal StateMachineAsset StateMachineAsset;
+        public object Clone()
+        {
+            return new AnimationStateMachineDebug
+            {
+                StateMachineAsset = StateMachineAsset
+            };
+        }
     }
     #endif
 }

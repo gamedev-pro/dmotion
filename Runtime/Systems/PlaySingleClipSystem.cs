@@ -6,7 +6,9 @@ namespace DMotion
 {
     [UpdateInGroup(typeof(TransformSystemGroup))]
     [UpdateBefore(typeof(AnimationStateMachineSystem))]
-    public partial class PlaySingleClipSystem : SystemBase
+    [RequireMatchingQueriesForUpdate]
+    [BurstCompile]
+    public partial struct PlaySingleClipSystem : ISystem
     {
         [BurstCompile]
         internal partial struct PlaySingleClipJob : IJobEntity
@@ -39,8 +41,17 @@ namespace DMotion
                 }
             }
         }
+        
+        public void OnCreate(ref SystemState state)
+        {
+        }
 
-        protected override void OnUpdate()
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
             new PlaySingleClipJob().ScheduleParallel();
         }

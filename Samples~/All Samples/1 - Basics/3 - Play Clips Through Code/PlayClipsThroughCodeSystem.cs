@@ -3,30 +3,38 @@ using UnityEngine;
 
 namespace DMotion.Samples.PlayClipsThroughCode
 {
-    [DisableAutoCreation]
-public partial class PlayClipsThroughCodeSystem : SystemBase
-{
-    protected override void OnUpdate()
+    [RequireMatchingQueriesForUpdate]
+    public partial struct PlayClipsThroughCodeSystem : ISystem
     {
-        var playWalk = Input.GetKeyDown(KeyCode.Alpha1);
-        var playRun = Input.GetKeyDown(KeyCode.Alpha2);
-
-        Entities.ForEach((ref PlaySingleClipRequest playSingleClipRequest,
-            in PlayClipsThroughCodeComponent playClipsComponent) =>
+        public void OnCreate(ref SystemState state)
         {
-            if (playWalk)
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+        }
+
+        public void OnUpdate(ref SystemState state)
+        {
+            var playWalk = Input.GetKeyDown(KeyCode.Alpha1);
+            var playRun = Input.GetKeyDown(KeyCode.Alpha2);
+
+            foreach (var (playSingleClipRequest, playClipsComponent) in
+                     SystemAPI.Query<RefRW<PlaySingleClipRequest>, PlayClipsThroughCodeComponent>())
             {
-                playSingleClipRequest = PlaySingleClipRequest.New(playClipsComponent.WalkClip,
-                    loop: true,
-                    playClipsComponent.TransitionDuration);
+                if (playWalk)
+                {
+                    playSingleClipRequest.ValueRW = PlaySingleClipRequest.New(playClipsComponent.WalkClip,
+                        loop: true,
+                        playClipsComponent.TransitionDuration);
+                }
+                else if (playRun)
+                {
+                    playSingleClipRequest.ValueRW = PlaySingleClipRequest.New(playClipsComponent.RunClip,
+                        loop: true,
+                        playClipsComponent.TransitionDuration);
+                }
             }
-            else if (playRun)
-            {
-                playSingleClipRequest = PlaySingleClipRequest.New(playClipsComponent.RunClip,
-                    loop: true,
-                    playClipsComponent.TransitionDuration);
-            }
-        }).Schedule();
+        }
     }
-}
 }

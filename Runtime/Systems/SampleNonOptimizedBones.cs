@@ -12,7 +12,7 @@ namespace DMotion
     [WithNone(typeof(SkeletonRootTag))]
     internal partial struct SampleNonOptimizedBones : IJobEntity
     {
-        [ReadOnly] internal BufferFromEntity<ClipSampler> BfeClipSampler;
+        [ReadOnly] internal BufferLookup<ClipSampler> BfeClipSampler;
         internal ProfilerMarker Marker;
 
         internal void Execute(
