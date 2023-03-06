@@ -1,7 +1,7 @@
 {
   "name": "com.gamedevpro.dmotion",
   "displayName": "DMotion",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "unity": "2022.2",
   "description": "DMotion is a high level Animation framework and State Machine for DOTS",
   "dependencies": {
