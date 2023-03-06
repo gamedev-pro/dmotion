@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace DMotion.Authoring
 {
     /// <summary>
-    /// This is a wrapper for the EntityManager, IBaker, and ECB
+    /// This is a wrapper for the EntityManager, and ECB
     /// </summary>
     public struct EntityCommands
     {
@@ -12,17 +12,15 @@ namespace DMotion.Authoring
         {
             EntityManager,
             Ecb,
-            Baker,
         }
 
         private EntityManager entityManager;
         private EntityCommandBuffer ecb;
         private EntityCommandsType type;
-        private IBaker baker;
 
         public static implicit operator EntityCommands(IBaker baker)
         {
-            return new EntityCommands() { type = EntityCommandsType.Baker, baker = baker };
+            return new EntityCommands { type = EntityCommandsType.Ecb, ecb = baker.GetEcb() };
         }
 
         public static implicit operator EntityCommands(EntityManager entityManager)
@@ -42,7 +40,6 @@ namespace DMotion.Authoring
             {
                 EntityCommandsType.EntityManager => entityManager.AddBuffer<T>(entity),
                 EntityCommandsType.Ecb => ecb.AddBuffer<T>(entity),
-                EntityCommandsType.Baker => baker.AddBuffer<T>(entity),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -58,9 +55,6 @@ namespace DMotion.Authoring
                 case EntityCommandsType.Ecb:
                     ecb.AddComponent(entity, c);
                     break;
-                case EntityCommandsType.Baker:
-                    baker.AddComponent(entity, c);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -73,7 +67,6 @@ namespace DMotion.Authoring
             {
                 EntityCommandsType.EntityManager => entityManager.GetBuffer<T>(entity),
                 EntityCommandsType.Ecb => throw new Exception("Ecb doesn't support GetBuffer"),
-                EntityCommandsType.Baker => throw new Exception("IBaker doesn't support GetBuffer"),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -88,9 +81,6 @@ namespace DMotion.Authoring
                     break;
                 case EntityCommandsType.Ecb:
                     ecb.AddComponent(entity, c);
-                    break;
-                case EntityCommandsType.Baker:
-                    baker.AddComponentObject(entity, c);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
