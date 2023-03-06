@@ -24,6 +24,7 @@ namespace DMotion.Authoring
     
     [UpdateInGroup(typeof(SmartBlobberBakingGroup))]
     [BurstCompile]
+    [DisableAutoCreation]
     internal partial struct ClipEventsSmartBlobberSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
