@@ -29,6 +29,7 @@ namespace DMotion.Authoring
 
     [UpdateInGroup(typeof(SmartBlobberBakingGroup))]
     [BurstCompile]
+    [DisableAutoCreation]
     internal partial struct AnimationStateMachineSmartBlobberSystem : ISystem
     {
         public void OnCreate(ref SystemState state)

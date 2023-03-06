@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] – 2022-12-22
+## [0.4.1] – 2023-03-05
+
+Bug fix release
+
+### Fixed
+- Fix SmartBaking systems being created both on the runtime world and Latios World
+- Fix Burst incompatibility on EntityCommands
+
+## [0.4.0] – 2023-02-17
 
 ### Changed
 - Upgraded DMotion to Entities 1.0
@@ -20,7 +28,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Fixed
 - Normalize rotations when blending between multiple clips (optimized and non-optimized)
 - Fix Safety Exceptions on ClipSamplingSystem and UpdateAnimationStatesSystem
-- 
+ 
 ## [0.3.4] – 2022-10-30
 
 ### Added
